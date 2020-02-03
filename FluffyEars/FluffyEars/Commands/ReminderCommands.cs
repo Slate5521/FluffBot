@@ -62,7 +62,8 @@ namespace FluffyEars.Commands
                         {
                             Text = messageString,
                             Time = dto.ToUnixTimeMilliseconds(),
-                            User = ctx.Member.Id
+                            User = ctx.Member.Id,
+                            Channel = ctx.Channel.Id
                         };
 
                         deb.WithTitle(@"Notification");

@@ -18,6 +18,8 @@ namespace FluffyEars.Reminders
         public string Text;
         /// <summary>Time of the reminder.</summary>
         public long Time;
+        /// <summary>Channel the reminder was originally set in.</summary>
+        public ulong Channel;
 
         /// <summary>
         /// This is a command that (tries) to generate a unique identifier for the Reminder, which can be used to cancel the reminder at a later date.
@@ -31,12 +33,13 @@ namespace FluffyEars.Reminders
             return obj is Reminder reminder &&
                    User == reminder.User &&
                    Text == reminder.Text &&
-                   Time == reminder.Time;
+                   Time == reminder.Time &&
+                   Channel == reminder.Channel;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(User, Text, Time);
+            return HashCode.Combine(User, Text, Time, Channel);
         }
     }
 }
