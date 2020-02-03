@@ -19,21 +19,11 @@ namespace FluffyEars.Commands
     {
         private bool CanUseReminderCommands(DiscordMember user) => true;//user.Roles.Any(a => IsAcceptedRole(a));
 
-        private bool IsAcceptedRole(DiscordRole role)
-        {
-            return role.Id == 214524811433607168 || // Admin
-                   role.Id == 503752769757511690 || // Bot Manager
-                   role.Id == 521006886451937310 || // Senior Mod
-                   role.Id == 214527027112312834 || // Mod
-                   role.Id == 326891962697383936 || // CH
-                   role.Id == 672663130324598811;   // FDS test role
-        }
-
-
-        [Command("addreminder")]
+        [Command("+reminder"), 
+            Description("[CH+] Add a reminder.\nUsage: +reminder \\`time [month(s), week(s) day(s), hour(s), minute(s)\\` \\`reminder message\\` @mention1 @mention2 ... @mention_n\nhttps://i.imgur.com/H1fVPta.png")]
         public async Task AddReminder(CommandContext ctx)
         {
-            if (CanUseReminderCommands(ctx.Member))
+            if (ctx.Member.GetRole().IsCHOrHigher())
             {
                 // DEB!
                 DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
@@ -56,6 +46,14 @@ namespace FluffyEars.Commands
                     else
                     {
                         DateTimeOffset dto = InterpretTimeString(timeString);
+                        StringBuilder sb = new StringBuilder();
+
+                        // For every userId that doesn't equal the bot's userId, add them to the list.
+                        List<ulong> usersToNotify = new List<ulong>();
+                        int i = 0;
+                        foreach (ulong userId in ctx.Message.MentionedUsers.Select(a => a.Id))
+                            if (userId != Bot.BotClient.CurrentUser.Id)
+                                usersToNotify.Add(userId);
 
                         // Generate a new reminder!
                         Reminder reminder = new Reminder
@@ -63,13 +61,22 @@ namespace FluffyEars.Commands
                             Text = messageString,
                             Time = dto.ToUnixTimeMilliseconds(),
                             User = ctx.Member.Id,
-                            Channel = ctx.Channel.Id
+                            Channel = ctx.Channel.Id,
+                            UsersToNotify = usersToNotify.ToArray()
                         };
+
+                        foreach (string mention in ctx.Message.MentionedUsers.Select(a => a.Mention))
+                            if(mention != @"<@!669347771312111619>")
+                                sb.Append(mention + ' ');
 
                         deb.WithTitle(@"Notification");
                         deb.AddField(@"User", ctx.Member.Mention);
                         deb.AddField(@"Time", dto.ToString());
                         deb.AddField(@"Message", messageString);
+
+                        if(sb.Length > 0)
+                            deb.AddField(@"Users to notify:", sb.ToString());
+                        
                         deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
 
                         ReminderSystem.AddReminder(reminder);
@@ -84,11 +91,12 @@ namespace FluffyEars.Commands
             }
         }
 
-        [Command("removereminder")]
+        [Command("-reminder"),
+            Description("[CH+] Removes a reminder.\nUsage: -reminder reminder_id")]
         public async Task RemoveReminder(CommandContext ctx, string reminderId)
         {
             // Only enter scope if (a) user can use reminder commands && this is an existing reminder.
-            if(CanUseReminderCommands(ctx.Member) && ReminderSystem.IsReminder(reminderId))
+            if(ctx.Member.GetRole().IsCHOrHigher() && ReminderSystem.IsReminder(reminderId))
             {
                 Reminder reminderToRemove = ReminderSystem.GetReminderFromId(reminderId);
 
@@ -113,10 +121,11 @@ namespace FluffyEars.Commands
             }
         }
 
-        [Command("listreminders")]
+        [Command("listreminders"),
+            Description("[CH+] Lists all pending notifications.")]
         public async Task ListReminders(CommandContext ctx)
         {
-            if(CanUseReminderCommands(ctx.Member))
+            if(ctx.Member.GetRole().IsCHOrHigher())
             {
                 // Check if there are any notifications. If there are none, let the user know.
                 if (ReminderSystem.HasNotification())
@@ -129,10 +138,16 @@ namespace FluffyEars.Commands
                     foreach(Reminder reminder in 
                         ReminderSystem.GetReminders().OrderByDescending(a => a.Time))
                     {
+                        StringBuilder sb = new StringBuilder();
+
+                        Array.ForEach(reminder.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
+                            a => sb.Append(String.Format("<@{0}> ", a)));
+
                         DateTimeOffset dto = DateTimeOffset.FromUnixTimeMilliseconds(reminder.Time);
 
                         deb.AddField(dto.ToString("ddMMMyyyy HH:mm"),
-                            String.Format("<@{0}>: {1}\nId: {2}", reminder.User, reminder.Text, reminder.GetIdentifier()));
+                            String.Format("<@{0}>: {1}\nMentions: {2}\nId: {3}", 
+                            /*{0}*/ reminder.User, /*{1}*/ reminder.Text, /*{2}*/ sb.ToString(), /*{3}*/ reminder.GetIdentifier()));
                     }
 
                     await ctx.Channel.SendMessageAsync(embed: deb);

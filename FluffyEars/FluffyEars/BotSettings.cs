@@ -24,9 +24,7 @@ namespace FluffyEars
         private struct botSettings_
         {
             /// <summary>Audit log channel.</summary>
-            public ulong AuditChannelId;
-            /// <summary>Notification channel (for Reminders).</summary>
-            public ulong NotifChannelId;
+            public ulong FilterChannelId;
             /// <summary>A list of users who can use bot config features.</summary>
             public List<ulong> WhitelistedUsers;
             /// <summary>A list of channels where bad words will not be checked for.</summary>
@@ -36,26 +34,18 @@ namespace FluffyEars
         /// <summary>Default bot settings.</summary>
         static botSettings_ DefaultBotSettings = new botSettings_
         {
-            AuditChannelId = 0,
-            NotifChannelId = 0,
+            FilterChannelId = 0,
             WhitelistedUsers = new List<ulong>() { 131626628211146752 },
             ExcludedChannels = new List<ulong>(),
         };
 
         /// <summary>Bot settings!</summary>
         private static botSettings_ botSettings;
-
-        /// <summary>Notification channel for bot settings.</summary>
-        public static ulong NotificationChannelId
+        
+        public static ulong FilterChannelId
         {
-            get => botSettings.NotifChannelId;
-            set => botSettings.NotifChannelId = value;
-        }
-
-        public static ulong AuditChannelId
-        {
-            get => botSettings.AuditChannelId;
-            set => botSettings.AuditChannelId = value;
+            get => botSettings.FilterChannelId;
+            set => botSettings.FilterChannelId = value;
         }
 
         // I will not be documenting these for the moment.
@@ -103,14 +93,20 @@ namespace FluffyEars
         }
 
         #endregion Initialization, deconstruction commands
-        
+
         #region Whitelist
 
         /// <summary>Check if a user can use configuration commands.</summary>
         /// <returns>True if the user can use configuration commands.</returns>
         public static bool CanUseConfigCommands(DiscordMember user)
         {
-            return user.IsOwner || botSettings.WhitelistedUsers.Contains(user.Id);
+            Role role = user.GetRole();
+
+            // Check if the user is the owner, whitelisted, or an admin, or bot manager.
+            return user.IsOwner ||
+                IsUserOnWhitelist(user) ||
+                role == Role.BotManager ||
+                role == Role.Admin;
         }
         /// <summary>Add a user to the white list for configuration commands.</summary>
         public static void AddUserToWhitelist(DiscordMember user)

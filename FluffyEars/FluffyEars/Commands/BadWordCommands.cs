@@ -14,13 +14,15 @@ namespace FluffyEars.Commands
 {
     class BadWordCommands : BaseModule
     {
-        /// <summary>Add multiple bad words to the bad word list.</summary>
+        /// <summary>Add bad word(s) to the bad word list.</summary>
         /// <param name="words">The supposed list.</param>
-        [Command("addbadwords")]
+        [Command("+badwords"), 
+            Aliases("+badword"),
+            Description("[SEN.MOD+] Adds a single bad word or multiple bad words to the bad word list.\nUsage: +badword badword badword1 badword2 ... badwordn")]
         public async Task AddBadWords(CommandContext ctx, params string[] words)
         {
             // Check if the user can use commands.
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
+            if (ctx.Member.GetRole().IsModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
@@ -57,57 +59,61 @@ namespace FluffyEars.Commands
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
 
-                BotSettings.Save();
-            }
-        }
-
-        /// <summary>Add a single bad word to the bad word list.</summary>
-        [Command("addbadword")]
-        public async Task AddBadWord(CommandContext ctx, string word)
-        {            
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
-            {
-                word = word.ToLower();
-                await ctx.TriggerTypingAsync();
-
-                if (BadwordSystem.IsBadWord(word))
-                {
-                    await ctx.Channel.SendMessageAsync("That is already a bad word.");
-                }
-                else
-                {
-                    BadwordSystem.AddBadWord(word.ToLower());
-
-                    await ctx.Channel.SendMessageAsync("I added that bad word to the list.");
-                    BotSettings.Save();
-                }
+                BadwordSystem.Save();
             }
         }
 
         /// <summary>Remove a single bad word from the bad word list, if it exists.</summary>
-        [Command("removebadword")]
-        public async Task RemoveBadWord(CommandContext ctx, string word)
+        [Command("-badwords"),
+            Aliases("-badword"),
+            Description("[SEN.MOD+] Removes a single or multiple bad words from the bad word list.\nUsage: -badword badword badword1 badword2 ... badwordn")]
+        public async Task RemoveBadWords(CommandContext ctx, params string[] words)
         {
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
+            // Check if the user can use commands.
+            if (ctx.Member.GetRole().IsModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
-                if (BadwordSystem.IsBadWord(word))
-                {
-                    BadwordSystem.RemoveBadWord(word);
-                    await ctx.Channel.SendMessageAsync("I removed that bad word.");
-                    BotSettings.Save();
+                StringBuilder sb_fail = new StringBuilder();    // A list of words we haven't been able to add.
+                StringBuilder sb_success = new StringBuilder(); // A list of words we were able to add.
+                DiscordEmbedBuilder deb;
 
-                }
-                else
+                foreach (string word in words)
                 {
-                    await ctx.Channel.SendMessageAsync("That bad word does not exist.");
+                    // Check if this is a bad word. If it is not, we were unsuccessful at adding it to the list.
+                    bool success = BadwordSystem.IsBadWord(word);
+
+                    if (success)
+                    {
+                        BadwordSystem.RemoveBadWord(word);
+                        sb_success.Append(word + @", ");
+                    }
+                    else
+                        sb_fail.Append(word + @", ");
                 }
+
+                // DEB!
+                deb = new DiscordEmbedBuilder()
+                {
+                    Description = @"I attempted to remove those words you gave me.",
+                };
+
+
+                // For each of these lists, we want to remove the last two characters, because every string will have an ", " at the end of it.
+                if (sb_success.Length > 0)
+                    deb.AddField("Successfully removed:", sb_success.Remove(sb_success.Length - 2, 2).ToString());
+                if (sb_fail.Length > 0)
+                    deb.AddField("Not removed:", sb_fail.Remove(sb_fail.Length - 2, 2).ToString());
+
+                await ctx.Channel.SendMessageAsync(embed: deb.Build());
+
+                BadwordSystem.Save();
             }
         }
 
         /// <summary>List all the bad words currently in the bad word list</summary>
-        [Command("listbadwords")]
+        [Command("listbadwords"),
+            Description("[MOD+] Lists all the bad words currently being watched for.")]
         public async Task ListBadWords(CommandContext ctx)
         {
             if (BotSettings.CanUseConfigCommands(ctx.Member))

@@ -14,9 +14,10 @@ namespace FluffyEars.Commands
 {
     class ConfigCommands : BaseModule
     {
-        [Command("setauditchannel"), 
-            Description("Sets the channel the bot will record the audit log into.")]
-        public async Task SetAuditChannel(CommandContext ctx, DiscordChannel chan)
+        [Command("setfilterchan"), 
+            Aliases("setfilterchannel", "setfilter"),
+            Description("[OWNER/ADMIN/BOT.BOI] Sets the channel the bot will record bad words into.\nUsage: setfilterchan #DiscordChannel")]
+        public async Task SetFilterChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use these sorts of commands.
             if (BotSettings.CanUseConfigCommands(ctx.Member))
@@ -24,32 +25,15 @@ namespace FluffyEars.Commands
                 await ctx.TriggerTypingAsync();
 
                 // Update the settings.
-                BotSettings.AuditChannelId = chan.Id;
+                BotSettings.FilterChannelId = chan.Id;
                 BotSettings.Save();
 
                 await ctx.Channel.SendMessageAsync("Audit channel set.");
             }
         }
 
-        [Command("setnotifchannel"),
-            Description("Sets the channel the bot will send notifications to.")]
-        public async Task SetNotifChannel(CommandContext ctx, DiscordChannel chan)
-        {
-            // Check if the user can use these sorts of commands.
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
-            {
-                await ctx.TriggerTypingAsync();
-
-                // Update the settings.
-                BotSettings.NotificationChannelId = chan.Id;
-                BotSettings.Save();
-
-                await ctx.Channel.SendMessageAsync("Notification channel set.");
-            }
-        }
-
-        [Command("whitelist"),
-            Description("[OWNER] Whitelist a specific user.")]
+        [Command("+whitelist"),
+            Description("[OWNER] Whitelist a specific user.\nUsage: +whitelist @DiscordUser")]
         public async Task WhitelistUser(CommandContext ctx, DiscordMember user)
         {
             // Owner only.
@@ -70,8 +54,8 @@ namespace FluffyEars.Commands
             }
         }
 
-        [Command("blacklist"),
-            Description("[OWNER] Remove a specific user from the whitelist.")]
+        [Command("-whitelist"),
+            Description("[OWNER] Remove a specific user from the whitelist.\nUsage: -whitelist @DiscordUser")]
         public async Task BlacklistUser(CommandContext ctx, DiscordMember user)
         {
             // Owner only.
@@ -92,31 +76,9 @@ namespace FluffyEars.Commands
             }
         }
 
-        [Command("excludechannel"),
-            Description("Exclude a channel from bad word searching.")]
-        public async Task ExcludeChannel(CommandContext ctx, DiscordChannel chan)
-        {
-            // Check if the user can use config commands.
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
-            {
-                string response = "Unknown error.";
-                await ctx.Channel.TriggerTypingAsync();
-
-                // Only enter scope if (a) channel is NOT already excluded && (b) the channel belongs to Rimworld. 
-                if (!BotSettings.IsChannelExcluded(chan) && (chan.Guild == ctx.Guild))
-                {
-                    BotSettings.ExcludeChannel(chan);
-                    response = "Channel successfully excluded.";
-                }
-                else if (BotSettings.IsChannelExcluded(chan))
-                    response = "Channel already excluded.";
-
-                await ctx.Channel.SendMessageAsync(response);
-            }
-        }
-
-        [Command("includechannel"),
-            Description("Un-exclude a channel from bad word searching.")]
+        [Command("+chan"),
+            Aliases("+channel"),
+            Description("[OWNER/ADMIN/BOT.BOI] Un-exclude a channel from bad word searching.\nUsage: +chan #DiscordChannel")]
         public async Task IncludeChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use config commands.
@@ -138,12 +100,34 @@ namespace FluffyEars.Commands
             }
         }
 
+        [Command("-chan"),
+            Aliases("-channel"),
+            Description("[OWNER/ADMIN/BOT.BOI] Exclude a channel from bad word searching.\nUsage: -chan #DiscordChannel")]
+        public async Task ExcludeChannel(CommandContext ctx, DiscordChannel chan)
+        {
+            // Check if the user can use config commands.
+            if (BotSettings.CanUseConfigCommands(ctx.Member))
+            {
+                string response = "Unknown error.";
+                await ctx.Channel.TriggerTypingAsync();
+
+                // Only enter scope if (a) channel is NOT already excluded && (b) the channel belongs to Rimworld. 
+                if (!BotSettings.IsChannelExcluded(chan) && (chan.Guild == ctx.Guild))
+                {
+                    BotSettings.ExcludeChannel(chan);
+                    response = "Channel successfully excluded.";
+                }
+                else if (BotSettings.IsChannelExcluded(chan))
+                    response = "Channel already excluded.";
+
+                await ctx.Channel.SendMessageAsync(response);
+            }
+        }
         [Command("listexcludes"),
             Description("List excluded channels.")]
         public async Task ListExcludes(CommandContext ctx)
         {
-            // Check if the user can use config commands.
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
+            if (ctx.Member.GetRole().IsCHOrHigher())
             {
                 await ctx.Channel.TriggerTypingAsync();
 

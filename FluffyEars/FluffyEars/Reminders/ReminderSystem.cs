@@ -59,14 +59,6 @@ namespace FluffyEars.Reminders
             }
         }
 
-        /// <summary>Call this whenever the list is altered.</summary>
-        private static void ListAltered()
-        {
-            // So, if reminders_ is null, we're gonna wanna initiate it
-            if (reminders_ is null)
-                reminders_ = new List<Reminder>();
-        }
-
         /// <summary>Call this to set the Reminder list to default.</summary>
         public static void Default()
         {
@@ -81,8 +73,6 @@ namespace FluffyEars.Reminders
             if (CanLoad())
                 reminders_ = saveFile.Load<List<Reminder>>(lockObj);
             else Default();
-
-            ListAltered();
         }
 
         /// <summary>Get a Reminder from its Id.</summary>
@@ -114,7 +104,7 @@ namespace FluffyEars.Reminders
         {
             Reminder returnVal;
 
-            if (remindersSorted.Length > 0)
+            if (remindersSorted is null || remindersSorted.Length > 0)
                 returnVal = remindersSorted[0];
             else
                 throw new IndexOutOfRangeException();
@@ -126,7 +116,6 @@ namespace FluffyEars.Reminders
         public static void AddReminder(Reminder reminder)
         {
             reminders_.Add(reminder);
-            ListAltered();
         }
 
         /// <summary>Remove an existing reminder from the list.</summary>
@@ -134,7 +123,6 @@ namespace FluffyEars.Reminders
         {
             if (reminders_.Contains(reminder))
                 reminders_.Remove(reminder);
-            ListAltered();
         }
         
         /// <summary>Get a list of all the reminders.</summary>
@@ -180,6 +168,7 @@ namespace FluffyEars.Reminders
                 // If the Reminder's time is NOW or PAST, enter this scope.
                 if (utcNow.Ticks >= reminderTime.Ticks)
                 {
+                    StringBuilder sb = new StringBuilder();
                     // How late the notification is. Necessary for two reasons:
                     // 1 - The bot may, for unknown reasons in the future, have some sort of extended downtime, so we should keep track of lateness.
                     // 2 - Reminders are only checked every bot heartbeat, so a notification can be anywhere from 40-60 seconds late.
@@ -193,9 +182,14 @@ namespace FluffyEars.Reminders
                     deb.WithDescription(curReminder.Text);
                     deb.AddField("Late by", lateBy.ToString());
 
+                    // Get all the people we need to remind.
+                    sb.Append(String.Format("<@{0}> ", curReminder.User));
+                    Array.ForEach(curReminder.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
+                        a => sb.Append(String.Format("<@{0}> ", a)));
+
                     await Bot.BotClient.SendMessageAsync(
                         channel: chan,
-                        content: String.Format("<@{0}>", curReminder.User),
+                        content: sb.ToString(),
                         tts: false,
                         embed: deb);
 
@@ -206,7 +200,10 @@ namespace FluffyEars.Reminders
                 // The current reminder will become the next step's previous reminder, and we should also grab the next reminder before heading into
                 // the next step.
                 prevReminder = curReminder;
-                curReminder = ReminderSystem.GetSoonestNotification();
+
+                if (ReminderSystem.HasNotification())
+                    curReminder = ReminderSystem.GetSoonestNotification();
+                else break;
             }
         }
     }

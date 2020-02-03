@@ -20,6 +20,8 @@ namespace FluffyEars.Reminders
         public long Time;
         /// <summary>Channel the reminder was originally set in.</summary>
         public ulong Channel;
+        /// <summary>A list of users to notify.</summary>
+        public ulong[] UsersToNotify;
 
         /// <summary>
         /// This is a command that (tries) to generate a unique identifier for the Reminder, which can be used to cancel the reminder at a later date.

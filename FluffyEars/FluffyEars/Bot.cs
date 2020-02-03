@@ -99,9 +99,9 @@ namespace FluffyEars
             CommandsNextConfiguration commandConfig = new CommandsNextConfiguration()
             {
                 CaseSensitive = false,
-                EnableDefaultHelp = false,
                 EnableMentionPrefix = true,
-                EnableDms = false
+                EnableDefaultHelp = false,
+                EnableDms = true
             };
 
             Commands = BotClient.UseCommandsNext(commandConfig);
@@ -109,6 +109,7 @@ namespace FluffyEars
             Commands.RegisterCommands<Commands.ConfigCommands>();
             Commands.RegisterCommands<Commands.BadWordCommands>();
             Commands.RegisterCommands<Commands.ReminderCommands>();
+            Commands.RegisterCommands<Commands.HelpCommand>();
 
             BotClient.MessageCreated += BotClient_MessageCreated;
             BotClient.MessageUpdated += BotClient_MessageUpdated;
@@ -150,7 +151,7 @@ namespace FluffyEars
         private async Task CheckMessage(DiscordMessage message)
         {
             // Let's check (a) does this message have a bad word? && (b) is this channel NOT the audit channel?
-            if(BadwordSystem.HasBadWord(message.Content) && BotSettings.AuditChannelId != 0)
+            if(BadwordSystem.HasBadWord(message.Content) && BotSettings.FilterChannelId != 0)
             {
                 string badWord = BadwordSystem.GetBadWord(message.Content); // The detected bad word.
 
@@ -163,7 +164,7 @@ namespace FluffyEars
                     String.Format("https://discordapp.com/channels/{0}/{1}/{2}", message.Channel.GuildId, message.ChannelId, message.Id)));
                 
                 // Grab the audit channel.
-                DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.AuditChannelId);
+                DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
 
                 await auditChannel.SendMessageAsync(embed: deb).ConfigureAwait(false);
             }
