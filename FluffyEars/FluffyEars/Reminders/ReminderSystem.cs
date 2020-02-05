@@ -180,7 +180,8 @@ namespace FluffyEars.Reminders
                     DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
                     deb.WithTitle("Notification");
                     deb.WithDescription(curReminder.Text);
-                    deb.AddField("Late by", lateBy.ToString());
+                    deb.AddField(@"Late by", 
+                        String.Format("{0}day {1}hr {2}min {3}sec", lateBy.Days, lateBy.Hours, lateBy.Minutes, lateBy.Seconds));
 
                     // Get all the people we need to remind.
                     sb.Append(String.Format("<@{0}> ", curReminder.User));

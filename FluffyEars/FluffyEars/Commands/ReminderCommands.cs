@@ -120,7 +120,8 @@ namespace FluffyEars.Commands
                 deb.WithTitle(@"Notification Removed");
                 deb.AddField(@"User", originalAuthorMention);
                 deb.AddField(@"Time", dto.ToString());
-                deb.AddField(@"Remaining time", remainingTime.ToString());
+                deb.AddField(@"Remaining time", 
+                    String.Format("{0}day {1}hr {2}min {3}sec", remainingTime.Days, remainingTime.Hours, remainingTime.Minutes, remainingTime.Seconds));
                 deb.AddField(@"Message", reminderToRemove.Text);
                 deb.AddField(@"Notification Identifier", reminderId);
 
