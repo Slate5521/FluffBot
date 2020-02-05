@@ -124,7 +124,7 @@ namespace FluffyEars
                 returnVal = // If bfA creation time is greater than (more recent) than bfB, then bfA is the most recent, therefore bfB is the
                             // oldest, and we return that (1: bfB) instead. On the contrary, if bfA is NOT greater (less recent) than bfB, that means
                             // bfA is the oldest, and we return that (2: bfA) instead.
-                    File.GetCreationTime(BaseFileA).Ticks > File.GetCreationTime(BaseFileB).Ticks ?
+                    File.GetLastWriteTime(BaseFileA).Ticks >= File.GetLastWriteTime(BaseFileB).Ticks ?
                             /*(1)*/ BaseFileB :
                             /*(2)*/ BaseFileA;
             else if (bfAExists && !bfBExists) // If bfA exists AND bfB does NOT exist, return bfB.

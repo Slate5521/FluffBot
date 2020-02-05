@@ -34,7 +34,7 @@ namespace FluffyEars
         /// <summary>Default bot settings.</summary>
         static botSettings_ DefaultBotSettings = new botSettings_
         {
-            FilterChannelId = 0,
+            FilterChannelId = 673693037351927828,
             WhitelistedUsers = new List<ulong>() { 131626628211146752 },
             ExcludedChannels = new List<ulong>(),
         };

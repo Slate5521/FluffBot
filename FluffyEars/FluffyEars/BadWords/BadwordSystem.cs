@@ -73,7 +73,6 @@ namespace FluffyEars.BadWords
             if (!badWords.Contains(badWord.ToLower()))
             {
                 badWords.Add(badWord.ToLower());
-                Save();
             }
         }
         /// <summary>Check if the word is a bad word.</summary>
@@ -85,10 +84,9 @@ namespace FluffyEars.BadWords
         /// <summary>Remove a bad word from the bad word list.</summary>
         public static void RemoveBadWord(string badWord)
         {
-            if (badWords.Contains(badWord))
+            if (IsBadWord(badWord))
             {
-                badWords.Remove(badWord);
-                Save();
+                badWords.Remove(badWord.ToLower());
             }
         }
     }

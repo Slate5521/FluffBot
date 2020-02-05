@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -22,13 +23,18 @@ namespace FluffyEars.Commands
             // Check if the user can use these sorts of commands.
             if (BotSettings.CanUseConfigCommands(ctx.Member))
             {
-                await ctx.TriggerTypingAsync();
+                await ctx.TriggerTypingAsync(); 
 
-                // Update the settings.
-                BotSettings.FilterChannelId = chan.Id;
-                BotSettings.Save();
+                // Check if the channel is in the guild
+                if (ctx.Guild.Channels.ToArray().Contains(chan))
+                {
+                    // Update the settings.
+                    BotSettings.FilterChannelId = chan.Id;
+                    BotSettings.Save();
 
-                await ctx.Channel.SendMessageAsync("Audit channel set.");
+                    await ctx.Channel.SendMessageAsync("Filter channel set.");
+                }
+                else await ctx.Channel.SendMessageAsync("Unable to set channel. Does not exist or is not in this guild.");
             }
         }
 

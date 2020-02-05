@@ -36,6 +36,12 @@ namespace FluffyEars.Commands
                     string timeString = spaghetti[1];
                     string messageString = spaghetti[3];
 
+                    if (messageString.Length > 160)
+                    {
+                        ctx.Channel.SendMessageAsync("Too many characters.");
+                        return;
+                    }
+
                     // Default message.
                     if (messageString.Trim() == String.Empty)
                         messageString = "Untitled notification";
@@ -46,43 +52,49 @@ namespace FluffyEars.Commands
                     else
                     {
                         DateTimeOffset dto = InterpretTimeString(timeString);
-                        StringBuilder sb = new StringBuilder();
 
-                        // For every userId that doesn't equal the bot's userId, add them to the list.
-                        List<ulong> usersToNotify = new List<ulong>();
-                        int i = 0;
-                        foreach (ulong userId in ctx.Message.MentionedUsers.Select(a => a.Id))
-                            if (userId != Bot.BotClient.CurrentUser.Id)
-                                usersToNotify.Add(userId);
-
-                        // Generate a new reminder!
-                        Reminder reminder = new Reminder
+                        if (dto.CompareTo(DateTimeOffset.UtcNow) != -1 &&
+                            DateTimeOffset.UtcNow.AddYears(1).UtcTicks >= dto.UtcTicks)
                         {
-                            Text = messageString,
-                            Time = dto.ToUnixTimeMilliseconds(),
-                            User = ctx.Member.Id,
-                            Channel = ctx.Channel.Id,
-                            UsersToNotify = usersToNotify.ToArray()
-                        };
+                            StringBuilder sb = new StringBuilder();
 
-                        foreach (string mention in ctx.Message.MentionedUsers.Select(a => a.Mention))
-                            if(mention != @"<@!669347771312111619>")
-                                sb.Append(mention + ' ');
+                            // For every userId that doesn't equal the bot's userId, add them to the list.
+                            List<ulong> usersToNotify = new List<ulong>();
+                            int i = 0;
+                            foreach (ulong userId in ctx.Message.MentionedUsers.Select(a => a.Id))
+                                if (userId != Bot.BotClient.CurrentUser.Id)
+                                    usersToNotify.Add(userId);
 
-                        deb.WithTitle(@"Notification");
-                        deb.AddField(@"User", ctx.Member.Mention);
-                        deb.AddField(@"Time", dto.ToString());
-                        deb.AddField(@"Message", messageString);
+                            // Generate a new reminder!
+                            Reminder reminder = new Reminder
+                            {
+                                Text = messageString,
+                                Time = dto.ToUnixTimeMilliseconds(),
+                                User = ctx.Member.Id,
+                                Channel = ctx.Channel.Id,
+                                UsersToNotify = usersToNotify.ToArray()
+                            };
 
-                        if(sb.Length > 0)
-                            deb.AddField(@"Users to notify:", sb.ToString());
-                        
-                        deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
+                            foreach (string mention in ctx.Message.MentionedUsers.Select(a => a.Mention))
+                                if (mention != @"<@!669347771312111619>")
+                                    sb.Append(mention + ' ');
 
-                        ReminderSystem.AddReminder(reminder);
+                            deb.WithTitle(@"Notification");
+                            deb.AddField(@"User", ctx.Member.Mention);
+                            deb.AddField(@"Time", dto.ToString());
+                            deb.AddField(@"Message", messageString);
 
-                        await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
-                        ReminderSystem.Save();
+                            if (sb.Length > 0)
+                                deb.AddField(@"Users to notify:", sb.ToString());
+
+                            deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
+
+                            ReminderSystem.AddReminder(reminder);
+
+                            await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
+                            ReminderSystem.Save();
+                        }
+                        else await ctx.Channel.SendMessageAsync("Invalid arguments.");
                     }
                 }
                 else
@@ -130,14 +142,18 @@ namespace FluffyEars.Commands
                 // Check if there are any notifications. If there are none, let the user know.
                 if (ReminderSystem.HasNotification())
                 {
+                    int debLength = 0;
+                    int page = 1;
+
                     // DEB!
                     DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
-                    deb.WithTitle("Reminder List");
+                    deb.WithTitle(@"Reminder List Page " + page);
 
                     // Get a list of reminders, but ordered descending by their remind date.
-                    foreach(Reminder reminder in 
-                        ReminderSystem.GetReminders().OrderByDescending(a => a.Time))
+                    Reminder[] reminderList = ReminderSystem.GetReminders().OrderByDescending(a => a.Time).ToArray();
+                    foreach (Reminder reminder in reminderList)
                     {
+                        int reminderLength;
                         StringBuilder sb = new StringBuilder();
 
                         Array.ForEach(reminder.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
@@ -145,12 +161,31 @@ namespace FluffyEars.Commands
 
                         DateTimeOffset dto = DateTimeOffset.FromUnixTimeMilliseconds(reminder.Time);
 
-                        deb.AddField(dto.ToString("ddMMMyyyy HH:mm"),
-                            String.Format("<@{0}>: {1}\nMentions: {2}\nId: {3}", 
-                            /*{0}*/ reminder.User, /*{1}*/ reminder.Text, /*{2}*/ sb.ToString(), /*{3}*/ reminder.GetIdentifier()));
+                        string str1 = dto.ToString("ddMMMyyyy HH:mm");
+                        string str2 = String.Format("<@{0}>: {1}\nMentions: {2}\nId: {3}",
+                            /*{0}*/ reminder.User, /*{1}*/ reminder.Text, /*{2}*/ sb.ToString(), /*{3}*/ reminder.GetIdentifier());
+
+                        reminderLength = sb.Length + str1.Length + str2.Length + deb.Title.Length;
+
+
+                        // So, if the resulting length is > 1600, we wanna send it and clear the embed.
+                        if (reminderLength + debLength > 1600)
+                        {
+                            await ctx.Channel.SendMessageAsync(embed: deb);
+                            deb = new DiscordEmbedBuilder();
+                            deb.WithTitle(@"Reminder List Page " + ++page);
+                            debLength = 0;
+                        }
+
+                        deb.AddField(str1, str2);
+                        debLength += reminderLength;
+
+                        // This checks for cases where we just finished with an embed, but we have one more reminder left. So if we do, let's send 
+                        // it.
+                        if(reminder.Equals(reminderList.Last()))
+                            await ctx.Channel.SendMessageAsync(embed: deb);
                     }
 
-                    await ctx.Channel.SendMessageAsync(embed: deb);
                 } else await ctx.Channel.SendMessageAsync("There are no notifications.");
             }
         }
