@@ -17,8 +17,6 @@ namespace FluffyEars.Commands
 {
     class ReminderCommands : BaseModule
     {
-        private bool CanUseReminderCommands(DiscordMember user) => true;//user.Roles.Any(a => IsAcceptedRole(a));
-
         [Command("+reminder"), 
             Description("[CH+] Add a reminder.\nUsage: +reminder \\`time [month(s), week(s) day(s), hour(s), minute(s)\\` \\`reminder message\\` @mention1 @mention2 ... @mention_n\nhttps://i.imgur.com/H1fVPta.png")]
         public async Task AddReminder(CommandContext ctx)
@@ -85,7 +83,7 @@ namespace FluffyEars.Commands
                             deb.AddField(@"Message", messageString);
 
                             if (sb.Length > 0)
-                                deb.AddField(@"Users to notify:", sb.ToString());
+                                deb.AddField(@"Users to notify:", sb.ToString().TrimEnd());
 
                             deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
 
