@@ -21,7 +21,7 @@ namespace FluffyEars.Commands
         public async Task SetFilterChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use these sorts of commands.
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
+            if (ctx.Member.GetRole().IsBotManagerOrHigher())
             {
                 await ctx.TriggerTypingAsync(); 
 
@@ -39,59 +39,13 @@ namespace FluffyEars.Commands
             }
         }
 
-        [Command("+whitelist"),
-            Description("[OWNER] Whitelist a specific user.\nUsage: +whitelist @DiscordUser")]
-        public async Task WhitelistUser(CommandContext ctx, DiscordMember user)
-        {
-            // Owner only.
-            if (ctx.Member.IsOwner)
-            {
-                string response;
-                await ctx.TriggerTypingAsync();
-
-                // Only add the user to white list if he or she is not on it.
-                if (!BotSettings.IsUserOnWhitelist(user))
-                {
-                    BotSettings.AddUserToWhitelist(user);
-                    response = "User added to whitelist.";
-                }
-                else response = "User already on whitelist.";
-
-                await ctx.Channel.SendMessageAsync(response);
-                await SelfAudit.LogSomething(ctx.User, @"+whitelist", user.Mention);
-            }
-        }
-
-        [Command("-whitelist"),
-            Description("[OWNER] Remove a specific user from the whitelist.\nUsage: -whitelist @DiscordUser")]
-        public async Task BlacklistUser(CommandContext ctx, DiscordMember user)
-        {
-            // Owner only.
-            if (ctx.Member.IsOwner)
-            {
-                string response;
-                await ctx.TriggerTypingAsync();
-
-                // Only remove the user from the whitelist if he or she is on it.
-                if (BotSettings.IsUserOnWhitelist(user))
-                {
-                    BotSettings.RemoveUserFromWhitelist(user);
-                    response = "User removed from whitelist.";
-                }
-                else response = "User not on whitelist.";
-
-                await ctx.Channel.SendMessageAsync(response);
-                await SelfAudit.LogSomething(ctx.User, @"-whitelist", user.Mention);
-            }
-        }
-
         [Command("+chan"),
             Aliases("+channel"),
             Description("[OWNER/ADMIN/BOT.BOI] Un-exclude a channel from bad word searching.\nUsage: +chan #DiscordChannel")]
         public async Task IncludeChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use config commands.
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
+            if (ctx.Member.GetRole().IsBotManagerOrHigher())
             {
                 string response = "Unknown error.";
                 await ctx.Channel.TriggerTypingAsync();
@@ -116,7 +70,7 @@ namespace FluffyEars.Commands
         public async Task ExcludeChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use config commands.
-            if (BotSettings.CanUseConfigCommands(ctx.Member))
+            if (ctx.Member.GetRole().IsBotManagerOrHigher())
             {
                 string response = "Unknown error.";
                 await ctx.Channel.TriggerTypingAsync();

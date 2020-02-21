@@ -25,8 +25,6 @@ namespace FluffyEars
         {
             /// <summary>Audit log channel.</summary>
             public ulong FilterChannelId;
-            /// <summary>A list of users who can use bot config features.</summary>
-            public List<ulong> WhitelistedUsers;
             /// <summary>A list of channels that will not be checked.</summary>
             public List<ulong> ExcludedChannels;
             /// <summary>The max length of a message before it's considered spam.</summary>
@@ -43,7 +41,6 @@ namespace FluffyEars
         static botSettings_ DefaultBotSettings = new botSettings_
         {
             FilterChannelId = 674884683166646283,
-            WhitelistedUsers = new List<ulong>() { 131626628211146752 },
             ExcludedChannels = new List<ulong>(),
             MessageMaxLength = 800,
             MessageMaxSplits = 5,
@@ -106,46 +103,6 @@ namespace FluffyEars
 
         #endregion Initialization, deconstruction commands
 
-        #region Whitelist
-
-        /// <summary>Check if a user can use configuration commands.</summary>
-        /// <returns>True if the user can use configuration commands.</returns>
-        public static bool CanUseConfigCommands(DiscordMember user)
-        {
-            Role role = user.GetRole();
-
-            // Check if the user is the owner, whitelisted, or an admin, or bot manager.
-            return user.IsOwner ||
-                IsUserOnWhitelist(user) ||
-                role == Role.BotManager ||
-                role == Role.Admin;
-        }
-        /// <summary>Add a user to the white list for configuration commands.</summary>
-        public static void AddUserToWhitelist(DiscordMember user)
-        {
-            if(!botSettings.WhitelistedUsers.Contains(user.Id))
-                botSettings.WhitelistedUsers.Add(user.Id);
-        }
-
-        /// <summary>Remove a user from the white list for configuration commands.</summary>
-        public static void RemoveUserFromWhitelist(DiscordMember user)
-        {
-            if (botSettings.WhitelistedUsers.Contains(user.Id))
-                botSettings.WhitelistedUsers.Remove(user.Id);
-        }
-
-        /// <summary>Get users in the whitelist.</summary>
-        /// <returns>A ulong array representing the IDs of every user in the list.</returns>
-        public static ulong[] GetWhitelist()
-        {
-            return botSettings.WhitelistedUsers.ToArray();
-        }
-
-        /// <summary>Check if the user is whitelisted.</summary>
-        /// <returns>True if the user is whitelisted.</returns>
-        public static bool IsUserOnWhitelist(DiscordMember user) => botSettings.WhitelistedUsers.Contains(user.Id);
-        
-        #endregion Whitelist
         #region Channel exclusion
 
         /// <summary>Exclude the channel from bad word detection.</summary>
