@@ -135,7 +135,7 @@ namespace FluffyEars.Spam
 
                     // ----------------------------------------------------------------
                     // Let's count how many linesplits there are.
-                    if (!spamFound && e.Message.Content.Count(a => a == '\n') > BotSettings.MaxMessageSplits)
+                    if (!spamFound && e.Message.Content.Count(a => a == '\n') + 1 > BotSettings.MaxMessageSplits)
                     {
                         OnSpamDetected(new SpamEventArgs
                         {
