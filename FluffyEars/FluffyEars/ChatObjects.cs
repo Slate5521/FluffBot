@@ -1,4 +1,7 @@
-﻿namespace FluffyEars
+﻿// ChatObjects.cs
+// Various objects to be sent to chat.
+
+namespace FluffyEars
 {
     public static class ChatObjects
     {

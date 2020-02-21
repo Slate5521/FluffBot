@@ -1,9 +1,10 @@
-﻿using DSharpPlus.Entities;
+﻿// SpamFilter.cs
+// Everything necessary to run the spam side of the filter system.
+
 using DSharpPlus.EventArgs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -11,27 +12,36 @@ namespace FluffyEars.Spam
 {
     public static class SpamFilter
     {
+        /// <summary>This is what an emoticon looks like to RegEx.</summary>
         static Regex emoticonRegex = new Regex(@":\w:", 
             RegexOptions.Compiled | RegexOptions.Multiline | RegexOptions.IgnoreCase);
+        /// <summary>Replace emoticons with this.</summary>
         const string emoticonReplaceChar = @" ";
 
+        /// <summary>The last 12 messages ever sent by anyone in the server.</summary>
+        /// I chose specifically 12 because it seems like a good number. If someone's spamming away, even at peak hours, they're definitely going to
+        /// take up a sizeable chunk of this queue.
         private static Queue<DiscordMessageInfo> last12Messages
             = new Queue<DiscordMessageInfo>(12);
 
+        /// <summary>A list of users being timed out, preventing them from retriggering the filter.</summary>
         private static List<TimeoutInformation> SpamTimeout = new List<TimeoutInformation>();
 
-        public static SpamDetectedEventHandler SpamDetected;
+        /// <summary>Invoked when the spam filter is triggered.</summary>
+        public static event SpamDetectedEventHandler SpamDetected;
         public delegate void SpamDetectedEventHandler(SpamEventArgs e);
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
             bool spamFound = false;
 
+            // At this point, we want to keep the last 12 messages at 12 messages.
             if (last12Messages.Count == 12)
                 last12Messages.Dequeue();
 
             long messageTime = e.Message.CreationTimestamp.ToUnixTimeMilliseconds();
             ulong authorId = e.Message.Author.Id;
 
+            // Add a message's info to the queue.
             last12Messages.Enqueue(
                 new DiscordMessageInfo
                 {
@@ -42,9 +52,11 @@ namespace FluffyEars.Spam
                     MillisecondsSinceLastUserMessage = GetLastMessageMillisecondsElapsed(authorId, messageTime)
                 });
 
+            // If a user is timed out, and they're not supposed to be timed out, let's remove them from the timeout collection before continuing.
             if (IsUserTimedOut(authorId) && GetRemainingTimeoutMilliseconds(authorId) <= 0)
                 RemoveUserTimeout(authorId);
 
+            // Check if this cannel is excluded.
             if (!BotSettings.IsChannelExcluded(e.Channel))
             {
                 // Check if bots etc.
@@ -54,7 +66,7 @@ namespace FluffyEars.Spam
                    !IsUserTimedOut(authorId))         // Ignore anyone who's being timed out.
                 {
                     // ----------------------------------------------------------------
-                    // Let's see if they're overflowing.
+                    // Let's see if they're overflowing. aka sending a fuckton of messages at once.
 
                     int maxMsgPerSec = BotSettings.MaxMessagesPerSecond;
 
@@ -138,6 +150,8 @@ namespace FluffyEars.Spam
             }
         }
 
+        /// <summary>Adds the user to the time out collection, preventing them from retriggering the bot for a while.</summary>
+        /// <param name="duration">Duration in milliseconds.</param>
         private static void TimeoutUser(ulong id, long duration)
         {
             if (!IsUserTimedOut(id))
@@ -149,11 +163,13 @@ namespace FluffyEars.Spam
                     });
         }
 
+        /// <summary>Checks if the user is timed out currently.</summary>
         private static bool IsUserTimedOut(ulong id)
         {
             return SpamTimeout.Any(a => a.UserId == id);
         }
 
+        /// <summary>Removes the user from the timeout collection, allowing them to trigger the spam system.</summary>
         private static void RemoveUserTimeout(ulong id)
         {
             if(IsUserTimedOut(id))
@@ -165,12 +181,15 @@ namespace FluffyEars.Spam
             }
         }
 
+        /// <summary>Checks how much longer this person is being timed out for in milliseconds.</summary>
         private static long GetRemainingTimeoutMilliseconds(ulong id)
         {
             return SpamTimeout.First(a => a.UserId == id).TimeoutEndMilliseconds
                 - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
 
+        /// <summary>Checks how long it has been between the user's current message and their last message.</summary>
+        /// <param name="ms">The milliseconds of the most recent message.</param>
         private static long GetLastMessageMillisecondsElapsed(ulong userId, long ms)
         {
             long returnVal = -1; // -1 is our sentinel value for "not found."
@@ -192,6 +211,7 @@ namespace FluffyEars.Spam
         static int CountMessagesInSpan(ulong userId) =>
             last12Messages.Count(a => a.UserID == userId);
 
+        /// <summary>Gets a collection of messages from the user in the last 12 message span.</summary>\
         static DiscordMessageInfo[] GetMessagesInSpan(ulong userId)
         {
             return
@@ -203,6 +223,7 @@ namespace FluffyEars.Spam
                    ).ToArray();
         }
 
+        /// <summary>SPAM!!!!!!!!!!!!!!!!!!!!!!</summary>
         static void OnSpamDetected(SpamEventArgs e)
         {
             SpamDetectedEventHandler handler = SpamDetected;

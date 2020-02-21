@@ -16,10 +16,6 @@ namespace FluffyEars.Reminders
     /// <summary>A static class containing just about everything needed to run the Reminder system on RimWorld.</summary>
     public static class ReminderSystem
     {
-        /// <summary>
-        /// The JSON File containing the reminders.
-        /// </summary>
-        /// <remarks>When I implement the anti-corrupt save system, let's remove this.</remarks>
         public const string BaseFile = @"reminders";
         private static SaveFile saveFile = new SaveFile(BaseFile);
         private static readonly object lockObj = (object)

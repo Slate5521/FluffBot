@@ -1,7 +1,8 @@
-﻿using DSharpPlus.Entities;
+﻿// FilterEventArgs.cs
+// Contains arguments detailing the bad words found and other context in a filter event.
+
+using DSharpPlus.Entities;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FluffyEars.BadWords
 {
@@ -10,6 +11,7 @@ namespace FluffyEars.BadWords
         public DiscordMessage Message;
         public DiscordUser User;
         public DiscordChannel Channel;
+        /// <summary>The bad words found by the filter.</summary>
         public string[] BadWords;
     }
 }

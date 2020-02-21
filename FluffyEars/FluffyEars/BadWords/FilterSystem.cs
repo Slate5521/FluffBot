@@ -14,7 +14,8 @@ namespace FluffyEars.BadWords
 {
     public static class FilterSystem
     {
-        public static FilterTriggeredEventHandler FilterTriggered;
+        /// <summary>Invoked when the filter is triggered.</summary>
+        public static event FilterTriggeredEventHandler FilterTriggered;
         public delegate void FilterTriggeredEventHandler(FilterEventArgs e);
 
         private static List<string> filterList;
@@ -26,6 +27,7 @@ namespace FluffyEars.BadWords
           / )
    jgs  o( )_\_";
         private static SaveFile saveFile = new SaveFile(BaseFile);
+        static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
         private static string regexPattern = String.Empty; // All of filterList in a pattern.
 
         public static void Default()
@@ -50,6 +52,7 @@ namespace FluffyEars.BadWords
             else Default();
         }
 
+        /// <summary>This updates the RegEx megastring, containing all the filter words but in a word1|word2 format.</summary>
         private static void UpdatePatternString()
         {
             StringBuilder sb = new StringBuilder();
@@ -77,7 +80,6 @@ namespace FluffyEars.BadWords
         public static void AddWord(string word) => filterList.Add(word);
         public static void RemoveWord(string word) => filterList.Remove(word);
 
-        static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
         public static List<string> GetBadWords(string message)
         {
             List<string> returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
@@ -111,19 +113,19 @@ namespace FluffyEars.BadWords
         {
             // Skip if (1) this channel is excluded or (2) this is sent by the bot.
             if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
-                await CheckMessage(e.Message);
+                CheckMessage(e.Message);
         }
 
         internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
         {
             // Skip if (1) this channel is excluded or (2) this is sent by the bot.
             if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
-                await CheckMessage(e.Message);
+                CheckMessage(e.Message);
         }
         
         /// <summary>Check the messages for any Bad Words aka slurs.</summary>
         /// <param name="message">The message object to inspect.</param>
-        private static async Task CheckMessage(DiscordMessage message)
+        private static void CheckMessage(DiscordMessage message)
         {
             // Let's check if the audit channel is set.
             if (BotSettings.FilterChannelId != 0)

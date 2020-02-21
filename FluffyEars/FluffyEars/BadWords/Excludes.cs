@@ -1,11 +1,14 @@
-﻿using System;
+﻿// Excludes.cs
+// This is a system that goes with the word filter system to exclude words, preventing them from triggering the word filter.
+
 using System.Collections.Generic;
-using System.Text;
+
 
 namespace FluffyEars.BadWords
 {
     public static class Excludes
     {
+        /// <summary>List of words to exclude.</summary>
         private static List<string> excludeList;
         public const string BaseFile = "wordexcludes";
         private static readonly object lockObj = (object)@"
@@ -17,12 +20,13 @@ namespace FluffyEars.BadWords
 jgs   {_\______\-'\__\_\";
         private static SaveFile saveFile = new SaveFile(BaseFile);
 
-
         public static void Default()
         {
+            // Default values in this case is an empty list.
             excludeList = new List<string>();
             Save();
         }
+
         public static void Save()
         {
             saveFile.Save<List<string>>(excludeList, lockObj);
@@ -35,6 +39,7 @@ jgs   {_\______\-'\__\_\";
             else Default();
         }
 
+        /// <summary>Check if a word is in the exclude list.</summary>
         public static bool IsExcluded(string word) => excludeList.Contains(word.ToLower());
         public static bool IsExcluded(string message, int badWordIndex, int badWordLen)
         {

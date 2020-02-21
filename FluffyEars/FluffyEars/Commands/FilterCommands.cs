@@ -244,6 +244,11 @@ namespace FluffyEars.Commands
                     return;
                 }
 
+                await ctx.Channel.SendMessageAsync(
+                    ChatObjects.GetSuccessMessage(
+                        String.Format("Spam length has been set to {0}.", length)));
+                await SelfAudit.LogSomething(ctx.User, @"spamlength", length.ToString());
+
                 BotSettings.MaxMessageLength = length;
                 BotSettings.Save();
             }
@@ -256,12 +261,17 @@ namespace FluffyEars.Commands
             {
                 await ctx.TriggerTypingAsync();
                 // Cancels:
-                if (length <= 1)
+                if (length < 1)
                 {   // Too low
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"That value is too low..."));
                     return;
                 }
+
+                await ctx.Channel.SendMessageAsync(
+                    ChatObjects.GetSuccessMessage(
+                        String.Format("Maximum linesplits per message has been set to {0}.", length)));
+                await SelfAudit.LogSomething(ctx.User, @"linesplits", length.ToString());
 
                 BotSettings.MaxMessageSplits = length;
                 BotSettings.Save();
@@ -275,12 +285,17 @@ namespace FluffyEars.Commands
             {
                 await ctx.TriggerTypingAsync();
                 // Cancels:
-                if (length <= 1)
+                if (length < 1)
                 {   // Too low
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"That value is too low..."));
                     return;
                 }
+
+                await ctx.Channel.SendMessageAsync(
+                    ChatObjects.GetSuccessMessage(
+                        String.Format("Maximum messages per second has been set to {0}/sec.", length)));
+                await SelfAudit.LogSomething(ctx.User, @"spammessagessec", length.ToString());
 
                 BotSettings.MaxMessagesPerSecond = length;
                 BotSettings.Save();
@@ -294,12 +309,17 @@ namespace FluffyEars.Commands
             {
                 await ctx.TriggerTypingAsync();
                 // Cancels:
-                if (length <= 1)
+                if (length < 1)
                 {   // Too low
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"That value is too low..."));
                     return;
                 }
+
+                await ctx.Channel.SendMessageAsync(
+                    ChatObjects.GetSuccessMessage(
+                        String.Format("Spam timeout has been set to {0} ms.", length)));
+                await SelfAudit.LogSomething(ctx.User, @"spamtimeout", length.ToString());
 
                 BotSettings.SpamTimeout = length;
                 BotSettings.Save();

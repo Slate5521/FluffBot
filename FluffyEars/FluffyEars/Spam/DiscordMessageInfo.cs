@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// DiscordMessageInfo.cs
+// Contains information about a message sent by any user. Notably, it contains what time it was sent, and the time since the last message was ever 
+// sent.
 
 namespace FluffyEars.Spam
 {

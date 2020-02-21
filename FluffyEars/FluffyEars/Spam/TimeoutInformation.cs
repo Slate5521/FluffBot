@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// TimeoutInformation.cs
+// Contains information about a spam timeout.
 
 namespace FluffyEars.Spam
 {
     public struct TimeoutInformation
     {
+        /// <summary>When, in unix epoch, the timeout ends.</summary>
         public long TimeoutEndMilliseconds;
         public ulong UserId;
 

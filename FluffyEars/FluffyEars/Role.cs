@@ -1,4 +1,7 @@
-﻿using DSharpPlus.Entities;
+﻿// Role.cs
+// For working with roles and their permissions.
+
+using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

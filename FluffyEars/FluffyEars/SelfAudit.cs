@@ -1,4 +1,7 @@
-﻿using DSharpPlus.Entities;
+﻿// SelfAudit.cs
+// The bot will audit changes made to it.
+
+using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;

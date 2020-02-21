@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// SpamEventArgs.cs
+// Just some args for when the spam filter is triggered.
+
+using System;
 using DSharpPlus.Entities;
 
 namespace FluffyEars.Spam
