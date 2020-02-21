@@ -12,104 +12,138 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using FluffyEars.Reminders;
+using System.Text.RegularExpressions;
 
 namespace FluffyEars.Commands
 {
     class ReminderCommands : BaseModule
     {
-        [Command("+reminder"), 
-            Description("[CH+] Add a reminder.\nUsage: +reminder \\`time [month(s), week(s) day(s), hour(s), minute(s)\\` \\`reminder message\\` @mention1 @mention2 ... @mention_n\nhttps://i.imgur.com/H1fVPta.png")]
+        static Regex DateRegex
+            = new Regex(@"(\d+)\s?(months?|days?|weeks?|wks?|hours?|hrs?|minutes?|mins?)",
+                RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
+
+        [Command("+reminder")]
         public async Task AddReminder(CommandContext ctx)
         {
             if (ctx.Member.GetRole().IsCHOrHigher())
             {
-                // DEB!
-                DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+                
+                string args = ctx.RawArgumentString;
+                int firstQuote = args.IndexOf('[');
+                int secondQuote = args.LastIndexOf(']');
 
-                // If there are four `s, that means we have a valid argument.
-                // Basically, it's @bot addreminder `time` `message`
-                if (ctx.RawArgumentString.Count(a => a == '`') == 4)
+                // Let's try to get the date, first of all.
+                string dateSubstring;
+
+                // If there's no quote, let's just see what happens if we put the whole string in.
+                if (firstQuote == -1)
+                    dateSubstring = args.TrimStart();
+                else dateSubstring = args.TrimStart(' ').Substring(0, firstQuote);
+
+                MatchCollection matches = DateRegex.Matches(dateSubstring);
+
+                DateTimeOffset dto = ctx.Message.CreationTimestamp.UtcDateTime;
+
+                foreach(Match match in matches)
                 {
-                    string[] spaghetti = ctx.RawArgumentString.Split('`');
-                    string timeString = spaghetti[1];
-                    string messageString = spaghetti[3];
-
-                    if (messageString.Length > 160)
+                    if(match.Groups.Count == 3)
                     {
-                        ctx.Channel.SendMessageAsync("Too many characters.");
-                        return;
-                    }
-
-                    // Default message.
-                    if (messageString.Trim() == String.Empty)
-                        messageString = "Untitled notification";
-
-                    // Check how many spaces there are. If there are none, that means there really isn't anything to take in.
-                    if (timeString.Count(a => a == ' ') < 1)
-                        await ctx.Channel.SendMessageAsync(@"Invalid time");
-                    else
-                    {
-                        DateTimeOffset dto = InterpretTimeString(timeString);
-
-                        if (dto.CompareTo(DateTimeOffset.UtcNow) != -1 &&
-                            DateTimeOffset.UtcNow.AddYears(1).UtcTicks >= dto.UtcTicks)
+                        // Check if it's an integer just in case...
+                        if (Int32.TryParse(match.Groups[1].Value, out int measure))
                         {
-                            StringBuilder sb = new StringBuilder();
-
-                            // For every userId that doesn't equal the bot's userId, add them to the list.
-                            List<ulong> usersToNotify = new List<ulong>();
-                            int i = 0;
-                            foreach (ulong userId in ctx.Message.MentionedUsers.Select(a => a.Id))
-                                if (userId != Bot.BotClient.CurrentUser.Id)
-                                    usersToNotify.Add(userId);
-
-                            // Generate a new reminder!
-                            Reminder reminder = new Reminder
-                            {
-                                Text = messageString,
-                                Time = dto.ToUnixTimeMilliseconds(),
-                                User = ctx.Member.Id,
-                                Channel = ctx.Channel.Id,
-                                UsersToNotify = usersToNotify.ToArray()
-                            };
-
-                            foreach (string mention in ctx.Message.MentionedUsers.Select(a => a.Mention))
-                                if (mention != @"<@!669347771312111619>")
-                                    sb.Append(mention + ' ');
-
-                            deb.WithTitle(@"Notification");
-                            deb.AddField(@"User", ctx.Member.Mention);
-                            deb.AddField(@"Time", dto.ToString());
-                            deb.AddField(@"Message", messageString);
-
-                            if (sb.Length > 0)
-                                deb.AddField(@"Users to notify:", sb.ToString().TrimEnd());
-
-                            deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
-                            deb.WithThumbnailUrl(@"https://i.imgur.com/lOqo2k8.png");
-
-                            ReminderSystem.AddReminder(reminder);
-
-                            await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
-                            await SelfAudit.LogSomething(ctx.User, @"+reminder", String.Join('\n', messageString, dto.ToString()));
-                            ReminderSystem.Save();
+                            InterpretTime(
+                                measure: measure,
+                                unit: match.Groups[2].Value,
+                                dto: ref dto);
                         }
-                        else await ctx.Channel.SendMessageAsync("Invalid arguments.");
                     }
                 }
-                else
-                    await ctx.Channel.SendMessageAsync(@"Unrecognized arguments.");
 
+                // Cancels: ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+
+                if (dto.UtcTicks == ctx.Message.CreationTimestamp.UtcTicks)
+                {   // No time has been added.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"Invalid time string..."));
+                    return;
+                }
+
+                DateTimeOffset yearFromNow = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddYears(1);
+                if(dto.UtcTicks > yearFromNow.UtcTicks)
+                {   // More than a year away.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"That's more than one year away. Please reduce your time..."));
+                    return;
+                }
+
+                // Great, so now we have our time string. Now we need to try and figure out what our message string is.
+                string msgString = @"no message provided";
+                
+                // Just checking to make sure everything is in bounds.
+                if(firstQuote != -1 && firstQuote + 1 < args.Length && secondQuote - 1 > firstQuote)
+                {
+                    if (secondQuote == -1)
+                        msgString = args.Substring(firstQuote + 1);
+                    else msgString = args.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
+                }
+
+                // Now we have our message string. Let's see if there are any mentions.
+                ulong[] mentionIds = ctx.Message.MentionedUsers.Select(a => a.Id).ToArray();
+
+
+                StringBuilder sb = new StringBuilder();
+                // DEB!
+                DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+                
+                Reminder reminder = new Reminder
+                {
+                    Text = msgString,
+                    Time = dto.ToUnixTimeMilliseconds(),
+                    User = ctx.Member.Id,
+                    Channel = ctx.Channel.Id,
+                    UsersToNotify = mentionIds
+                };
+
+                foreach (ulong mentionId in mentionIds)
+                {
+                    if (mentionId != 669347771312111619)
+                        sb.Append(String.Format("<@{0}> ", mentionId));
+                }
+
+                deb.WithTitle(@"Notification");
+                deb.AddField(@"User", ctx.Member.Mention);
+                deb.AddField(@"Time", dto.ToString());
+                deb.AddField(@"Message", msgString);
+
+                if (sb.Length > 0)
+                    deb.AddField(@"Users to notify:", sb.ToString().TrimEnd());
+
+                deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
+                deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_GENERIC);
+
+                await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
+                await SelfAudit.LogSomething(ctx.User, @"+reminder", String.Join('\n', msgString, dto.ToString()));
+
+                ReminderSystem.AddReminder(reminder);
+                ReminderSystem.Save();
             }
         }
 
-        [Command("-reminder"),
-            Description("[CH+] Removes a reminder.\nUsage: -reminder reminder_id")]
+        [Command("-reminder")]
         public async Task RemoveReminder(CommandContext ctx, string reminderId)
         {
-            // Only enter scope if (a) user can use reminder commands && this is an existing reminder.
-            if(ctx.Member.GetRole().IsCHOrHigher() && ReminderSystem.IsReminder(reminderId))
+            if(ctx.Member.GetRole().IsCHOrHigher())
             {
+                await ctx.TriggerTypingAsync();
+
+                // Cancels:
+                if(!ReminderSystem.IsReminder(reminderId))
+                {
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"That is not a valid Reminder ID..."));
+                    return;
+                }
+
                 Reminder reminderToRemove = ReminderSystem.GetReminderFromId(reminderId);
 
                 // DEB!
@@ -126,19 +160,19 @@ namespace FluffyEars.Commands
                     String.Format("{0}day {1}hr {2}min {3}sec", remainingTime.Days, remainingTime.Hours, remainingTime.Minutes, remainingTime.Seconds));
                 deb.AddField(@"Message", reminderToRemove.Text);
                 deb.AddField(@"Notification Identifier", reminderId);
-                deb.WithThumbnailUrl(@"https://i.imgur.com/8IDy1oM.png");
+
+                deb.WithColor(DiscordColor.LightGray);
+                deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_DELETED);
             
-
-                ReminderSystem.RemoveReminder(reminderToRemove);
-
                 await ctx.Channel.SendMessageAsync(originalAuthorMention, false, deb);
                 await SelfAudit.LogSomething(ctx.User, @"-reminder", String.Join('\n', originalAuthorMention, dto.ToString(), reminderId, reminderToRemove.Text));
+
+                ReminderSystem.RemoveReminder(reminderToRemove);
                 ReminderSystem.Save();
             }
         }
 
-        [Command("listreminders"),
-            Description("[CH+] Lists all pending notifications.")]
+        [Command("reminderlist")]
         public async Task ListReminders(CommandContext ctx)
         {
             if(ctx.Member.GetRole().IsCHOrHigher())
@@ -180,7 +214,7 @@ namespace FluffyEars.Commands
                             await ctx.Channel.SendMessageAsync(embed: deb);
                             deb = new DiscordEmbedBuilder();
                             deb.WithTitle(@"Reminder List Page " + ++page);
-                            deb.WithThumbnailUrl(@"https://i.imgur.com/lOqo2k8.png");
+                            deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_GENERIC);
                             debLength = deb.ThumbnailUrl.Length;
                         }
 
@@ -196,69 +230,43 @@ namespace FluffyEars.Commands
                 } else await ctx.Channel.SendMessageAsync("There are no notifications.");
             }
         }
-
-        private static DateTimeOffset InterpretTimeString(string str)
+        private static void InterpretTime(int measure, string unit, ref DateTimeOffset dto)
         {
-            DateTimeOffset dto = DateTimeOffset.UtcNow;
-            string[] spaghetti = str.Split(' '); // An array of either a potential number or a potential unit of measure.
-
-            int lastNumber = 0;
-            for (int i = 0; i < spaghetti.Length; i++)
+            // Only continue if these two have a valid value.
+            if (measure > 0 && unit.Length > 0)
             {
-                int curNumber;
-                string meatball = spaghetti[i];
-
-                // If this isn't a number, it's probably some kind of unit of measurement.
-                // Regardless of if it's a number or not, it tries to update the last number. If it is not a number, enter the switch/case
-                // and figure out what unit of measurement it is. If it is a number, enter the else scope and update the last number.
-                if (!int.TryParse(meatball, out curNumber))
+                switch (unit.ToLower())
                 {
-                    if (lastNumber != 0)
-                    {
-                        // Because the last number is always updated when a number is found, this means a number has to precede the 
-                        // unit of measurement. Theoretically, something like 1 month minute could add 1 month and one minute. That's on the user, 
-                        // though.
-                        switch (meatball.ToLower())
-                        {
-                            case "month":
-                            case "months":
-                            case "mo":
-                            case "mos": // Months.
-                                dto = dto.AddMonths(lastNumber);
-                                break;
-                            case "week":
-                            case "weeks":
-                            case "wk":
-                            case "wks":
-                            case "w":
-                                dto = dto.AddDays(lastNumber * 7);
-                                break;
-                            case "day":
-                            case "days":
-                            case "d":      // Days.
-                                dto = dto.AddDays(lastNumber);
-                                break;
-                            case "hour":
-                            case "hours":
-                            case "hr":
-                            case "hrs":
-                            case "h":      // Hours
-                                dto = dto.AddHours(lastNumber);
-                                break;
-                            case "minute":
-                            case "minutes":
-                            case "min":
-                            case "mins":
-                            case "m":      // Minutes
-                                dto = dto.AddMinutes(lastNumber);
-                                break;
-                        }
-                    }
+                    case "month":
+                    case "months":
+                        dto = dto.AddMonths(measure);
+                        break;
+                    case "day":
+                    case "days":
+                        dto = dto.AddDays(measure);
+                        break;
+                    case "week":
+                    case "weeks":
+                    case "wk":
+                    case "wks":
+                        dto = dto.AddDays(measure * 7);
+                        break;
+                    case "hour":
+                    case "hours":
+                    case "hr":
+                    case "hrs":
+                        dto = dto.AddHours(measure);
+                        break;
+                    case "minute":
+                    case "minutes":
+                    case "min":
+                    case "mins":
+                        dto = dto.AddMinutes(measure);
+                        break;
+                    default:
+                        break;
                 }
-                else lastNumber = curNumber;
             }
-
-            return dto;
         }
 
         protected override void Setup(DiscordClient client) { }

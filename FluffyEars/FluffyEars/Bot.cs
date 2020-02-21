@@ -125,8 +125,6 @@ namespace FluffyEars
             Commands.RegisterCommands<Commands.ConfigCommands>();
             Commands.RegisterCommands<Commands.FilterCommands>();
             Commands.RegisterCommands<Commands.ReminderCommands>();
-            Commands.RegisterCommands<Commands.HelpCommand>();
-            Commands.RegisterCommands<Commands.SpamCommands>();
 
             //BotClient.MessageCreated += BotClient_MessageCreated;FROZENZEZE
 

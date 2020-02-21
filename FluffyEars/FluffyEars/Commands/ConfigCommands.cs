@@ -15,87 +15,121 @@ namespace FluffyEars.Commands
 {
     class ConfigCommands : BaseModule
     {
-        [Command("setfilterchan"), 
-            Aliases("setfilterchannel", "setfilter"),
-            Description("[OWNER/ADMIN/BOT.BOI] Sets the channel the bot will record bad words into.\nUsage: setfilterchan #DiscordChannel")]
+        [Command("setfilterchan")]
         public async Task SetFilterChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use these sorts of commands.
             if (ctx.Member.GetRole().IsBotManagerOrHigher())
             {
-                await ctx.TriggerTypingAsync(); 
+                await ctx.TriggerTypingAsync();
 
-                // Check if the channel is in the guild
-                if (ctx.Guild.Channels.ToArray().Contains(chan))
-                {
-                    // Update the settings.
-                    BotSettings.FilterChannelId = chan.Id;
-                    BotSettings.Save();
-
-                    await ctx.Channel.SendMessageAsync("Filter channel set.");
-                    await SelfAudit.LogSomething(ctx.User, @"filter channel", chan.Name);
+                // Cancels:
+                if (BotSettings.FilterChannelId == chan.Id)
+                {   // Trying to set the channel to itself.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"Unable to set filter channel. That's already the channel..."));
+                    return;
+                } 
+                if (!ctx.Guild.Channels.Contains(chan))
+                {   // Channel does not exist.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"Unable to set filter channel. Does not exist or is not in this guild..."));
+                    return;
                 }
-                else await ctx.Channel.SendMessageAsync("Unable to set channel. Does not exist or is not in this guild.");
+
+                // Update the settings.
+                BotSettings.FilterChannelId = chan.Id;
+                BotSettings.Save();
+
+                // Success message.
+                await ctx.Channel.SendMessageAsync(
+                    ChatObjects.GetSuccessMessage(
+                        String.Format("Filter channel set to {0}!", chan.Mention)));
+                await SelfAudit.LogSomething(ctx.User, @"filter channel", chan.Name);
             }
         }
 
         [Command("+chan"),
-            Aliases("+channel"),
-            Description("[OWNER/ADMIN/BOT.BOI] Un-exclude a channel from bad word searching.\nUsage: +chan #DiscordChannel")]
+            Aliases("+channel")]
         public async Task IncludeChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use config commands.
             if (ctx.Member.GetRole().IsBotManagerOrHigher())
             {
-                string response = "Unknown error.";
                 await ctx.Channel.TriggerTypingAsync();
 
-                // Only enter scope if (a) channel is currently exluced && (b) the channel belongs to Rimworld.
-                if (BotSettings.IsChannelExcluded(chan) && (chan.Guild == ctx.Guild))
-                {
-                    BotSettings.IncludeChannel(chan);
-                    response = "Channel successfully removed from exclude list.";
+                // Cancels:
+                if(!BotSettings.IsChannelExcluded(chan))
+                {   // This channel does not exist.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"Unable to un-exclude channel. This channel is not already excluded..."));
+                    return;
                 }
-                else if (!BotSettings.IsChannelExcluded(chan))
-                    response = "Channel not in exclude list.";
+                if(!ctx.Guild.Channels.Contains(chan))
+                {   // This channel is not in the guild.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"Unable to un-exclude channel. This channel does not exist in this server..."));
+                    return;
+                }
 
-                await ctx.Channel.SendMessageAsync(response);
-                await SelfAudit.LogSomething(ctx.User, @"+chan", chan.Name);
+                await ctx.Channel.SendMessageAsync(
+                    ChatObjects.GetSuccessMessage(
+                        String.Format("{0} was successfully un-excluded!", chan.Mention)));
+                await SelfAudit.LogSomething(ctx.User, @" + chan", chan.Name);
+
+                BotSettings.IncludeChannel(chan);
+                BotSettings.Save();
             }
         }
 
         [Command("-chan"),
-            Aliases("-channel"),
-            Description("[OWNER/ADMIN/BOT.BOI] Exclude a channel from bad word searching.\nUsage: -chan #DiscordChannel")]
+            Aliases("-channel")]
         public async Task ExcludeChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use config commands.
             if (ctx.Member.GetRole().IsBotManagerOrHigher())
             {
-                string response = "Unknown error.";
                 await ctx.Channel.TriggerTypingAsync();
 
-                // Only enter scope if (a) channel is NOT already excluded && (b) the channel belongs to Rimworld. 
-                if (!BotSettings.IsChannelExcluded(chan) && (chan.Guild == ctx.Guild))
-                {
-                    BotSettings.ExcludeChannel(chan);
-                    response = "Channel successfully excluded.";
+                // Cancels:
+                if (BotSettings.IsChannelExcluded(chan))
+                {   // This channel does not exist.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"Unable to uexclude channel. This channel is already excluded..."));
+                    return;
                 }
-                else if (BotSettings.IsChannelExcluded(chan))
-                    response = "Channel already excluded.";
+                if (!ctx.Guild.Channels.Contains(chan))
+                {   // This channel is not in the guild.
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"Unable to exclude channel. This channel does not exist in this server..."));
+                    return;
+                }
 
-                await ctx.Channel.SendMessageAsync(response);
+                await ctx.Channel.SendMessageAsync(
+                    ChatObjects.GetSuccessMessage(
+                        String.Format("{0} was successfully excluded!", chan.Mention)));
                 await SelfAudit.LogSomething(ctx.User, @"-chan", chan.Name);
+
+                BotSettings.ExcludeChannel(chan);
+                BotSettings.Save();
             }
         }
 
-        [Command("listexcludes"),
-            Description("List excluded channels.")]
+        [Command("chanexcludes")]
         public async Task ListExcludes(CommandContext ctx)
         {
             if (ctx.Member.GetRole().IsCHOrHigher())
             {
                 await ctx.Channel.TriggerTypingAsync();
+
+                // Cancels:
+
+                if(BotSettings.GetExcludedChannelsCount == 0)
+                {
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetNeutralMessage(@"There are no excluded channels..."));
+                    return;
+                }
 
                 // DEB!
                 DiscordEmbedBuilder deb = new DiscordEmbedBuilder
@@ -110,6 +144,8 @@ namespace FluffyEars.Commands
                     sb.AppendLine(chan.Mention);
 
                 deb.Description = sb.ToString();
+                deb.WithColor(DiscordColor.LightGray);
+                deb.WithThumbnailUrl(ChatObjects.URL_SPEECH_BUBBLE);
 
                 await ctx.Channel.SendMessageAsync(embed: deb);
             }

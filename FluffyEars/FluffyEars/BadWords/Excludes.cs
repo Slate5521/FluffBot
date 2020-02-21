@@ -64,5 +64,6 @@ jgs   {_\______\-'\__\_\";
         public static void AddWord(string word) => excludeList.Add(word);
         public static void RemoveWord(string word) => excludeList.Remove(word);
         public static List<string> GetWords() => excludeList;
+        public static int GetWordCount() => excludeList.Count;
     }
 }

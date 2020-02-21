@@ -108,28 +108,30 @@ namespace FluffyEars
         /// <summary>Exclude the channel from bad word detection.</summary>
         public static void ExcludeChannel(DiscordChannel chan)
         {
-            if(!DefaultBotSettings.ExcludedChannels.Contains(chan.Id))
-                DefaultBotSettings.ExcludedChannels.Add(chan.Id);
+            if(!botSettings.ExcludedChannels.Contains(chan.Id))
+                botSettings.ExcludedChannels.Add(chan.Id);
         }
 
         /// <summary>Un-exclude the channel from bad word detection.</summary>
         public static void IncludeChannel(DiscordChannel chan)
         {
-            if (DefaultBotSettings.ExcludedChannels.Contains(chan.Id))
-                DefaultBotSettings.ExcludedChannels.Remove(chan.Id);
+            if (botSettings.ExcludedChannels.Contains(chan.Id))
+                botSettings.ExcludedChannels.Remove(chan.Id);
         }
+
+        public static int GetExcludedChannelsCount => botSettings.ExcludedChannels.Count;
 
         /// <summary>Get excluded channels.</summary>
         public static async Task<DiscordChannel[]> GetExcludedChannels()
         {
             DiscordChannel[] channels;
 
-            if (DefaultBotSettings.ExcludedChannels.Count > 0)
+            if (botSettings.ExcludedChannels.Count > 0)
             {
-                channels = new DiscordChannel[DefaultBotSettings.ExcludedChannels.Count];
+                channels = new DiscordChannel[botSettings.ExcludedChannels.Count];
 
-                for(int i = 0; i < DefaultBotSettings.ExcludedChannels.Count; i++)
-                    channels[i] = await Bot.BotClient.GetChannelAsync(DefaultBotSettings.ExcludedChannels[i]);
+                for(int i = 0; i < botSettings.ExcludedChannels.Count; i++)
+                    channels[i] = await Bot.BotClient.GetChannelAsync(botSettings.ExcludedChannels[i]);
             }
             else
                 channels = Array.Empty<DiscordChannel>();
@@ -138,7 +140,7 @@ namespace FluffyEars
         }
         /// <summary>Check if the channel is excluded.</summary>
         /// <returns>True if the channel is excluded.</returns>
-        public static bool IsChannelExcluded(DiscordChannel chan) => DefaultBotSettings.ExcludedChannels.Contains(chan.Id);
+        public static bool IsChannelExcluded(DiscordChannel chan) => botSettings.ExcludedChannels.Contains(chan.Id);
 
         #endregion Channel exclusion
         #region Spam
