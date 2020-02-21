@@ -6,10 +6,12 @@
         const string SUCCESS_PREFIX = @":white_check_mark: **/(^‿^)\\**";
         const string NEUTRAL_PREFIX = @":speech_left: **/('▿')\\**";
 
-        public const string URL_SPEECH_BUBBLE = @"https://i.imgur.com/NAHI4h3.png";
-        public const string URL_FILTER_ADD = @"https://i.imgur.com/cVeWPNz.png";
-        public const string URL_FILTER_SUB = @"https://i.imgur.com/kNdFBoK.png";
-        public const string URL_FILTER_GENERIC = @"https://i.imgur.com/58C8Noh.png";
+        public const string URL_SPEECH_BUBBLE =    @"https://i.imgur.com/NAHI4h3.png";
+        public const string URL_FILTER_ADD =       @"https://i.imgur.com/cVeWPNz.png";
+        public const string URL_FILTER_SUB =       @"https://i.imgur.com/kNdFBoK.png";
+        public const string URL_FILTER_SPAM =      @"https://i.imgur.com/jh741I7.png";
+        public const string URL_FILTER_BUBBLE =    @"https://i.imgur.com/TAaRDgI.png";
+        public const string URL_FILTER_GENERIC =   @"https://i.imgur.com/58C8Noh.png";
         public const string URL_REMINDER_GENERIC = @"https://i.imgur.com/Ya1Lu6e.png";
         public const string URL_REMINDER_EXCLAIM = @"https://i.imgur.com/NUCrbSl.png";
         public const string URL_REMINDER_DELETED = @"https://i.imgur.com/OnTaJdd.png";

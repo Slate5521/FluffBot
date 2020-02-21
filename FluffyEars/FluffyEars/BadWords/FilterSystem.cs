@@ -135,21 +135,6 @@ namespace FluffyEars.BadWords
                             User = message.Author,
                             BadWords = badWords.ToArray()
                         });
-
-                    /*// DEB!
-                    DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
-
-                    deb.WithTitle("Filter: Word Detected");
-                    deb.WithColor(DiscordColor.Cyan);
-                    deb.WithDescription(String.Format("{0} has triggered the filter system. Words possibly detected:\n{1} in the channel\n{2}",
-                        /*{0}*/ //message.Author.Mention,
-                        /*{1}*/ //sb.ToString(),
-                        /*{2}*/// String.Format("https://discordapp.com/channels/{0}/{1}/{2}", message.Channel.GuildId, message.ChannelId, message.Id)));
-
-                    // Grab the audit channel.
-                    //DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
-
-                    //await auditChannel.SendMessageAsync(embed: deb).ConfigureAwait(false);
                 }
             }
         }

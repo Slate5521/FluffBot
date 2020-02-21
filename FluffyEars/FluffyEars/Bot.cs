@@ -164,7 +164,7 @@ namespace FluffyEars
                 /*{0}*/ e.User.Mention,
                 /*{1}*/ sb.ToString(),
                 /*{2}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
-            deb.WithThumbnailUrl(@"https://i.imgur.com/1qfo3ng.png");
+            deb.WithThumbnailUrl(ChatObjects.URL_FILTER_BUBBLE);
 
             await NotifyFilterChannel(deb.Build());
         }
@@ -181,7 +181,7 @@ namespace FluffyEars
                 /*{0}*/ e.Spammer.Mention,
                 /*{1}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
 
-            deb.WithThumbnailUrl(@"https://i.imgur.com/HRNXkD9.png");
+            deb.WithThumbnailUrl(ChatObjects.URL_FILTER_SPAM);
 
             await NotifyFilterChannel(deb.Build());
         }
