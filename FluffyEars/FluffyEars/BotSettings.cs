@@ -144,21 +144,26 @@ namespace FluffyEars
 
         #endregion Channel exclusion
         #region Spam
+        
         public static int MaxMessageLength
         {
             get => botSettings.MessageMaxLength;
+            set => botSettings.MessageMaxLength = value;
         }
         public static int MaxMessageSplits
         {
             get => botSettings.MessageMaxSplits;
+            set => botSettings.MessageMaxSplits = value;
         }
         public static int MaxMessagesPerSecond
         {
             get => botSettings.MaxMessagesPerSecond;
+            set => botSettings.MaxMessagesPerSecond = value;
         }
         public static int SpamTimeout
         {
             get => botSettings.SpamTimeout;
+            set => botSettings.SpamTimeout = value;
         }
         #endregion
     }

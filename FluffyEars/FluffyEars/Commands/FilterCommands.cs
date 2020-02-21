@@ -303,7 +303,7 @@ namespace FluffyEars.Commands
 
                 BotSettings.SpamTimeout = length;
                 BotSettings.Save();
-            }
+            } 
         }
 
 
