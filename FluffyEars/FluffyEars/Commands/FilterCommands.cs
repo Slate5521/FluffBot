@@ -32,7 +32,7 @@ namespace FluffyEars.Commands
                 foreach (string word in words)
                 {
                     // Check if this is in the filter list or exclude list. If it is, we were unsuccessful at adding it to the list.
-                    bool success = !FilterSystem.IsWord(word) || !Excludes.IsExcluded(word);
+                    bool success = !FilterSystem.IsWord(word) && !Excludes.IsExcluded(word);
 
                     if (success)
                     {
@@ -57,6 +57,7 @@ namespace FluffyEars.Commands
                     deb.AddField(@"Not added (already in the filter system):", sb_fail.Remove(sb_fail.Length - 2, 2).ToString());
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
+                await SelfAudit.LogSomething(ctx.User, @"+filter", String.Join(' ', words));
 
                 FilterSystem.Save();
             }
@@ -104,6 +105,7 @@ namespace FluffyEars.Commands
                     deb.AddField("Not removed:", sb_fail.Remove(sb_fail.Length - 2, 2).ToString());
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
+                await SelfAudit.LogSomething(ctx.User, @"-filter", String.Join(' ', words));
 
                 FilterSystem.Save();
             }
@@ -148,6 +150,7 @@ namespace FluffyEars.Commands
                 {
                     Excludes.AddWord(word);
                     await ctx.Channel.SendMessageAsync("I excluded that word.");
+                    await SelfAudit.LogSomething(ctx.User, @"+filterexclude", String.Join(' ', word));
                 }
             }
         }
@@ -166,6 +169,7 @@ namespace FluffyEars.Commands
                 {
                     Excludes.RemoveWord(word);
                     await ctx.Channel.SendMessageAsync("I removed that word from exclusion.");
+                    await SelfAudit.LogSomething(ctx.User, @"-filterexclude", String.Join(' ', word));
                 }
             }
         }

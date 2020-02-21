@@ -33,6 +33,7 @@ namespace FluffyEars.Commands
                     BotSettings.Save();
 
                     await ctx.Channel.SendMessageAsync("Filter channel set.");
+                    await SelfAudit.LogSomething(ctx.User, @"filter channel", chan.Name);
                 }
                 else await ctx.Channel.SendMessageAsync("Unable to set channel. Does not exist or is not in this guild.");
             }
@@ -57,6 +58,7 @@ namespace FluffyEars.Commands
                 else response = "User already on whitelist.";
 
                 await ctx.Channel.SendMessageAsync(response);
+                await SelfAudit.LogSomething(ctx.User, @"+whitelist", user.Mention);
             }
         }
 
@@ -79,6 +81,7 @@ namespace FluffyEars.Commands
                 else response = "User not on whitelist.";
 
                 await ctx.Channel.SendMessageAsync(response);
+                await SelfAudit.LogSomething(ctx.User, @"-whitelist", user.Mention);
             }
         }
 
@@ -103,6 +106,7 @@ namespace FluffyEars.Commands
                     response = "Channel not in exclude list.";
 
                 await ctx.Channel.SendMessageAsync(response);
+                await SelfAudit.LogSomething(ctx.User, @"+chan", chan.Name);
             }
         }
 
@@ -127,8 +131,10 @@ namespace FluffyEars.Commands
                     response = "Channel already excluded.";
 
                 await ctx.Channel.SendMessageAsync(response);
+                await SelfAudit.LogSomething(ctx.User, @"-chan", chan.Name);
             }
         }
+
         [Command("listexcludes"),
             Description("List excluded channels.")]
         public async Task ListExcludes(CommandContext ctx)

@@ -91,6 +91,7 @@ namespace FluffyEars.Commands
                             ReminderSystem.AddReminder(reminder);
 
                             await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
+                            await SelfAudit.LogSomething(ctx.User, @"+reminder", String.Join('\n', messageString, dto.ToString()));
                             ReminderSystem.Save();
                         }
                         else await ctx.Channel.SendMessageAsync("Invalid arguments.");
@@ -131,6 +132,7 @@ namespace FluffyEars.Commands
                 ReminderSystem.RemoveReminder(reminderToRemove);
 
                 await ctx.Channel.SendMessageAsync(originalAuthorMention, false, deb);
+                await SelfAudit.LogSomething(ctx.User, @"-reminder", String.Join('\n', originalAuthorMention, dto.ToString(), reminderId, reminderToRemove.Text));
                 ReminderSystem.Save();
             }
         }
