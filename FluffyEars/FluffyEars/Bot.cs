@@ -136,11 +136,27 @@ namespace FluffyEars
             BotClient.ClientErrored += BotClient_ClientErrored;
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
 
+            BotClient.Ready += BotClient_Ready;
+
             SpamFilter.SpamDetected += BotClient_SpamDetected;
             FilterSystem.FilterTriggered += BotClient_FilterTriggered;
 
             await BotClient.ConnectAsync();
             await Task.Delay(-1);
+        }
+
+        private async Task BotClient_Ready(ReadyEventArgs e)
+        {
+            try
+            {
+                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
+                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(214523379766525963),
+                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+            }
+            catch { }
+
+            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
         }
 
         private async void BotClient_FilterTriggered(FilterEventArgs e)

@@ -1,6 +1,8 @@
 ﻿// TimeoutInformation.cs
 // Contains information about a spam timeout.
 
+using System;
+
 namespace FluffyEars.Spam
 {
     public struct TimeoutInformation
@@ -13,6 +15,11 @@ namespace FluffyEars.Spam
         {
             return obj is TimeoutInformation information &&
                    UserId == information.UserId;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(TimeoutEndMilliseconds, UserId);
         }
     }
 }

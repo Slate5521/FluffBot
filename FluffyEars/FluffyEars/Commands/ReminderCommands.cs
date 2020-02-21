@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Linq;
 using FluffyEars.Reminders;
 using System.Text.RegularExpressions;
 
