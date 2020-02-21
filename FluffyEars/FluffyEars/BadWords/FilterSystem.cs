@@ -54,7 +54,10 @@ namespace FluffyEars.BadWords
         {
             StringBuilder sb = new StringBuilder();
 
-            List<string> filterListDesc = filterList.OrderByDescending(a => a.Length).ToList();
+            //List<string> filterListDesc = filterList.OrderByDescending(a => a.Length).ToList();
+            List<string> filterListDesc = filterList;
+            filterListDesc.Sort();
+            filterListDesc.Reverse();
 
             foreach (string pattern in filterListDesc)
             {
