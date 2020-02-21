@@ -1,4 +1,4 @@
-﻿// BadWordCommands.cs
+﻿// FilterCommands.cs
 // Contains a module for configuring bad words.
 
 using DSharpPlus;

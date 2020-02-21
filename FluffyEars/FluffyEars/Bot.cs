@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using FluffyEars.Reminders;
 using FluffyEars.BadWords;
 using System.Collections.Generic;
+using System.Linq;
+using FluffyEars.Spam;
 
 namespace FluffyEars
 {
@@ -124,14 +126,28 @@ namespace FluffyEars
             Commands.RegisterCommands<Commands.FilterCommands>();
             Commands.RegisterCommands<Commands.ReminderCommands>();
             Commands.RegisterCommands<Commands.HelpCommand>();
+            Commands.RegisterCommands<Commands.SpamCommands>();
 
             BotClient.MessageCreated += BotClient_MessageCreated;
+            BotClient.MessageCreated += SpamFilter.BotClient_MessageCreated;
+
             BotClient.MessageUpdated += BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
 
+            Spam.SpamFilter.SpamDetected += BotClient_SpamDetected;
+
             await BotClient.ConnectAsync();
             await Task.Delay(-1);
+        }
+
+        private async void BotClient_SpamDetected(SpamEventArgs e)
+        {
+            DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
+
+            await auditChannel.SendMessageAsync("SPAM!!!!!!! (placeholder message for now)").ConfigureAwait(false);
+
+            
         }
 
         /// <summary>Some shit broke.</summary>
@@ -151,10 +167,20 @@ namespace FluffyEars
             if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
                 await CheckMessage(e.Message);
         }
-
+        private readonly string[] frozenWords = { "frozen", "frozo", "forza", "freezy" };
         /// <summary>A text message was sent to the Guild by a user</summary>
         private async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
+            // Frozen told me to add this!!!
+            
+            if(frozenWords.Any(e.Message.Content.ToLower().Contains))
+            {
+                DiscordChannel chan = await BotClient.GetChannelAsync(679933620034600960);
+                await chan.SendMessageAsync(String.Format("<@113829933071073287> Someone mentioned you!\n{0}",
+                    String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
+            }
+
+
             // Skip if (1) this channel is excluded or (2) this is sent by the bot.
             if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
                 await CheckMessage(e.Message);

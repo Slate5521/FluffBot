@@ -27,8 +27,16 @@ namespace FluffyEars
             public ulong FilterChannelId;
             /// <summary>A list of users who can use bot config features.</summary>
             public List<ulong> WhitelistedUsers;
-            /// <summary>A list of channels where bad words will not be checked for.</summary>
+            /// <summary>A list of channels that will not be checked.</summary>
             public List<ulong> ExcludedChannels;
+            /// <summary>The max length of a message before it's considered spam.</summary>
+            public int MessageMaxLength;
+            /// <summary>The max amount of linesplits of a message before it's considered spam.</summary>
+            public int MessageMaxSplits;
+            /// <summary>The max amount of messages in a second before it's considered spam.</summary>
+            public int MaxMessagesPerSecond;
+            /// <summary>The amount of time to wait before being triggered by a user's spam</summary>
+            public int SpamTimeout;
         }
 
         /// <summary>Default bot settings.</summary>
@@ -37,6 +45,10 @@ namespace FluffyEars
             FilterChannelId = 674884683166646283,
             WhitelistedUsers = new List<ulong>() { 131626628211146752 },
             ExcludedChannels = new List<ulong>(),
+            MessageMaxLength = 800,
+            MessageMaxSplits = 5,
+            MaxMessagesPerSecond = 3,
+            SpamTimeout = 30000 // 30 seconds by default.
         };
 
         /// <summary>Bot settings!</summary>
@@ -172,5 +184,23 @@ namespace FluffyEars
         public static bool IsChannelExcluded(DiscordChannel chan) => DefaultBotSettings.ExcludedChannels.Contains(chan.Id);
 
         #endregion Channel exclusion
+        #region Spam
+        public static int MaxMessageLength
+        {
+            get => botSettings.MessageMaxLength;
+        }
+        public static int MaxMessageSplits
+        {
+            get => botSettings.MessageMaxSplits;
+        }
+        public static int MaxMessagesPerSecond
+        {
+            get => botSettings.MaxMessagesPerSecond;
+        }
+        public static int SpamTimeout
+        {
+            get => botSettings.SpamTimeout;
+        }
+        #endregion
     }
 }
