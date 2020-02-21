@@ -60,7 +60,7 @@ namespace FluffyEars.Spam
 
                     // This means that, out of the 12 or so messages sent to the server recently, the threshold amount of them have been from this 
                     // user.
-                    if(CountMessagesInSpan(authorId) > maxMsgPerSec)
+                    if (CountMessagesInSpan(authorId) > maxMsgPerSec)
                     {
                         // So we know this user is probably spamming. We need to check that for ourselves.
 
@@ -74,8 +74,8 @@ namespace FluffyEars.Spam
                         //      maxMsgPerSec-length span of messages, that means we don't have a span of messages that may exceed the 
                         //      max-per-second.
                         //  INCREMENT: We will simply increment the first index and last index
-                        for (int first = 0, last = first + maxMsgPerSec     ; //!
-                            !spamFound && last < allUserSpanMessages.Length ; //!
+                        for (int first = 0, last = first + maxMsgPerSec; //!
+                            !spamFound && last < allUserSpanMessages.Length; //!
                             first++, last++)
                         {
                             // I don't necessarily care to distinguish between first or last because all I want is the difference between their sent
@@ -116,14 +116,14 @@ namespace FluffyEars.Spam
                                 Channel = e.Channel,
                                 Message = e.Message,
                                 Spammer = e.Author
-                            }); 
+                            });
                             spamFound = true;
                         }
                     }
 
                     // ----------------------------------------------------------------
                     // Let's count how many linesplits there are.
-                    else if (!spamFound && e.Message.Content.Count(a => a == '\n') > BotSettings.MaxMessageSplits)
+                    if (!spamFound && e.Message.Content.Count(a => a == '\n') > BotSettings.MaxMessageSplits)
                     {
                         OnSpamDetected(new SpamEventArgs
                         {
@@ -205,8 +205,6 @@ namespace FluffyEars.Spam
 
         static void OnSpamDetected(SpamEventArgs e)
         {
-            e.Channel.SendMessageAsync("THAT'S SPAM");
-
             SpamDetectedEventHandler handler = SpamDetected;
             handler?.Invoke(e);
         }

@@ -161,11 +161,12 @@ namespace FluffyEars
             DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
 
             deb.WithTitle("Filter: Word Detected");
-            deb.WithColor(DiscordColor.Cyan);
+            deb.WithColor(DiscordColor.Red);
             deb.WithDescription(String.Format("{0} has triggered the filter system. Words possibly detected:\n{1}\n in the channel\n{2}",
                 /*{0}*/ e.User.Mention,
                 /*{1}*/ sb.ToString(),
                 /*{2}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
+            deb.WithThumbnailUrl(@"https://i.imgur.com/1qfo3ng.png");
 
             await NotifyFilterChannel(deb.Build());
         }
@@ -177,10 +178,12 @@ namespace FluffyEars
             DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
 
             deb.WithTitle("Filter: Spam Detected");
-            deb.WithColor(DiscordColor.Cyan);
+            deb.WithColor(DiscordColor.Orange);
             deb.WithDescription(String.Format("{0} is possibly spamming.\n{1}",
                 /*{0}*/ e.Spammer.Mention,
                 /*{1}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
+
+            deb.WithThumbnailUrl(@"https://i.imgur.com/HRNXkD9.png");
 
             await NotifyFilterChannel(deb.Build());
         }

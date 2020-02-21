@@ -182,6 +182,7 @@ namespace FluffyEars.Reminders
                     deb.WithDescription(curReminder.Text);
                     deb.AddField(@"Late by", 
                         String.Format("{0}day {1}hr {2}min {3}sec", lateBy.Days, lateBy.Hours, lateBy.Minutes, lateBy.Seconds));
+                    deb.WithThumbnailUrl(@"https://i.imgur.com/ulC48mX.png");
 
                     // Get all the people we need to remind.
                     sb.Append(String.Format("<@{0}> ", curReminder.User));
@@ -196,6 +197,7 @@ namespace FluffyEars.Reminders
 
                     // Remove the reminder from the list.
                     ReminderSystem.RemoveReminder(curReminder);
+                    ReminderSystem.Save();
                 }
 
                 // The current reminder will become the next step's previous reminder, and we should also grab the next reminder before heading into

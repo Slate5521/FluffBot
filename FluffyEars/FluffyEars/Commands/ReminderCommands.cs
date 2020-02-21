@@ -86,6 +86,7 @@ namespace FluffyEars.Commands
                                 deb.AddField(@"Users to notify:", sb.ToString().TrimEnd());
 
                             deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
+                            deb.WithThumbnailUrl(@"https://i.imgur.com/lOqo2k8.png");
 
                             ReminderSystem.AddReminder(reminder);
 
@@ -124,6 +125,8 @@ namespace FluffyEars.Commands
                     String.Format("{0}day {1}hr {2}min {3}sec", remainingTime.Days, remainingTime.Hours, remainingTime.Minutes, remainingTime.Seconds));
                 deb.AddField(@"Message", reminderToRemove.Text);
                 deb.AddField(@"Notification Identifier", reminderId);
+                deb.WithThumbnailUrl(@"https://i.imgur.com/8IDy1oM.png");
+            
 
                 ReminderSystem.RemoveReminder(reminderToRemove);
 
@@ -141,12 +144,14 @@ namespace FluffyEars.Commands
                 // Check if there are any notifications. If there are none, let the user know.
                 if (ReminderSystem.HasNotification())
                 {
-                    int debLength = 0;
+                    int debLength;
                     int page = 1;
 
                     // DEB!
                     DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
                     deb.WithTitle(@"Reminder List Page " + page);
+                    deb.WithThumbnailUrl(@"https://i.imgur.com/lOqo2k8.png");
+                    debLength = deb.ThumbnailUrl.Length;
 
                     // Get a list of reminders, but ordered descending by their remind date.
                     Reminder[] reminderList = ReminderSystem.GetReminders().OrderByDescending(a => a.Time).ToArray();
@@ -173,7 +178,8 @@ namespace FluffyEars.Commands
                             await ctx.Channel.SendMessageAsync(embed: deb);
                             deb = new DiscordEmbedBuilder();
                             deb.WithTitle(@"Reminder List Page " + ++page);
-                            debLength = 0;
+                            deb.WithThumbnailUrl(@"https://i.imgur.com/lOqo2k8.png");
+                            debLength = deb.ThumbnailUrl.Length;
                         }
 
                         deb.AddField(str1, str2);
