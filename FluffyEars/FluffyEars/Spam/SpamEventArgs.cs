@@ -10,6 +10,5 @@ namespace FluffyEars.Spam
         public DiscordMessage Message;
         public DiscordUser Spammer;
         public DiscordChannel Channel;
-        public SpamType SpamType;
     }
 }

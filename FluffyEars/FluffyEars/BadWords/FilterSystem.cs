@@ -1,16 +1,22 @@
 ﻿// BadwordSystem.cs
 // A static class that handles badwords.
 
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace FluffyEars.BadWords
 {
     public static class FilterSystem
     {
+        public static FilterTriggeredEventHandler FilterTriggered;
+        public delegate void FilterTriggeredEventHandler(FilterEventArgs e);
+
         private static List<string> filterList;
         public const string BaseFile = "filter";
         private static readonly object lockObj = (object)@"
@@ -89,6 +95,63 @@ namespace FluffyEars.BadWords
             }
 
             return returnVal;
+        }
+        static void OnFilterTriggered(FilterEventArgs e)
+        {
+            FilterTriggeredEventHandler handler = FilterTriggered;
+            handler?.Invoke(e);
+        }
+
+        internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
+        {
+            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
+            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
+                await CheckMessage(e.Message);
+        }
+
+        internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
+        {
+            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
+            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
+                await CheckMessage(e.Message);
+        }
+        
+        /// <summary>Check the messages for any Bad Words aka slurs.</summary>
+        /// <param name="message">The message object to inspect.</param>
+        private static async Task CheckMessage(DiscordMessage message)
+        {
+            // Let's check if the audit channel is set.
+            if (BotSettings.FilterChannelId != 0)
+            {
+                List<string> badWords = GetBadWords(message.Content); // The detected bad words.
+
+                if (badWords.Count > 0)
+                {
+                    OnFilterTriggered(
+                        new FilterEventArgs
+                        {
+                            Message = message,
+                            Channel = message.Channel,
+                            User = message.Author,
+                            BadWords = badWords.ToArray()
+                        });
+
+                    /*// DEB!
+                    DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+
+                    deb.WithTitle("Filter: Word Detected");
+                    deb.WithColor(DiscordColor.Cyan);
+                    deb.WithDescription(String.Format("{0} has triggered the filter system. Words possibly detected:\n{1} in the channel\n{2}",
+                        /*{0}*/ //message.Author.Mention,
+                        /*{1}*/ //sb.ToString(),
+                        /*{2}*/// String.Format("https://discordapp.com/channels/{0}/{1}/{2}", message.Channel.GuildId, message.ChannelId, message.Id)));
+
+                    // Grab the audit channel.
+                    //DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
+
+                    //await auditChannel.SendMessageAsync(embed: deb).ConfigureAwait(false);
+                }
+            }
         }
     }
 }

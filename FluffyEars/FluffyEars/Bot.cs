@@ -128,26 +128,69 @@ namespace FluffyEars
             Commands.RegisterCommands<Commands.HelpCommand>();
             Commands.RegisterCommands<Commands.SpamCommands>();
 
-            BotClient.MessageCreated += BotClient_MessageCreated;
-            BotClient.MessageCreated += SpamFilter.BotClient_MessageCreated;
+            //BotClient.MessageCreated += BotClient_MessageCreated;FROZENZEZE
 
-            BotClient.MessageUpdated += BotClient_MessageUpdated;
+            BotClient.MessageCreated += SpamFilter.BotClient_MessageCreated;
+            BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
+
+            BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
 
-            Spam.SpamFilter.SpamDetected += BotClient_SpamDetected;
+            SpamFilter.SpamDetected += BotClient_SpamDetected;
+            FilterSystem.FilterTriggered += BotClient_FilterTriggered;
 
             await BotClient.ConnectAsync();
             await Task.Delay(-1);
         }
 
+        private async void BotClient_FilterTriggered(FilterEventArgs e)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            foreach(string str in e.BadWords)
+            {
+                sb.Append(str);
+
+                if(!e.BadWords.Last().Equals(str))
+                    sb.Append(@", ");
+            }
+
+            // DEB!
+            DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+
+            deb.WithTitle("Filter: Word Detected");
+            deb.WithColor(DiscordColor.Cyan);
+            deb.WithDescription(String.Format("{0} has triggered the filter system. Words possibly detected:\n{1}\n in the channel\n{2}",
+                /*{0}*/ e.User.Mention,
+                /*{1}*/ sb.ToString(),
+                /*{2}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
+
+            await NotifyFilterChannel(deb.Build());
+        }
+
         private async void BotClient_SpamDetected(SpamEventArgs e)
+        {
+
+            // DEB!
+            DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+
+            deb.WithTitle("Filter: Spam Detected");
+            deb.WithColor(DiscordColor.Cyan);
+            deb.WithDescription(String.Format("{0} is possibly spamming.\n{1}",
+                /*{0}*/ e.Spammer.Mention,
+                /*{1}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
+
+            await NotifyFilterChannel(deb.Build());
+        }
+
+        private static async Task NotifyFilterChannel(DiscordEmbed embed, string text = @"")
         {
             DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
 
-            await auditChannel.SendMessageAsync("SPAM!!!!!!! (placeholder message for now)").ConfigureAwait(false);
-
-            
+            await auditChannel.SendMessageAsync(
+                content: text == String.Empty ? null : text,
+                embed: embed).ConfigureAwait(false);
         }
 
         /// <summary>Some shit broke.</summary>
@@ -159,66 +202,5 @@ namespace FluffyEars
 
             return Task.CompletedTask;
         }
-
-        /// <summary>A text message was updated by a user.</summary>
-        private async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
-        {
-            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
-            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
-                await CheckMessage(e.Message);
-        }
-        private readonly string[] frozenWords = { "frozen", "frozo", "forza", "freezy" };
-        /// <summary>A text message was sent to the Guild by a user</summary>
-        private async Task BotClient_MessageCreated(MessageCreateEventArgs e)
-        {
-            // Frozen told me to add this!!!
-            
-            if(frozenWords.Any(e.Message.Content.ToLower().Contains))
-            {
-                DiscordChannel chan = await BotClient.GetChannelAsync(679933620034600960);
-                await chan.SendMessageAsync(String.Format("<@113829933071073287> Someone mentioned you!\n{0}",
-                    String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
-            }
-
-
-            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
-            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
-                await CheckMessage(e.Message);
-        }
-
-        /// <summary>Check the messages for any Bad Words aka slurs.</summary>
-        /// <param name="message">The message object to inspect.</param>
-        private async Task CheckMessage(DiscordMessage message)
-        {
-            // Let's check if the audit channel is set.
-            if(BotSettings.FilterChannelId != 0)
-            {
-                List<string> badWords = FilterSystem.GetBadWords(message.Content); // The detected bad words.
-
-                if (badWords.Count > 0)
-                {
-                    StringBuilder sb = new StringBuilder();
-
-                    foreach(string word in badWords)
-                        sb.Append(word + ' ');
-
-                    // DEB!
-                    DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
-
-                    deb.WithTitle("Filter: Word Detected");
-                    deb.WithColor(DiscordColor.Cyan);
-                    deb.WithDescription(String.Format("{0} has triggered the filter system. Words possibly detected:\n{1} in the channel\n{2}",
-                        /*{0}*/ message.Author.Mention,
-                        /*{1}*/ sb.ToString(),
-                        /*{2}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", message.Channel.GuildId, message.ChannelId, message.Id)));
-
-                    // Grab the audit channel.
-                    DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
-
-                    await auditChannel.SendMessageAsync(embed: deb).ConfigureAwait(false);
-                }
-            }
-        }
-        
     }
 }

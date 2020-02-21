@@ -90,8 +90,7 @@ namespace FluffyEars.Spam
                                 {
                                     Channel = e.Channel,
                                     Message = e.Message,
-                                    Spammer = e.Author,
-                                    SpamType = SpamType.Overflow
+                                    Spammer = e.Author
                                 });
 
                                 TimeoutUser(authorId, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + BotSettings.SpamTimeout);
@@ -116,8 +115,7 @@ namespace FluffyEars.Spam
                             {
                                 Channel = e.Channel,
                                 Message = e.Message,
-                                Spammer = e.Author,
-                                SpamType = SpamType.OverLimit
+                                Spammer = e.Author
                             }); 
                             spamFound = true;
                         }
@@ -131,8 +129,7 @@ namespace FluffyEars.Spam
                         {
                             Channel = e.Channel,
                             Message = e.Message,
-                            Spammer = e.Author,
-                            SpamType = SpamType.Linesplit
+                            Spammer = e.Author
                         });
 
                         spamFound = true;
