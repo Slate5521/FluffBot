@@ -132,6 +132,7 @@ namespace FluffyEars
 
             BotClient.MessageCreated += SpamFilter.BotClient_MessageCreated;
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
+            BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
 
             BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
