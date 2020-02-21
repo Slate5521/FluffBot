@@ -60,24 +60,18 @@ namespace FluffyEars
             lock (lockObj)
             {
                 // Let's save the SaveFile.
-                using (var fs = File.OpenWrite(saveFile))
-                {
-                    using (var sw = new StreamWriter(fs))
+                    using (var sw = new StreamWriter(saveFile, false))
                     {
                         sw.Write(json);
                         sw.Flush();
                     }
-                }
 
                 // Let's save the MD5.
-                using (var fs = File.OpenWrite(GetMD5File(saveFile)))
-                {
-                    using (var sw = new StreamWriter(fs))
+                    using (var sw = new StreamWriter(GetMD5File(saveFile), false))
                     {
                         sw.Write(GetFileMD5(saveFile));
                         sw.Flush();
                     }
-                }
             }
         }
 
@@ -205,6 +199,8 @@ namespace FluffyEars
             string oldFileTrueMD5;
             string newFileMD5;
             string oldFileMD5;
+            bool newFileIntegrity;
+            bool oldFileIntegrity;
 
             lock (lockObj)
             {
@@ -213,11 +209,13 @@ namespace FluffyEars
                 {
                     newFileTrueMD5 = ReadFile(newestFileMD5);
                     newFileMD5 = GetFileMD5(newestFile);
+                    newFileIntegrity = CompareMD5(newFileTrueMD5, newFileMD5) && IsValidJson(newestFile);
                 }
                 else
                 {
                     newFileTrueMD5 = String.Empty;
                     newFileMD5 = String.Empty;
+                    newFileIntegrity = false;
                 }
 
                 // Let's try load the MD5s of the older files.
@@ -225,18 +223,17 @@ namespace FluffyEars
                 {
                     oldFileTrueMD5 = ReadFile(oldestFileMD5);
                     oldFileMD5 = GetFileMD5(oldestFile);
+                    oldFileIntegrity = CompareMD5(oldFileTrueMD5, oldFileMD5) && IsValidJson(oldestFile);
                 }
                 else 
                 { 
                     oldFileTrueMD5 = String.Empty;
                     oldFileMD5 = String.Empty;
+                    oldFileIntegrity = false;
                 }
+
+                // Great. Now we have all the MD5s, so we need to compare them and see what's up.
             }
-
-            // Great. Now we have all the MD5s, so we need to compare them and see what's up.
-
-            bool newFileIntegrity = CompareMD5(newFileTrueMD5, newFileMD5);
-            bool oldFileIntegrity = CompareMD5(oldFileTrueMD5, oldFileMD5);
 
             bool newFileExisting = newFileExists && newestFileMD5Exists;
             bool oldFileExisting = oldFileExists && oldestFileMD5Exists;
@@ -258,6 +255,22 @@ namespace FluffyEars
             }
 
             return returnVal;
+        }
+
+        private bool IsValidJson(string file)
+        {
+            bool valid = true; // It's valid until proven otherwise.
+            string jsonContents = ReadFile(file);
+
+            try
+            {
+                JsonConvert.DeserializeObject(jsonContents);
+            } catch(JsonException je)
+            {
+                valid = false;
+            }
+
+            return valid;
         }
 
         /// <summary>Read information from file.</summary>
