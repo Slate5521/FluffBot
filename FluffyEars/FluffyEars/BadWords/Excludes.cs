@@ -35,7 +35,7 @@ jgs   {_\______\-'\__\_\";
             else Default();
         }
 
-        public static bool IsExcluded(string word) => excludeList.Contains(word);
+        public static bool IsExcluded(string word) => excludeList.Contains(word.ToLower());
         public static bool IsExcluded(string message, int badWordIndex, int badWordLen)
         {
             bool returnVal = false;
@@ -44,7 +44,7 @@ jgs   {_\______\-'\__\_\";
             {
                 if (!returnVal)
                 {
-                    int excludedIndex = message.IndexOf(excludedWord);
+                    int excludedIndex = message.ToLower().IndexOf(excludedWord);
 
                     // We've found an excluded word.
                     if(excludedIndex != -1)
@@ -61,8 +61,8 @@ jgs   {_\______\-'\__\_\";
 
             return returnVal;
         }
-        public static void AddWord(string word) => excludeList.Add(word);
-        public static void RemoveWord(string word) => excludeList.Remove(word);
+        public static void AddWord(string word) => excludeList.Add(word.ToLower());
+        public static void RemoveWord(string word) => excludeList.Remove(word.ToLower());
         public static List<string> GetWords() => excludeList;
         public static int GetWordCount() => excludeList.Count;
     }

@@ -54,7 +54,7 @@ namespace FluffyEars.BadWords
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach(string pattern in filterList)
+            foreach(string pattern in filterList.OrderByDescending(a => a.Length))
             {
                 sb.Append(pattern);
 
@@ -77,7 +77,7 @@ namespace FluffyEars.BadWords
         {
             List<string> returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
 
-            if (filterList.Count > 0)
+            if (filterList.Count > 0)   
             {
                 MatchCollection mc = Regex.Matches(message, regexPattern, regexOptions);
 
