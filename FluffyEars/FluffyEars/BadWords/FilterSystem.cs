@@ -54,12 +54,14 @@ namespace FluffyEars.BadWords
         {
             StringBuilder sb = new StringBuilder();
 
-            foreach(string pattern in filterList.OrderByDescending(a => a.Length))
+            List<string> filterListDesc = filterList.OrderByDescending(a => a.Length).ToList();
+
+            foreach (string pattern in filterListDesc)
             {
                 sb.Append(pattern);
 
                 // If this is not the last filter word, add an | separator. 
-                if (!filterList.Last().Equals(pattern))
+                if (!filterListDesc.Last().Equals(pattern))
                     sb.Append('|');
             }
 

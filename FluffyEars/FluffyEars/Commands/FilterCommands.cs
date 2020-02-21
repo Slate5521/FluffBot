@@ -14,6 +14,7 @@ namespace FluffyEars.Commands
 {
     class FilterCommands : BaseModule
     {
+        #region Word Filter
         /// <summary>Add bad word(s) to the bad word list.</summary>
         /// <param name="words">The supposed list.</param>
         [Command("+filter")]
@@ -150,7 +151,7 @@ namespace FluffyEars.Commands
                         ChatObjects.GetErrMessage(@"Cannot add that word. It's a filter word..."));
                     return;
                 }
-                if(Excludes.IsExcluded(word))
+                if (Excludes.IsExcluded(word))
                 {
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"Cannot add that word. It's already excluded..."));
@@ -199,7 +200,7 @@ namespace FluffyEars.Commands
                 StringBuilder sb = new StringBuilder();
 
                 // Cancels:
-                if(Excludes.GetWordCount() == 0)
+                if (Excludes.GetWordCount() == 0)
                 {
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetNeutralMessage(@"There are no filter excludes..."));
@@ -220,6 +221,93 @@ namespace FluffyEars.Commands
             }
         }
 
+        #endregion Word Filter
+        #region Spam Filter
+
+        [Command("spamlength")]
+        public async Task SpamLength(CommandContext ctx, int length)
+        {
+            if (ctx.Member.GetRole().IsBotManagerOrHigher())
+            {
+                await ctx.TriggerTypingAsync();
+                // Cancels:
+                if (length > 2000)
+                {   // Too high
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"That value exceeds Discord's text limit..."));
+                    return;
+                }
+                if (length <= 0)
+                {   // Too low
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"That value is too low..."));
+                    return;
+                }
+
+                BotSettings.MaxMessageLength = length;
+                BotSettings.Save();
+            }
+        }
+
+        [Command("spammaxsplits")]
+        public async Task SpamMaxSplits(CommandContext ctx, int length)
+        {
+            if (ctx.Member.GetRole().IsBotManagerOrHigher())
+            {
+                await ctx.TriggerTypingAsync();
+                // Cancels:
+                if (length <= 1)
+                {   // Too low
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"That value is too low..."));
+                    return;
+                }
+
+                BotSettings.MaxMessageSplits = length;
+                BotSettings.Save();
+            }
+        }
+
+        [Command("spammessagessec")]
+        public async Task SpamMessagesSec(CommandContext ctx, int length)
+        {
+            if (ctx.Member.GetRole().IsBotManagerOrHigher())
+            {
+                await ctx.TriggerTypingAsync();
+                // Cancels:
+                if (length <= 1)
+                {   // Too low
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"That value is too low..."));
+                    return;
+                }
+
+                BotSettings.MaxMessagesPerSecond = length;
+                BotSettings.Save();
+            }
+        }
+
+        [Command("spamtimeout")]
+        public async Task SpamTimeout(CommandContext ctx, int length)
+        {
+            if (ctx.Member.GetRole().IsBotManagerOrHigher())
+            {
+                await ctx.TriggerTypingAsync();
+                // Cancels:
+                if (length <= 1)
+                {   // Too low
+                    await ctx.Channel.SendMessageAsync(
+                        ChatObjects.GetErrMessage(@"That value is too low..."));
+                    return;
+                }
+
+                BotSettings.SpamTimeout = length;
+                BotSettings.Save();
+            }
+        }
+
+
+        #endregion Spam Filter
         protected override void Setup(DiscordClient client) { }
     }
 }
