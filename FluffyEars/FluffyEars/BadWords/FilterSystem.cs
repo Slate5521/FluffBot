@@ -75,16 +75,24 @@ namespace FluffyEars.BadWords
         }
 
         public static bool IsWord(string word) => filterList.Contains(word);
-        public static List<string> GetWords() => filterList; 
+        public static List<string> GetWords() => filterList;
 
-        public static void AddWord(string word) => filterList.Add(word);
-        public static void RemoveWord(string word) => filterList.Remove(word);
+        public static void AddWord(string word)
+        {
+            filterList.Add(word);
+            UpdatePatternString();
+        }
+        public static void RemoveWord(string word)
+        {
+            filterList.Remove(word);
+            UpdatePatternString();
+        }
 
         public static List<string> GetBadWords(string message)
         {
             List<string> returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
 
-            if (filterList.Count > 0)   
+            if (filterList.Count > 0)
             {
                 MatchCollection mc = Regex.Matches(message, regexPattern, regexOptions);
 

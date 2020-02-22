@@ -146,7 +146,7 @@ namespace FluffyEars
         }
 
         private async Task BotClient_Ready(ReadyEventArgs e)
-        {
+        {/*
             try
             {
                 await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
@@ -156,7 +156,7 @@ namespace FluffyEars
             }
             catch { }
 
-            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
+            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");*/    
         }
 
         private async void BotClient_FilterTriggered(FilterEventArgs e)

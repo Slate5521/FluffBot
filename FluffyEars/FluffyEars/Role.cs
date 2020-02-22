@@ -36,7 +36,7 @@ namespace FluffyEars
 
             if (roles.Contains(214524811433607168) || roles.Contains(673765748514095115)) // Admin
                 return Role.Admin;
-            if (roles.Contains(503752769757511690) || roles.Contains(673765760656605194)) // Bot Boi
+            if (roles.Contains(503752769757511690) || roles.Contains(673765760656605194) || roles.Contains(653357224520974355)) // Bot Boi
                 return Role.BotManager;
             if (roles.Contains(521006886451937310) || roles.Contains(673765727605358614)) // Senior Mod
                 return Role.SeniorModerator;

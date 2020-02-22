@@ -60,7 +60,7 @@ namespace FluffyEars.Commands
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
                 await SelfAudit.LogSomething(ctx.User, @"+filter", String.Join(' ', words));
-
+                
                 FilterSystem.Save();
             }
         }
