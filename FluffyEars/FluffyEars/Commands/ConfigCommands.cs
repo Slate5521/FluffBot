@@ -72,13 +72,13 @@ namespace FluffyEars.Commands
                     return;
                 }
 
+                BotSettings.IncludeChannel(chan);
+                BotSettings.Save();
+
                 await ctx.Channel.SendMessageAsync(
                     ChatObjects.GetSuccessMessage(
                         String.Format("{0} was successfully un-excluded!", chan.Mention)));
                 await SelfAudit.LogSomething(ctx.User, @" + chan", chan.Name);
-
-                BotSettings.IncludeChannel(chan);
-                BotSettings.Save();
             }
         }
 
@@ -105,13 +105,14 @@ namespace FluffyEars.Commands
                     return;
                 }
 
+
+                BotSettings.ExcludeChannel(chan);
+                BotSettings.Save();
+
                 await ctx.Channel.SendMessageAsync(
                     ChatObjects.GetSuccessMessage(
                         String.Format("{0} was successfully excluded!", chan.Mention)));
                 await SelfAudit.LogSomething(ctx.User, @"-chan", chan.Name);
-
-                BotSettings.ExcludeChannel(chan);
-                BotSettings.Save();
             }
         }
 

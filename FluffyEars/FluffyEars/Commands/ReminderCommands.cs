@@ -120,11 +120,11 @@ namespace FluffyEars.Commands
                 deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
                 deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_GENERIC);
 
-                await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
-                await SelfAudit.LogSomething(ctx.User, @"+reminder", String.Join('\n', msgString, dto.ToString()));
-
                 ReminderSystem.AddReminder(reminder);
                 ReminderSystem.Save();
+
+                await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
+                await SelfAudit.LogSomething(ctx.User, @"+reminder", String.Join('\n', msgString, dto.ToString()));
             }
         }
 
@@ -162,12 +162,12 @@ namespace FluffyEars.Commands
 
                 deb.WithColor(DiscordColor.LightGray);
                 deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_DELETED);
-            
-                await ctx.Channel.SendMessageAsync(originalAuthorMention, false, deb);
-                await SelfAudit.LogSomething(ctx.User, @"-reminder", String.Join('\n', originalAuthorMention, dto.ToString(), reminderId, reminderToRemove.Text));
 
                 ReminderSystem.RemoveReminder(reminderToRemove);
                 ReminderSystem.Save();
+
+                await ctx.Channel.SendMessageAsync(originalAuthorMention, false, deb);
+                await SelfAudit.LogSomething(ctx.User, @"-reminder", String.Join('\n', originalAuthorMention, dto.ToString(), reminderId, reminderToRemove.Text));
             }
         }
 
