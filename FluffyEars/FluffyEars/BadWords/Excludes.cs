@@ -45,8 +45,10 @@ jgs   {_\______\-'\__\_\";
         {
             bool returnVal = false;
 
-            foreach(string excludedWord in excludeList)
+            foreach(string excludedWord_ in excludeList)
             {
+                string excludedWord = excludedWord_.ToLower();
+
                 if (!returnVal)
                 {
                     int excludedIndex = message.ToLower().IndexOf(excludedWord);
