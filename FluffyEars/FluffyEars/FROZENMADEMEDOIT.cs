@@ -39,6 +39,7 @@ namespace FluffyEars
                 DiscordChannel chan = await Bot.BotClient.GetChannelAsync(679933620034600960);
                 await chan.SendMessageAsync(String.Format("<@113829933071073287> Someone mentioned you!\n{0}",
                     String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
+                await chan.SendMessageAsync(e.Message.Content);
             }
 
         }
