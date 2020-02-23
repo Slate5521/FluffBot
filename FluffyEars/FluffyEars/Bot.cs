@@ -13,7 +13,6 @@ using FluffyEars.Reminders;
 using FluffyEars.BadWords;
 using System.Collections.Generic;
 using System.Linq;
-using FluffyEars.Spam;
 
 namespace FluffyEars
 {
@@ -128,7 +127,6 @@ namespace FluffyEars
 
             //BotClient.MessageCreated += BotClient_MessageCreated;FROZENZEZE
 
-            BotClient.MessageCreated += SpamFilter.BotClient_MessageCreated;
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
 
@@ -138,7 +136,6 @@ namespace FluffyEars
 
             BotClient.Ready += BotClient_Ready;
 
-            SpamFilter.SpamDetected += BotClient_SpamDetected;
             FilterSystem.FilterTriggered += BotClient_FilterTriggered;
 
             await BotClient.ConnectAsync();
@@ -146,7 +143,7 @@ namespace FluffyEars
         }
 
         private async Task BotClient_Ready(ReadyEventArgs e)
-        {
+        {/*
             try
             {
                 await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
@@ -156,7 +153,7 @@ namespace FluffyEars
             }
             catch { }
 
-            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
+            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");*/
         }
 
         private async void BotClient_FilterTriggered(FilterEventArgs e)
@@ -181,23 +178,6 @@ namespace FluffyEars
                 /*{1}*/ sb.ToString(),
                 /*{2}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
             deb.WithThumbnailUrl(ChatObjects.URL_FILTER_BUBBLE);
-
-            await NotifyFilterChannel(deb.Build());
-        }
-
-        private async void BotClient_SpamDetected(SpamEventArgs e)
-        {
-
-            // DEB!
-            DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
-
-            deb.WithTitle("Filter: Spam Detected");
-            deb.WithColor(DiscordColor.Orange);
-            deb.WithDescription(String.Format("{0} is possibly spamming.\n{1}",
-                /*{0}*/ e.Spammer.Mention,
-                /*{1}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
-
-            deb.WithThumbnailUrl(ChatObjects.URL_FILTER_SPAM);
 
             await NotifyFilterChannel(deb.Build());
         }
