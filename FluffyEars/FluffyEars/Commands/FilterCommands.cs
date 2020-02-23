@@ -58,10 +58,10 @@ namespace FluffyEars.Commands
                 if (sb_fail.Length > 0)
                     deb.AddField(@"Not added:", sb_fail.Remove(sb_fail.Length - 2, 2).ToString());
 
+                FilterSystem.Save();
+
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
                 await SelfAudit.LogSomething(ctx.User, @"+filter", String.Join(' ', words));
-                
-                FilterSystem.Save();
             }
         }
 
@@ -107,10 +107,10 @@ namespace FluffyEars.Commands
                 if (sb_fail.Length > 0)
                     deb.AddField("Not removed:", sb_fail.Remove(sb_fail.Length - 2, 2).ToString());
 
+                FilterSystem.Save();
+
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
                 await SelfAudit.LogSomething(ctx.User, @"-filter", String.Join(' ', words));
-
-                FilterSystem.Save();
             }
         }
 
