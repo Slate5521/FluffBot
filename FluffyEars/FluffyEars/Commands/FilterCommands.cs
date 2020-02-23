@@ -59,7 +59,7 @@ namespace FluffyEars.Commands
                     deb.AddField(@"Not added:", sb_fail.Remove(sb_fail.Length - 2, 2).ToString());
 
                 FilterSystem.Save();
-
+                
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
                 await SelfAudit.LogSomething(ctx.User, @"+filter", String.Join(' ', words));
             }
