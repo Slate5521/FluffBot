@@ -91,7 +91,7 @@ namespace FluffyEars.BadWords
         public static List<string> GetBadWords(string message)
         {
             List<string> returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
-
+                
             if (filterList.Count > 0)
             {
                 MatchCollection mc = Regex.Matches(message, regexPattern, regexOptions);

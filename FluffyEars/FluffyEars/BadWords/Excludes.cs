@@ -24,6 +24,7 @@ jgs   {_\______\-'\__\_\";
         {
             // Default values in this case is an empty list.
             excludeList = new List<string>();
+            ReorganizeList();
             Save();
         }
 
@@ -35,8 +36,17 @@ jgs   {_\______\-'\__\_\";
         public static void Load()
         {
             if (CanLoad())
+            {
                 excludeList = saveFile.Load<List<string>>(lockObj);
+                ReorganizeList();
+            }
             else Default();
+        }
+
+        private static void ReorganizeList()
+        {
+            excludeList.Sort();
+            excludeList.Reverse();
         }
 
         /// <summary>Check if a word is in the exclude list.</summary>
@@ -58,19 +68,30 @@ jgs   {_\______\-'\__\_\";
                     {
                         int excludedLen = excludedWord.Length;
 
+                        string stringymathingy = message.ToLower().Substring(badWordIndex, excludedLen);
+
                         // What this does is it checks if the suspected bad word is within the boundaries of the excluded word. If it is, then we 
-                        // know the word is excluded! Hooray.
-                        returnVal = badWordIndex >= excludedIndex &&
-                                    badWordIndex + badWordLen <= excludedIndex + excludedLen;
+                        // check if the word is an excluded word.
+                        returnVal = badWordIndex <= message.Length &&
+                                    badWordIndex + excludedLen <= message.Length &&
+                                    excludeList.Contains(message.ToLower().Substring(badWordIndex, excludedLen));
                     }
                 }
             }
 
             return returnVal;
         }
-        public static void AddWord(string word) => excludeList.Add(word.ToLower());
-        public static void RemoveWord(string word) => excludeList.Remove(word.ToLower());
-        public static List<string> GetWords() => excludeList;
+        public static void AddWord(string word)
+        {
+            excludeList.Add(word.ToLower());
+            ReorganizeList();
+        }
+        public static void RemoveWord(string word)
+        {
+            excludeList.Remove(word.ToLower());
+            ReorganizeList();
+        }
+            public static List<string> GetWords() => excludeList;
         public static int GetWordCount() => excludeList.Count;
     }
 }
