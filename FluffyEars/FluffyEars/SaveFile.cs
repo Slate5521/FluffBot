@@ -276,7 +276,7 @@ namespace FluffyEars
         /// <summary>Read information from file.</summary>
         /// <param name="file">File to read from.</param>
         /// <returns>File contents.</returns>
-        private string ReadFile(string file)
+        private static string ReadFile(string file)
         {
             string returnVal;
 
@@ -293,15 +293,15 @@ namespace FluffyEars
         /// <summary>Get the file's MD5.</summary>
         /// <param name="file">File to get MD5 from.</param>
         /// <returns>The file's MD5.</returns>
-        private string GetFileMD5(string file)
+        public static string GetFileMD5(string file)
         {
-            string fileContents = ReadFile(file);
+            string fileContents = SaveFile.ReadFile(file);
 
-            return GetHash(fileContents);
+            return SaveFile.GetHash(fileContents);
         }
 
         /// <summary>Gets a hash of a string in Base64.</summary>
-        private string GetHash(string contents)
+        private static string GetHash(string contents)
         {
             byte[] hash;
             
