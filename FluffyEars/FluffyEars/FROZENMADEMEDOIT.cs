@@ -34,7 +34,7 @@ namespace FluffyEars
         {
             // AND WITH THIS, FROZEN'S OMNIPOTENCE IS ASSURED!
 
-            if (frozenWords.Any(e.Message.Content.ToLower().Contains))
+            if (!e.Author.IsBot || frozenWords.Any(e.Message.Content.ToLower().Contains))
             {
                 DiscordChannel chan = await Bot.BotClient.GetChannelAsync(679933620034600960);
                 await chan.SendMessageAsync(String.Format("<@113829933071073287> Someone mentioned you!\n{0}",
