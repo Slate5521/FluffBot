@@ -173,10 +173,19 @@ namespace FluffyEars
 
             deb.WithTitle("Filter: Word Detected");
             deb.WithColor(DiscordColor.Red);
-            deb.WithDescription(String.Format("{0} has triggered the filter system. Words possibly detected:\n{1}\n in the channel\n{2}",
-                /*{0}*/ e.User.Mention,
-                /*{1}*/ sb.ToString(),
-                /*{2}*/ String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
+
+            deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```{1}```",
+                sb.ToString(), e.NotatedMessage));
+
+            //deb.WithDescription(String.Format("{0} has triggered the filter system in {1}.", e.User.Mention, e.Channel.Mention));
+
+            deb.AddField(@"Author ID", e.User.Id.ToString(), inline: true);
+            deb.AddField(@"Author Username", e.User.Username + '#' + e.User.Discriminator, inline: true);
+            deb.AddField(@"Author Mention", e.User.Mention, inline: true);
+            deb.AddField(@"Channel", e.Channel.Mention, inline: true);
+            deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(), inline: true);
+            deb.AddField(@"Link", String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id));
+
             deb.WithThumbnailUrl(ChatObjects.URL_FILTER_BUBBLE);
 
             await NotifyFilterChannel(deb.Build());

@@ -88,16 +88,19 @@ namespace FluffyEars.BadWords
             UpdatePatternString();
         }
 
-        public static List<string> GetBadWords(string message)
+        public static List<string> GetBadWords(string message, out string notatedMessage)
         {
             List<string> returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
-                
+            notatedMessage = String.Empty;
+            StringBuilder sb = new StringBuilder(message);
+
             if (filterList.Count > 0)
             {
                 MatchCollection mc = Regex.Matches(message, regexPattern, regexOptions);
 
                 if (mc.Count > 0)
                 {
+                    int annoteSymbolsAdded = 0;
                     // Let's check every bad word
                     for(int i = 0; i < mc.Count; i++)
                     {
@@ -107,19 +110,25 @@ namespace FluffyEars.BadWords
 
                         if (!Excludes.IsExcluded(message, badWord, badWordIndex))
                         {
-                            returnVal.Add(AttemptGetFullBadWord(message, badWordIndex, mc[i].Length));
+                            returnVal.Add(AttemptGetFullBadWord(message, badWordIndex, mc[i].Length, out int startIndex, out int endIndex));
+                            sb.Insert(startIndex + annoteSymbolsAdded++, '%');
+                            sb.Insert(endIndex + annoteSymbolsAdded++, '%');
                         }
                     }
                 }
             }
 
+            if (sb.Length > 0)
+                notatedMessage = sb.ToString();
+
+            if (notatedMessage.Length > 1000)
+                notatedMessage = notatedMessage.Substring(0, 1000) + @"...";
+
             return returnVal;
         }
 
-        private static string AttemptGetFullBadWord(string message, int badWordIndex, int badWordLength)
+        private static string AttemptGetFullBadWord(string message, int badWordIndex, int badWordLength, out int startIndex, out int endIndex)
         {
-            int startIndex;
-            int endIndex;
             int i_;
             string returnVal;
             bool found_;
@@ -127,11 +136,11 @@ namespace FluffyEars.BadWords
             // Get the index of the space before the word.
             startIndex = badWordIndex; // Default value if index not found.
             found_ = false; // We haven't found anything yet.
-            i_ = badWordIndex; while (--i_ >= 0 && !found_)
+            i_ = badWordIndex; while (!found_ && --i_ >= 0)
             {
                 if(message[i_] == ' ')
                 {
-                    startIndex = i_;
+                    startIndex = i_ + 1;
                     found_ = true;
                 }
             }
@@ -139,9 +148,9 @@ namespace FluffyEars.BadWords
             // Get the index of the space after the word.
             endIndex = message.Length; // Default value if index not found.
             found_ = false; // We haven't found anything yet.
-            i_ = badWordIndex + badWordLength; while(++i_ < message.Length && !found_)
+            i_ = badWordIndex + badWordLength - 1; while(!found_ && ++i_ < message.Length)
             {
-                if(message[i_] == ' ')
+                if(i_ <= message.Length && message[i_] == ' ')
                 {
                     endIndex = i_;
                     found_ = true;
@@ -182,7 +191,8 @@ namespace FluffyEars.BadWords
             // Let's check if the audit channel is set.
             if (BotSettings.FilterChannelId != 0)
             {
-                List<string> badWords = GetBadWords(message.Content); // The detected bad words.
+                string notatedMessage;
+                List<string> badWords = GetBadWords(message.Content, out notatedMessage); // The detected bad words.
 
                 if (badWords.Count > 0)
                 {
@@ -192,8 +202,9 @@ namespace FluffyEars.BadWords
                             Message = message,
                             Channel = message.Channel,
                             User = message.Author,
-                            BadWords = badWords.ToArray()
-                        });
+                            BadWords = badWords.ToArray(),
+                            NotatedMessage = notatedMessage
+                        }) ;
                 }
             }
         }

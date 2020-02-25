@@ -13,5 +13,6 @@ namespace FluffyEars.BadWords
         public DiscordChannel Channel;
         /// <summary>The bad words found by the filter.</summary>
         public string[] BadWords;
+        public string NotatedMessage;
     }
 }

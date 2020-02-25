@@ -68,7 +68,10 @@ jgs   {_\______\-'\__\_\";
 
                     int foundExcludeIndex = 0, scanIndex = 0; do
                     {
-                        foundExcludeIndex = msgOriginal.IndexOf(excludedWord, scanIndex);
+                        if (scanIndex <= msgOriginal.Length)
+                            foundExcludeIndex = msgOriginal.IndexOf(excludedWord, scanIndex);
+                        else
+                            foundExcludeIndex = -1;
 
                         if (foundExcludeIndex != -1)
                         {
