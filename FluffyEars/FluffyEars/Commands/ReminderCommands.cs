@@ -87,7 +87,12 @@ namespace FluffyEars.Commands
                 }
 
                 // Now we have our message string. Let's see if there are any mentions.
-                ulong[] mentionIds = ctx.Message.MentionedUsers.Select(a => a.Id).ToArray();
+                IEnumerable<ulong> mentionIds =
+                    from mentionId in ctx.Message.MentionedUsers.Select(a => a.Id).Distinct()
+                    where mentionId != 669347771312111619 && // Do not allow mentions of the bot,
+                          mentionId != 676710243878830090 && // the dev bot,
+                          mentionId != ctx.Message.Author.Id // or the user who called the function.
+                    select mentionId;
 
 
                 StringBuilder sb = new StringBuilder();
@@ -100,14 +105,11 @@ namespace FluffyEars.Commands
                     Time = dto.ToUnixTimeMilliseconds(),
                     User = ctx.Member.Id,
                     Channel = ctx.Channel.Id,
-                    UsersToNotify = mentionIds
+                    UsersToNotify = mentionIds.ToArray()
                 };
 
                 foreach (ulong mentionId in mentionIds)
-                {
-                    if (mentionId != 669347771312111619)
-                        sb.Append(String.Format("<@{0}> ", mentionId));
-                }
+                    sb.Append(String.Format("<@{0}> ", mentionId));
 
                 deb.WithTitle(@"Notification");
                 deb.AddField(@"User", ctx.Member.Mention);
