@@ -96,21 +96,65 @@ namespace FluffyEars.BadWords
             {
                 MatchCollection mc = Regex.Matches(message, regexPattern, regexOptions);
 
-                // Great, we found something!
                 if (mc.Count > 0)
                 {
-                    foreach (Match match in mc)
+                    // Let's check every bad word
+                    for(int i = 0; i < mc.Count; i++)
                     {
-                        string possibleBadWord = match.Value;
+                        Match match = mc[i];
+                        string badWord = match.Value;
+                        int badWordIndex = match.Index;
 
-                        if (!Excludes.IsExcluded(message, match.Index, match.Length))
-                            returnVal.Add(possibleBadWord);
+                        if (!Excludes.IsExcluded(message, badWord, badWordIndex))
+                        {
+                            returnVal.Add(AttemptGetFullBadWord(message, badWordIndex, mc[i].Length));
+                        }
                     }
                 }
             }
 
             return returnVal;
         }
+
+        private static string AttemptGetFullBadWord(string message, int badWordIndex, int badWordLength)
+        {
+            int startIndex;
+            int endIndex;
+            int i_;
+            string returnVal;
+            bool found_;
+
+            // Get the index of the space before the word.
+            startIndex = badWordIndex; // Default value if index not found.
+            found_ = false; // We haven't found anything yet.
+            i_ = badWordIndex; while (--i_ >= 0 && !found_)
+            {
+                if(message[i_] == ' ')
+                {
+                    startIndex = i_;
+                    found_ = true;
+                }
+            }
+
+            // Get the index of the space after the word.
+            endIndex = badWordIndex + badWordLength; // Default value if index not found.
+            found_ = false; // We haven't found anything yet.
+            i_ = badWordIndex + badWordLength; while(++i_ <= message.Length && !found_)
+            {
+                if(message[i_] == ' ')
+                {
+                    endIndex = i_;
+                    found_ = true;
+                }
+            }
+
+            if (badWordIndex >= 0 && badWordIndex + badWordLength <= message.Length)
+                returnVal = message.Substring(startIndex, endIndex - startIndex);
+            else returnVal = message.Substring(badWordIndex, badWordLength);
+
+            return returnVal;
+        }
+
         static void OnFilterTriggered(FilterEventArgs e)
         {
             FilterTriggeredEventHandler handler = FilterTriggered;

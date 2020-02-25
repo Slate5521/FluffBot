@@ -51,36 +51,72 @@ jgs   {_\______\-'\__\_\";
 
         /// <summary>Check if a word is in the exclude list.</summary>
         public static bool IsExcluded(string word) => excludeList.Contains(word.ToLower());
-        public static bool IsExcluded(string message, int badWordIndex, int badWordLen)
+        public static bool IsExcluded(string msgOriginal, string badWord, int badWordIndex)
         {
+            // The default return value is false because if there are no excluded words, then nothing can be excluded.
             bool returnVal = false;
 
-            foreach(string excludedWord_ in excludeList)
+            if (excludeList.Count > 0) 
             {
-                string excludedWord = excludedWord_.ToLower();
-
-                if (!returnVal)
+                // Let's loop through every excluded word to check them against the list.
+                foreach (string excludedWord in excludeList)
                 {
-                    int excludedIndex = message.ToLower().IndexOf(excludedWord);
+                    if (returnVal)
+                        break; // NON-SESE BREAK POINT! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! 
 
-                    // We've found an excluded word.
-                    if(excludedIndex != -1)
+                    int excludedWordLength = excludedWord.Length;
+
+                    int foundExcludeIndex = 0, scanIndex = 0; do
                     {
-                        int excludedLen = excludedWord.Length;
+                        foundExcludeIndex = msgOriginal.IndexOf(excludedWord, scanIndex);
 
-                        string stringymathingy = message.ToLower().Substring(badWordIndex, excludedLen);
+                        if (foundExcludeIndex != -1)
+                        {
+                            // A && B && C && D
+                            // (A) the bad word starts at or after the found excluded word.
+                            // (B) the bad word ends at or before the found excluded word ends.
+                            // (C) exception protect: let's make sure the substring we want to get next is within bounds of the message.
+                            // (D) the found excluded word contains the bad word.
+                            returnVal = badWordIndex >= foundExcludeIndex &&
+                                        badWordIndex + badWord.Length <= foundExcludeIndex + excludedWordLength &&
+                                        foundExcludeIndex + excludedWordLength <= msgOriginal.Length &&
+                                        msgOriginal.Substring(foundExcludeIndex, excludedWordLength).IndexOf(excludedWord) != -1;
 
-                        // What this does is it checks if the suspected bad word is within the boundaries of the excluded word. If it is, then we 
-                        // check if the word is an excluded word.
-                        returnVal = badWordIndex <= message.Length &&
-                                    badWordIndex + excludedLen <= message.Length &&
-                                    excludeList.Contains(message.ToLower().Substring(badWordIndex, excludedLen));
-                    }
+                            if(!returnVal)
+                                scanIndex += foundExcludeIndex + excludedWordLength;
+                        }
+
+                    } while (foundExcludeIndex != -1 && !returnVal);
+
                 }
             }
 
             return returnVal;
         }
+
+        /// <summary>
+        /// Returns a list of the indexes of all occurrences of a substring in this string.
+        /// </summary>
+        /// <param name="word"></param>
+        private static List<int> AllIndexesOf(this string str, string word, int startIndex)
+        {
+            List<int> returnVal = new List<int>();
+
+            int i = 0; do
+            {
+                i = str.IndexOf(word, i);
+                
+                if (i != -1)
+                {
+                    returnVal.Add(i);
+                    // Every time we find a word, we increment by its length so we can skip that word.
+                    i += word.Length;
+                }
+            } while (i != -1);
+
+            return returnVal;
+        }
+
         public static void AddWord(string word)
         {
             excludeList.Add(word.ToLower());
