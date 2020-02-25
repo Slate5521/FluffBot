@@ -179,7 +179,7 @@ namespace FluffyEars.Commands
                 if (!Excludes.IsExcluded(word))
                 {
                     await ctx.Channel.SendMessageAsync(
-                        ChatObjects.GetErrMessage(@"Cannot un-exclude that word. It's not already excluded."));
+                        ChatObjects.GetErrMessage(@"Cannot un-exclude that word. It's not already excluded..."));
                 }
                 else
                 {
@@ -188,7 +188,7 @@ namespace FluffyEars.Commands
                     Excludes.Save();
 
                     await ctx.Channel.SendMessageAsync(
-                        ChatObjects.GetSuccessMessage(@"I removed that word from exclusion."));
+                        ChatObjects.GetSuccessMessage(@"I removed that word from exclusion!"));
                     await SelfAudit.LogSomething(ctx.User, @"-filterexclude", String.Join(' ', word));
 
                 }
