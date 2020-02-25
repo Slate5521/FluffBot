@@ -137,9 +137,9 @@ namespace FluffyEars.BadWords
             }
 
             // Get the index of the space after the word.
-            endIndex = badWordIndex + badWordLength; // Default value if index not found.
+            endIndex = message.Length; // Default value if index not found.
             found_ = false; // We haven't found anything yet.
-            i_ = badWordIndex + badWordLength; while(++i_ <= message.Length && !found_)
+            i_ = badWordIndex + badWordLength; while(++i_ < message.Length && !found_)
             {
                 if(message[i_] == ' ')
                 {
