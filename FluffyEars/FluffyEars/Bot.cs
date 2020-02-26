@@ -162,10 +162,7 @@ namespace FluffyEars
 
             foreach(string str in e.BadWords)
             {
-                sb.Append(str);
-
-                if(!e.BadWords.Last().Equals(str))
-                    sb.Append(@", ");
+                sb.Append(str + ' ');
             }
 
             // DEB!
