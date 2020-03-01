@@ -31,7 +31,7 @@ namespace FluffyEars
             sb.AppendLine(newValue);
             sb.Append(@"------------------------------------------------------");
 
-            await auditChan.SendMessageAsync(sb.ToString());
+            auditChan.SendMessageAsync(sb.ToString());
         }
     }
 }

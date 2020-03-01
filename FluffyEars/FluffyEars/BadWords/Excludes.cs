@@ -55,6 +55,7 @@ jgs   {_\______\-'\__\_\";
         {
             // The default return value is false because if there are no excluded words, then nothing can be excluded.
             bool returnVal = false;
+            string msgLwr = msgOriginal.ToLower();
 
             if (excludeList.Count > 0) 
             {
@@ -69,7 +70,7 @@ jgs   {_\______\-'\__\_\";
                     int foundExcludeIndex = 0, scanIndex = 0; do
                     {
                         if (scanIndex <= msgOriginal.Length)
-                            foundExcludeIndex = msgOriginal.IndexOf(excludedWord, scanIndex);
+                            foundExcludeIndex = msgLwr.IndexOf(excludedWord, scanIndex);
                         else
                             foundExcludeIndex = -1;
 
@@ -83,7 +84,7 @@ jgs   {_\______\-'\__\_\";
                             returnVal = badWordIndex >= foundExcludeIndex &&
                                         badWordIndex + badWord.Length <= foundExcludeIndex + excludedWordLength &&
                                         foundExcludeIndex + excludedWordLength <= msgOriginal.Length &&
-                                        msgOriginal.Substring(foundExcludeIndex, excludedWordLength).IndexOf(excludedWord) != -1;
+                                        msgLwr.Substring(foundExcludeIndex, excludedWordLength).IndexOf(excludedWord) != -1;
 
                             if(!returnVal)
                                 scanIndex += foundExcludeIndex + excludedWordLength;
