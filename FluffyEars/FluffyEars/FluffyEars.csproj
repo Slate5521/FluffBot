@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -10,9 +10,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DSharpPlus" Version="3.2.3" />
-    <PackageReference Include="DSharpPlus.CommandsNext" Version="3.2.3" />
-    <PackageReference Include="DSharpPlus.Interactivity" Version="3.2.3" />
+    <Reference Include="DSharpPlus">
+      <HintPath>..\..\..\DSharpPlus\DSharpPlus\obj\Release\netstandard2.0\DSharpPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="DSharpPlus.CommandsNext">
+      <HintPath>..\..\..\DSharpPlus\DSharpPlus.CommandsNext\bin\Release\netstandard2.0\DSharpPlus.CommandsNext.dll</HintPath>
+    </Reference>
+    <Reference Include="DSharpPlus.Interactivity">
+      <HintPath>..\..\..\DSharpPlus\DSharpPlus.Interactivity\obj\Release\netstandard2.0\DSharpPlus.Interactivity.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

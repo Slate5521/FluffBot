@@ -21,7 +21,7 @@ namespace FluffyEars
         /// <summary>The bot client.</summary>
         public static DiscordClient BotClient;
         /// <summary>CommandNextModule</summary>
-        public CommandsNextModule Commands;
+        public CommandsNextExtension Commands;
 
         /// <summary>Start this shit up!</summary>
         public async Task RunAsync()
