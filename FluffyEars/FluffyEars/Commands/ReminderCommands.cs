@@ -15,11 +15,13 @@ using System.Text.RegularExpressions;
 
 namespace FluffyEars.Commands
 {
-    class ReminderCommands : BaseModule
+    class ReminderCommands : BaseCommandModule
     {
         static Regex DateRegex
             = new Regex(@"(\d+)\s?(months?|days?|weeks?|wks?|hours?|hrs?|minutes?|mins?)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
+
+        public ReminderCommands() { }
 
         [Command("+reminder")]
         public async Task AddReminder(CommandContext ctx)
@@ -269,7 +271,5 @@ namespace FluffyEars.Commands
                 }
             }
         }
-
-        protected override void Setup(DiscordClient client) { }
     }
 }

@@ -13,6 +13,8 @@ using FluffyEars.Reminders;
 using FluffyEars.BadWords;
 using System.Collections.Generic;
 using System.Linq;
+using DSharpPlus.CommandsNext.Exceptions;
+using Newtonsoft.Json;
 
 namespace FluffyEars
 {
@@ -26,10 +28,96 @@ namespace FluffyEars
         /// <summary>Start this shit up!</summary>
         public async Task RunAsync()
         {
-            string authKey = String.Empty;
-
-            // --------------------
             // Load shit.
+            string authKey = LoadConfig();
+
+            DiscordConfiguration botConfig = new DiscordConfiguration
+            {
+                Token = authKey,
+                TokenType = TokenType.Bot,
+                AutoReconnect = true,
+                UseInternalLogHandler = true,
+                LogLevel = LogLevel.Critical | LogLevel.Debug | LogLevel.Error | LogLevel.Info | LogLevel.Warning,
+            };
+
+            BotClient = new DiscordClient(botConfig);
+
+            var commandConfig = new CommandsNextConfiguration()
+            {
+                //CaseSensitive = false,
+                //EnableMentionPrefix = true,
+                //EnableDefaultHelp = false,
+                //EnableDms = true
+
+                // let's use the string prefix defined in config.json
+                StringPrefixes = new[] { "!", "@" },
+
+                // enable responding in direct messages
+                EnableDms = true,
+
+                // enable mentioning the bot as a command prefix
+                EnableMentionPrefix = true
+            };
+
+            Commands = BotClient.UseCommandsNext(commandConfig);
+
+            Commands.CommandExecuted += Commands_CommandExecuted;
+            Commands.CommandErrored += Commands_CommandErrored;
+
+            Commands.RegisterCommands<Commands.ConfigCommands>();
+            Commands.RegisterCommands<Commands.FilterCommands>();
+            Commands.RegisterCommands<Commands.ReminderCommands>();
+
+            //BotClient.MessageCreated += BotClient_MessageCreated;FROZENZEZE
+
+            BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
+            BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
+
+            BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
+            BotClient.ClientErrored += BotClient_ClientErrored;
+            BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
+
+            BotClient.Ready += BotClient_Ready;
+
+            FilterSystem.FilterTriggered += BotClient_FilterTriggered;
+
+            await BotClient.ConnectAsync();
+            await Task.Delay(-1);
+        }
+
+        private Task Commands_CommandErrored(CommandErrorEventArgs e)
+        {
+            e.Context.Client.DebugLogger
+                .LogMessage(LogLevel.Error, "FloppyEars", $"Exception: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+
+            return Task.CompletedTask;
+        }
+
+        private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
+        {
+            e.Context.Client.DebugLogger
+                .LogMessage(LogLevel.Info, "ExampleBot", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+
+            return Task.CompletedTask;
+        }
+
+        private async Task BotClient_Ready(ReadyEventArgs e)
+        {
+            try
+            {
+                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
+                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(214523379766525963),
+                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+            }
+            catch { }
+
+            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
+        }
+
+        private string LoadConfig()
+        {
+            string authKey = String.Empty;
 
             // Authkey
             Console.WriteLine(@"Loading bot config:");
@@ -48,13 +136,14 @@ namespace FluffyEars
 
             // Bot settings
 
-           Console.Write("\tSettings");
-            
-            if(BotSettings.CanLoad())
+            Console.Write("\tSettings");
+
+            if (BotSettings.CanLoad())
             {
                 BotSettings.Load();
                 Console.WriteLine("... Loaded!");
-            } else
+            }
+            else
             {
                 BotSettings.Default();
                 Console.WriteLine("... Not found. Loading default values.");
@@ -99,61 +188,7 @@ namespace FluffyEars
                 Console.WriteLine("... Not found. Instantiating default values.");
             }
 
-
-            DiscordConfiguration botConfig = new DiscordConfiguration
-            {
-                Token = authKey,
-                TokenType = TokenType.Bot,
-                AutoReconnect = true,
-                UseInternalLogHandler = true,
-                LogLevel = LogLevel.Critical | LogLevel.Debug | LogLevel.Error | LogLevel.Info | LogLevel.Warning,
-            };
-
-            BotClient = new DiscordClient(botConfig);
-
-            CommandsNextConfiguration commandConfig = new CommandsNextConfiguration()
-            {
-                CaseSensitive = false,
-                EnableMentionPrefix = true,
-                EnableDefaultHelp = false,
-                EnableDms = true
-            };
-
-            Commands = BotClient.UseCommandsNext(commandConfig);
-
-            Commands.RegisterCommands<Commands.ConfigCommands>();
-            Commands.RegisterCommands<Commands.FilterCommands>();
-            Commands.RegisterCommands<Commands.ReminderCommands>();
-
-            //BotClient.MessageCreated += BotClient_MessageCreated;FROZENZEZE
-
-            BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
-            BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
-
-            BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
-            BotClient.ClientErrored += BotClient_ClientErrored;
-            BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
-
-            BotClient.Ready += BotClient_Ready;
-
-            FilterSystem.FilterTriggered += BotClient_FilterTriggered;
-
-            await BotClient.ConnectAsync();
-            await Task.Delay(-1);
-        }
-
-        private async Task BotClient_Ready(ReadyEventArgs e)
-        {
-            try
-            {
-                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
-                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
-                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(214523379766525963),
-                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
-            }
-            catch { }
-
-            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
+            return authKey;
         }
 
         private async void BotClient_FilterTriggered(FilterEventArgs e)

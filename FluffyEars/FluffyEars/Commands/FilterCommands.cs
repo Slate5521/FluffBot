@@ -12,8 +12,10 @@ using FluffyEars.BadWords;
 
 namespace FluffyEars.Commands
 {
-    class FilterCommands : BaseModule
+    class FilterCommands : BaseCommandModule
     {
+        public FilterCommands() { }
+
         #region Word Filter
         /// <summary>Add bad word(s) to the bad word list.</summary>
         /// <param name="words">The supposed list.</param>
@@ -225,6 +227,5 @@ namespace FluffyEars.Commands
         }
 
         #endregion Word Filter
-        protected override void Setup(DiscordClient client) { }
     }
 }

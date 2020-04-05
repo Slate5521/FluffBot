@@ -188,7 +188,6 @@ namespace FluffyEars.Reminders
                     await Bot.BotClient.SendMessageAsync(
                         channel: chan,
                         content: sb.ToString(),
-                        tts: false,
                         embed: deb);
 
                     // Remove the reminder from the list.

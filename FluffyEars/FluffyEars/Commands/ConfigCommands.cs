@@ -13,10 +13,13 @@ using DSharpPlus.Entities;
 
 namespace FluffyEars.Commands
 {
-    class ConfigCommands : BaseModule
+    class ConfigCommands : BaseCommandModule
     {
+        public ConfigCommands() { }
+
         [Command("setfilterchan")]
-        public async Task SetFilterChannel(CommandContext ctx, DiscordChannel chan)
+        public async Task SetFilterChannel(CommandContext ctx, 
+            [Description("The channel to set the filter logs to.")] DiscordChannel chan)
         {
             // Check if the user can use these sorts of commands.
             if (ctx.Member.GetRole().IsBotManagerOrHigher())
@@ -30,7 +33,7 @@ namespace FluffyEars.Commands
                         ChatObjects.GetErrMessage(@"Unable to set filter channel. That's already the channel..."));
                     return;
                 } 
-                if (!ctx.Guild.Channels.Contains(chan))
+                if (!ctx.Guild.Channels.ContainsKey(chan.Id))
                 {   // Channel does not exist.
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"Unable to set filter channel. Does not exist or is not in this guild..."));
@@ -50,8 +53,10 @@ namespace FluffyEars.Commands
         }
 
         [Command("+chan"),
-            Aliases("+channel")]
-        public async Task IncludeChannel(CommandContext ctx, DiscordChannel chan)
+            Aliases("+channel"),
+            Description("Remove a channel from exclusion, allowing it to trigger the filter system.")]
+        public async Task IncludeChannel(CommandContext ctx,
+            [Description("Channel to exclude.")] DiscordChannel chan)
         {
             // Check if the user can use config commands.
             if (ctx.Member.GetRole().IsBotManagerOrHigher())
@@ -65,7 +70,7 @@ namespace FluffyEars.Commands
                         ChatObjects.GetErrMessage(@"Unable to un-exclude channel. This channel is not already excluded..."));
                     return;
                 }
-                if(!ctx.Guild.Channels.Contains(chan))
+                if(!ctx.Guild.Channels.ContainsKey(chan.Id))
                 {   // This channel is not in the guild.
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"Unable to un-exclude channel. This channel does not exist in this server..."));
@@ -83,8 +88,10 @@ namespace FluffyEars.Commands
         }
 
         [Command("-chan"),
-            Aliases("-channel")]
-        public async Task ExcludeChannel(CommandContext ctx, DiscordChannel chan)
+            Aliases("-channel"),
+            Description("Add a channel to exclusion, preventing it from triggering the filter system.")]
+        public async Task ExcludeChannel(CommandContext ctx,
+            [Description("Exclude a channel")]DiscordChannel chan)
         {
             // Check if the user can use config commands.
             if (ctx.Member.GetRole().IsBotManagerOrHigher())
@@ -98,7 +105,7 @@ namespace FluffyEars.Commands
                         ChatObjects.GetErrMessage(@"Unable to uexclude channel. This channel is already excluded..."));
                     return;
                 }
-                if (!ctx.Guild.Channels.Contains(chan))
+                if (!ctx.Guild.Channels.ContainsKey(chan.Id))
                 {   // This channel is not in the guild.
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"Unable to exclude channel. This channel does not exist in this server..."));
@@ -116,7 +123,8 @@ namespace FluffyEars.Commands
             }
         }
 
-        [Command("chanexcludes")]
+        [Command("chanexcludes"),
+            Description("List the excluded channels.")]
         public async Task ListExcludes(CommandContext ctx)
         {
             if (ctx.Member.GetRole().IsCHOrHigher())
@@ -151,7 +159,5 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(embed: deb);
             }
         }
-
-        protected override void Setup(DiscordClient client) { }
     }
 }
