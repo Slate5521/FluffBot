@@ -44,19 +44,10 @@ namespace FluffyEars
 
             var commandConfig = new CommandsNextConfiguration()
             {
-                //CaseSensitive = false,
-                //EnableMentionPrefix = true,
-                //EnableDefaultHelp = false,
-                //EnableDms = true
-
-                // let's use the string prefix defined in config.json
-                StringPrefixes = new[] { "!", "@" },
-
-                // enable responding in direct messages
-                EnableDms = true,
-
-                // enable mentioning the bot as a command prefix
-                EnableMentionPrefix = true
+                CaseSensitive = false,
+                EnableMentionPrefix = true,
+                EnableDefaultHelp = false,
+                EnableDms = true
             };
 
             Commands = BotClient.UseCommandsNext(commandConfig);
@@ -67,8 +58,6 @@ namespace FluffyEars
             Commands.RegisterCommands<Commands.ConfigCommands>();
             Commands.RegisterCommands<Commands.FilterCommands>();
             Commands.RegisterCommands<Commands.ReminderCommands>();
-
-            //BotClient.MessageCreated += BotClient_MessageCreated;FROZENZEZE
 
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
