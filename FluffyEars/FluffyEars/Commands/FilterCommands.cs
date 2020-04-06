@@ -63,7 +63,6 @@ namespace FluffyEars.Commands
                 FilterSystem.Save();
                 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
-                await SelfAudit.LogSomething(ctx.User, @"+filter", String.Join(' ', words));
             }
         }
 
@@ -112,7 +111,6 @@ namespace FluffyEars.Commands
                 FilterSystem.Save();
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
-                await SelfAudit.LogSomething(ctx.User, @"-filter", String.Join(' ', words));
             }
         }
 
@@ -166,7 +164,6 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(
                     ChatObjects.GetSuccessMessage(
                         String.Format("I excluded the word {0}!", word)));
-                await SelfAudit.LogSomething(ctx.User, @"+filterexclude", String.Join(' ', word));
 
             }
         }
@@ -191,7 +188,6 @@ namespace FluffyEars.Commands
 
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetSuccessMessage(@"I removed that word from exclusion!"));
-                    await SelfAudit.LogSomething(ctx.User, @"-filterexclude", String.Join(' ', word));
 
                 }
             }

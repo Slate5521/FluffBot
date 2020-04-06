@@ -76,16 +76,23 @@ namespace FluffyEars
 
         private Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
-            e.Context.Client.DebugLogger
-                .LogMessage(LogLevel.Error, "FloppyEars", $"Exception: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            if (!(e.Exception is CommandNotFoundException) &&
+                !(e.Exception is ChecksFailedException))
+            {
+                e.Context.Client.DebugLogger
+                    .LogMessage(LogLevel.Error, "FloppyEars", $"Exception: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+            }
 
             return Task.CompletedTask;
         }
 
         private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
+            string baseString = $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'";
             e.Context.Client.DebugLogger
-                .LogMessage(LogLevel.Info, "ExampleBot", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+                .LogMessage(LogLevel.Info, "FloppyEars", baseString, DateTime.Now);
+
+            SelfAudit.LogSomething(e.Context.Member, baseString, e.Context.RawArgumentString).ConfigureAwait(false).GetAwaiter().GetResult();
 
             return Task.CompletedTask;
         }
@@ -100,8 +107,6 @@ namespace FluffyEars
                     ChatObjects.GetNeutralMessage(@"I'm a bunny."));
             }
             catch { }
-
-            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
         }
 
         private string LoadConfig()

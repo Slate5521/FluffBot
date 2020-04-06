@@ -24,7 +24,7 @@ namespace FluffyEars.Commands
         public ReminderCommands() { }
 
         [Command("+reminder")]
-        public async Task AddReminder(CommandContext ctx)
+        public async Task AddReminder(CommandContext ctx, params string[] paramsList)
         {
             if (ctx.Member.GetRole().IsCHOrHigher())
             {
@@ -128,7 +128,6 @@ namespace FluffyEars.Commands
                 ReminderSystem.Save();
 
                 await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
-                await SelfAudit.LogSomething(ctx.User, @"+reminder", String.Join('\n', msgString, dto.ToString()));
             }
         }
 
@@ -171,7 +170,6 @@ namespace FluffyEars.Commands
                 ReminderSystem.Save();
 
                 await ctx.Channel.SendMessageAsync(originalAuthorMention, false, deb);
-                await SelfAudit.LogSomething(ctx.User, @"-reminder", String.Join('\n', originalAuthorMention, dto.ToString(), reminderId, reminderToRemove.Text));
             }
         }
 

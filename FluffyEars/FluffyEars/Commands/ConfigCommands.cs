@@ -48,7 +48,6 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(
                     ChatObjects.GetSuccessMessage(
                         String.Format("Filter channel set to {0}!", chan.Mention)));
-                await SelfAudit.LogSomething(ctx.User, @"filter channel", chan.Name);
             }
         }
 
@@ -83,7 +82,6 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(
                     ChatObjects.GetSuccessMessage(
                         String.Format("{0} was successfully un-excluded!", chan.Mention)));
-                await SelfAudit.LogSomething(ctx.User, @" + chan", chan.Name);
             }
         }
 
@@ -119,7 +117,6 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(
                     ChatObjects.GetSuccessMessage(
                         String.Format("{0} was successfully excluded!", chan.Mention)));
-                await SelfAudit.LogSomething(ctx.User, @"-chan", chan.Name);
             }
         }
 
