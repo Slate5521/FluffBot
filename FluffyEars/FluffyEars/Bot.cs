@@ -88,11 +88,10 @@ namespace FluffyEars
 
         private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
-            string baseString = $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'";
             e.Context.Client.DebugLogger
-                .LogMessage(LogLevel.Info, "FloppyEars", baseString, DateTime.Now);
+                .LogMessage(LogLevel.Info, "FloppyEars", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
 
-            SelfAudit.LogSomething(e.Context.Member, baseString, e.Context.RawArgumentString).ConfigureAwait(false).GetAwaiter().GetResult();
+            SelfAudit.LogSomething(e.Context.Member, e.Command.QualifiedName, e.Context.RawArgumentString).ConfigureAwait(false).GetAwaiter().GetResult();
 
             return Task.CompletedTask;
         }
