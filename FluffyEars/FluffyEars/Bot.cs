@@ -73,6 +73,20 @@ namespace FluffyEars
             await BotClient.ConnectAsync();
             await Task.Delay(-1);
         }
+        private async Task BotClient_Ready(ReadyEventArgs e)
+        {
+            try
+            {
+                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
+                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(214523379766525963),
+                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+            }
+            catch { }
+
+            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
+        }
+
 
         private Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
@@ -94,18 +108,6 @@ namespace FluffyEars
             SelfAudit.LogSomething(e.Context.Member, e.Command.QualifiedName, e.Context.RawArgumentString).ConfigureAwait(false).GetAwaiter().GetResult();
 
             return Task.CompletedTask;
-        }
-
-        private async Task BotClient_Ready(ReadyEventArgs e)
-        {
-            try
-            {
-                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
-                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
-                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(214523379766525963),
-                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
-            }
-            catch { }
         }
 
         private string LoadConfig()
@@ -181,49 +183,7 @@ namespace FluffyEars
                 Console.WriteLine("... Not found. Instantiating default values.");
             }
 
-<<<<<<< HEAD
             return authKey;
-=======
-
-            DiscordConfiguration botConfig = new DiscordConfiguration
-            {
-                Token = authKey,
-                TokenType = TokenType.Bot,
-                AutoReconnect = true,
-                UseInternalLogHandler = true,
-                LogLevel = LogLevel.Critical | LogLevel.Debug | LogLevel.Error | LogLevel.Info | LogLevel.Warning,
-            };
-
-            BotClient = new DiscordClient(botConfig);
-
-            CommandsNextConfiguration commandConfig = new CommandsNextConfiguration()
-            {
-                CaseSensitive = false,
-                EnableMentionPrefix = true,
-                EnableDefaultHelp = false,
-                EnableDms = true
-            };
-
-            Commands = BotClient.UseCommandsNext(commandConfig);
-
-            Commands.RegisterCommands<Commands.ConfigCommands>();
-            Commands.RegisterCommands<Commands.FilterCommands>();
-            Commands.RegisterCommands<Commands.ReminderCommands>();
-
-            //BotClient.MessageCreated += BotClient_MessageCreated;FROZENZEZE
-
-            BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
-            BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
-
-            BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
-            BotClient.ClientErrored += BotClient_ClientErrored;
-            BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
-
-            FilterSystem.FilterTriggered += BotClient_FilterTriggered;
-
-            await BotClient.ConnectAsync();
-            await Task.Delay(-1);
->>>>>>> master
         }
 
         private async void BotClient_FilterTriggered(FilterEventArgs e)
