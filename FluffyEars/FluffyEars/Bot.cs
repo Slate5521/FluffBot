@@ -58,6 +58,7 @@ namespace FluffyEars
             Commands.RegisterCommands<Commands.ConfigCommands>();
             Commands.RegisterCommands<Commands.FilterCommands>();
             Commands.RegisterCommands<Commands.ReminderCommands>();
+            Commands.RegisterCommands<Commands.RequestedCommands>();
 
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
