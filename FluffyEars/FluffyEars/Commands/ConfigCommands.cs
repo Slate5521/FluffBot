@@ -151,7 +151,7 @@ namespace FluffyEars.Commands
 
                 deb.Description = sb.ToString();
                 deb.WithColor(DiscordColor.LightGray);
-                deb.WithThumbnailUrl(ChatObjects.URL_SPEECH_BUBBLE);
+                deb.WithThumbnail(ChatObjects.URL_SPEECH_BUBBLE);
 
                 await ctx.Channel.SendMessageAsync(embed: deb);
             }

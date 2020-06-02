@@ -122,7 +122,7 @@ namespace FluffyEars.Commands
                     deb.AddField(@"Users to notify:", sb.ToString().TrimEnd());
 
                 deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
-                deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_GENERIC);
+                deb.WithThumbnail(ChatObjects.URL_REMINDER_GENERIC);
 
                 ReminderSystem.AddReminder(reminder);
                 ReminderSystem.Save();
@@ -164,7 +164,7 @@ namespace FluffyEars.Commands
                 deb.AddField(@"Notification Identifier", reminderId);
 
                 deb.WithColor(DiscordColor.LightGray);
-                deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_DELETED);
+                deb.WithThumbnail(ChatObjects.URL_REMINDER_DELETED);
 
                 ReminderSystem.RemoveReminder(reminderToRemove);
                 ReminderSystem.Save();
@@ -187,8 +187,8 @@ namespace FluffyEars.Commands
                     // DEB!
                     DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
                     deb.WithTitle(@"Reminder List Page " + page);
-                    deb.WithThumbnailUrl(@"https://i.imgur.com/lOqo2k8.png");
-                    debLength = deb.ThumbnailUrl.Length;
+                    deb.WithThumbnail(@"https://i.imgur.com/lOqo2k8.png");
+                    debLength = deb.Thumbnail.Url.Length;
 
                     // Get a list of reminders, but ordered descending by their remind date.
                     Reminder[] reminderList = ReminderSystem.GetReminders().OrderByDescending(a => a.Time).ToArray();
@@ -215,8 +215,8 @@ namespace FluffyEars.Commands
                             await ctx.Channel.SendMessageAsync(embed: deb);
                             deb = new DiscordEmbedBuilder();
                             deb.WithTitle(@"Reminder List Page " + ++page);
-                            deb.WithThumbnailUrl(ChatObjects.URL_REMINDER_GENERIC);
-                            debLength = deb.ThumbnailUrl.Length;
+                            deb.WithThumbnail(ChatObjects.URL_REMINDER_GENERIC);
+                            debLength = deb.Thumbnail.Url.Length;
                         }
 
                         deb.AddField(str1, str2);

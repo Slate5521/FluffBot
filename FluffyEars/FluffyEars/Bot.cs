@@ -214,7 +214,7 @@ namespace FluffyEars
             deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(), inline: true);
             deb.AddField(@"Link", String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id));
 
-            deb.WithThumbnailUrl(ChatObjects.URL_FILTER_BUBBLE);
+            deb.WithThumbnail(ChatObjects.URL_FILTER_BUBBLE);
 
             await NotifyFilterChannel(deb.Build());
         }

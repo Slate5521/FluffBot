@@ -52,7 +52,7 @@ namespace FluffyEars.Commands
                     Color = DiscordColor.LightGray
                 };
 
-                deb.WithThumbnailUrl(ChatObjects.URL_FILTER_ADD);
+                deb.WithThumbnail(ChatObjects.URL_FILTER_ADD);
 
                 // For each of these lists, we want to remove the last two characters, because every string will have an ", " at the end of it.
                 if (sb_success.Length > 0)
@@ -100,7 +100,7 @@ namespace FluffyEars.Commands
                     Color = DiscordColor.LightGray
                 };
 
-                deb.WithThumbnailUrl(ChatObjects.URL_FILTER_SUB);
+                deb.WithThumbnail(ChatObjects.URL_FILTER_SUB);
 
                 // For each of these lists, we want to remove the last two characters, because every string will have an ", " at the end of it.
                 if (sb_success.Length > 0)
@@ -130,8 +130,9 @@ namespace FluffyEars.Commands
                     Color = DiscordColor.LightGray,
                     Description = sb.ToString(),
                     Title = "FILTER WORD LIST",
-                    ThumbnailUrl = ChatObjects.URL_FILTER_GENERIC
                 };
+
+                deb.WithThumbnail(ChatObjects.URL_FILTER_GENERIC);
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
             }

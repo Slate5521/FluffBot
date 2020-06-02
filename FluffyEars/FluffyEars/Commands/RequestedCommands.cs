@@ -25,7 +25,7 @@ namespace FluffyEars.Commands
 
                     deb.WithColor(DiscordColor.Aquamarine);
                     deb.WithTitle("User Info");
-                    deb.WithThumbnailUrl(member.AvatarUrl);
+                    deb.WithThumbnail(member.AvatarUrl);
 
                     deb.AddField(@"Joined Discord:", 
                         GetDateString(GetJoinedDiscordTime(member.Id)));
