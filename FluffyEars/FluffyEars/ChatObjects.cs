@@ -31,8 +31,10 @@ namespace FluffyEars
 
         public static string GetMessageUrl(DiscordMessage message)
             => GetMessageUrl(message.Channel.GuildId, message.ChannelId, message.Id);
-
         public static string GetMessageUrl(ulong guildId, ulong channelId, ulong messageId)
             => $"https://discordapp.com/channels/{guildId}/{channelId}/{messageId}";
+
+        public static string GetMention(ulong userId)
+            => $"<@{userId}>";
     }
 }
