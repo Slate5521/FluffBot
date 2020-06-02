@@ -27,7 +27,7 @@ namespace FluffyEars
             if (arguments.Length > 0)
                 deb.AddField(@"Arguments", command, true);
 
-            deb.AddField(@"Link", messageUrl, true);
+            deb.AddField(@"Link", messageUrl);
 
             DiscordChannel auditChan = await Bot.BotClient.GetChannelAsync(AUDIT_CHAN);
 
