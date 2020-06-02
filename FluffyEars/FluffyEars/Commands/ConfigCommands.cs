@@ -156,5 +156,11 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(embed: deb);
             }
         }
+
+        [Command("startmessageenabled")]
+        public async Task StartMessageEnabled(CommandContext ctx, bool enabled)
+        {
+
+        }
     }
 }

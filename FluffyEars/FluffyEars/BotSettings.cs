@@ -27,13 +27,16 @@ namespace FluffyEars
             public ulong FilterChannelId;
             /// <summary>A list of channels that will not be checked.</summary>
             public List<ulong> ExcludedChannels;
+            /// <summary>Whether or not the bot should announce it has started.</summary>
+            public bool StartMessageEnabled;
         }
 
         /// <summary>Default bot settings.</summary>
         static botSettings_ DefaultBotSettings = new botSettings_
         {
             FilterChannelId = 674884683166646283,
-            ExcludedChannels = new List<ulong>()
+            ExcludedChannels = new List<ulong>(),
+            StartMessageEnabled = false,
         };
 
         /// <summary>Bot settings!</summary>
@@ -43,6 +46,12 @@ namespace FluffyEars
         {
             get => botSettings.FilterChannelId;
             set => botSettings.FilterChannelId = value;
+        }
+
+        public static bool StartMessageEnabled
+        {
+            get => botSettings.StartMessageEnabled;
+            set => botSettings.StartMessageEnabled = value;
         }
 
         // I will not be documenting these for the moment.

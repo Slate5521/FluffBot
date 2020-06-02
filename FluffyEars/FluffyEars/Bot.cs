@@ -11,10 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluffyEars.Reminders;
 using FluffyEars.BadWords;
-using System.Collections.Generic;
-using System.Linq;
 using DSharpPlus.CommandsNext.Exceptions;
-using Newtonsoft.Json;
 
 namespace FluffyEars
 {
@@ -62,7 +59,6 @@ namespace FluffyEars
 
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
-
             BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
@@ -76,16 +72,19 @@ namespace FluffyEars
         }
         private async Task BotClient_Ready(ReadyEventArgs e)
         {
-            try
+            if (BotSettings.StartMessageEnabled)
             {
-                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
-                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
-                await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(214523379766525963),
-                    ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+                try
+                {
+                    await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(326892498096095233),
+                        ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+                    await BotClient.SendMessageAsync(await BotClient.GetChannelAsync(214523379766525963),
+                        ChatObjects.GetNeutralMessage(@"I'm a bunny."));
+                }
+                catch { }
             }
-            catch { }
-
-            await SelfAudit.LogSomething(BotClient.CurrentUser, "startup", "n/a");
+            
+            await SelfAudit.LogSomething(Bot.BotClient.CurrentUser, @"n/a", @"The bot has started.", @"Startup", String.Empty, DiscordColor.IndianRed);
         }
 
 
@@ -106,7 +105,15 @@ namespace FluffyEars
             e.Context.Client.DebugLogger
                 .LogMessage(LogLevel.Info, "FloppyEars", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
 
-            SelfAudit.LogSomething(e.Context.Member, e.Command.QualifiedName, e.Context.RawArgumentString).ConfigureAwait(false).GetAwaiter().GetResult();
+            SelfAudit.LogSomething
+                (
+                    who: e.Context.Member, 
+                    messageUrl: ChatObjects.GetMessageUrl(e.Context.Message),
+                    description: @"A command was executed.",
+                    command: e.Command.QualifiedName,
+                    arguments: e.Context.Message.Content,
+                    color: DiscordColor.Yellow
+                ).ConfigureAwait(false).GetAwaiter().GetResult();
 
             return Task.CompletedTask;
         }
@@ -115,7 +122,8 @@ namespace FluffyEars
         {
             string authKey = String.Empty;
 
-            // Authkey
+            // =================
+            // Load Authkey
             Console.WriteLine(@"Loading bot config:");
 
             Console.Write("\tAuthkey");
@@ -130,6 +138,7 @@ namespace FluffyEars
             if (authKey != String.Empty)
                 Console.WriteLine(@"... Loaded.");
 
+            // =================
             // Bot settings
 
             Console.Write("\tSettings");
@@ -192,9 +201,7 @@ namespace FluffyEars
             StringBuilder sb = new StringBuilder();
 
             foreach(string str in e.BadWords)
-            {
                 sb.Append(str + ' ');
-            }
 
             // DEB!
             DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
@@ -212,7 +219,7 @@ namespace FluffyEars
             deb.AddField(@"Author Mention", e.User.Mention, inline: true);
             deb.AddField(@"Channel", e.Channel.Mention, inline: true);
             deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(), inline: true);
-            deb.AddField(@"Link", String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id));
+            deb.AddField(@"Link", ChatObjects.GetMessageUrl(e.Message));
 
             deb.WithThumbnail(ChatObjects.URL_FILTER_BUBBLE);
 
@@ -223,17 +230,18 @@ namespace FluffyEars
         {
             DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
 
-            await auditChannel.SendMessageAsync(
-                content: text == String.Empty ? null : text,
-                embed: embed).ConfigureAwait(false);
+            await auditChannel.SendMessageAsync
+                (
+                    content: text == String.Empty ? null : text,
+                    embed: embed
+                ).ConfigureAwait(false);
         }
 
         /// <summary>Some shit broke.</summary>
         private Task BotClient_ClientErrored(ClientErrorEventArgs e)
         {
             Console.WriteLine(e.EventName);
-            Console.WriteLine(e.Exception);
-            Console.WriteLine(e.Exception.InnerException);
+            Console.WriteLine(e.Exception.ToString());
 
             return Task.CompletedTask;
         }

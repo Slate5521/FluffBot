@@ -13,25 +13,25 @@ namespace FluffyEars
     {
         const ulong AUDIT_CHAN = 680252154631684110;
 
-        public static async Task LogSomething(DiscordUser who, string descriptor, string newValue)
+        public static async Task LogSomething(DiscordUser who, string messageUrl, string description, string command, string arguments, DiscordColor color)
         {
+            // DEB!
+            DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+            deb.WithColor(color);
+
+            deb.AddField(@"User", who.Mention, true);
+            deb.AddField(@"User ID", $"{who.Username}#{who.Discriminator}", true);
+            deb.AddField(@"Snowflake", who.Id.ToString(), true);
+            deb.AddField(@"Command", command, true);
+
+            if (arguments.Length > 0)
+                deb.AddField(@"Arguments", command, true);
+
+            deb.AddField(@"Link", messageUrl, true);
+
             DiscordChannel auditChan = await Bot.BotClient.GetChannelAsync(AUDIT_CHAN);
 
-            StringBuilder sb = new StringBuilder();
-
-            sb.Append(@"**");
-            sb.Append(who.Username);
-            sb.Append('#');
-            sb.Append(who.Discriminator);
-            sb.Append(@"** (");
-            sb.Append(who.Mention);
-            sb.Append(@") modified **");
-            sb.Append(descriptor);
-            sb.AppendLine(@"** with the value(s): ");
-            sb.AppendLine(newValue);
-            sb.Append(@"------------------------------------------------------");
-
-            auditChan.SendMessageAsync(sb.ToString());
+            await auditChan.SendMessageAsync(embed: deb.Build());
         }
     }
 }
