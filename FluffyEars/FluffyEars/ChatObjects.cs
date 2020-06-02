@@ -23,11 +23,11 @@ namespace FluffyEars
 
 
         public static string GetSuccessMessage(string message)
-            => SUCCESS_PREFIX + ' ' + message;
+            => $"{SUCCESS_PREFIX} {message}";
         public static string GetErrMessage(string message)
-            => ERROR_PREFIX + ' ' + message;
+            => $"{ERROR_PREFIX} {message}";
         public static string GetNeutralMessage(string message)
-            => NEUTRAL_PREFIX + ' ' + message;
+            => $"{NEUTRAL_PREFIX} {message}";
 
         public static string GetMessageUrl(DiscordMessage message)
             => GetMessageUrl(message.Channel.GuildId, message.ChannelId, message.Id);
