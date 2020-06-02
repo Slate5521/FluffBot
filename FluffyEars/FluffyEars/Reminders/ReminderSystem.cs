@@ -37,9 +37,8 @@ namespace FluffyEars.Reminders
      ''      ''''---'`    ''";
 
         private static List<Reminder> reminders_ = new List<Reminder>();    // All the reminders loaded into memory.
-        // All of the reminders from reminders_ but sorted. This is initially set to an empty array, and for the sake of not having a clusterfuck,
-        // I may change how this is initially defined or even switch it over to a Property wherein Linq is used to return the sorted array when
-        // called upon.
+        
+        /// <summary>Sorted list of reminders by chronological order.</summary>
         private static Reminder[] remindersSorted
         {
             get
@@ -76,12 +75,12 @@ namespace FluffyEars.Reminders
 
         /// <summary>Check if there are any Reminders in queue.</summary>
         /// <returns>True if there are notifications.</returns>
-        public static bool HasNotification()
+        public static bool HasNotificationsPending()
         {
             bool returnVal = false;
 
-            // If the arrays are null, there are no reminders.
-            if (remindersSorted is null || reminders_ is null)
+            // If the original reminder array is null or empty, there are no reminders.
+            if (reminders_ is null || reminders_.Count == 0)
                 returnVal = false;
             else
             {   // If there's anything in the array, there's a reminder.
@@ -100,10 +99,10 @@ namespace FluffyEars.Reminders
         {
             Reminder returnVal;
 
-            if (remindersSorted is null || remindersSorted.Length > 0)
+            if (!(remindersSorted is null) && remindersSorted.Length > 0)
                 returnVal = remindersSorted[0];
             else
-                throw new IndexOutOfRangeException();
+                throw new IndexOutOfRangeException("Tried to access sorter Reminder array with no values in it.");
 
             return returnVal;
         }
@@ -143,10 +142,12 @@ namespace FluffyEars.Reminders
                                                     // there should never be a Reminder object stored in memory that is the default object.
 
             // Check if there's any notifications. If there are, set the curReminder to the most present reminder before entering the loop.
-            if (ReminderSystem.HasNotification())
+            if (ReminderSystem.HasNotificationsPending())
                 curReminder = ReminderSystem.GetSoonestNotification();
             else return; // Note to self: I hate using return in the middle of a method due to optimization reasons. If I can change this later,
-                         // I would love that.
+                         // I would love that. 
+                         // Hello February me, this is 06/01/2020 me speaking. There is no reason to remove this return. 
+                         // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
 
             // Bit confusing what I'm doing here. So, basically...
             // 
@@ -155,7 +156,7 @@ namespace FluffyEars.Reminders
             // anything later doesn't need to be checked. On the contrary, if a reminder from the previous step is not equal to the 
             // reminder in the current step, that means we should continually check until we find a reminder that isn't ready to be
             // notified.
-            while (ReminderSystem.HasNotification() && !curReminder.Equals(prevReminder))
+            while (ReminderSystem.HasNotificationsPending() && !curReminder.Equals(prevReminder))
             {
                 DateTimeOffset reminderTime = DateTimeOffset.FromUnixTimeMilliseconds(curReminder.Time);
 
@@ -183,7 +184,7 @@ namespace FluffyEars.Reminders
                     // Get all the people we need to remind.
                     sb.Append(String.Format("<@{0}> ", curReminder.User));
                     Array.ForEach(curReminder.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
-                        a => sb.Append(String.Format("<@{0}> ", a)));
+                        a => sb.Append($"{ChatObjects.GetMention(a)} "));
 
                     await Bot.BotClient.SendMessageAsync(
                         channel: chan,
@@ -199,9 +200,9 @@ namespace FluffyEars.Reminders
                 // the next step.
                 prevReminder = curReminder;
 
-                if (ReminderSystem.HasNotification())
+                if (ReminderSystem.HasNotificationsPending())
                     curReminder = ReminderSystem.GetSoonestNotification();
-                else break;
+                else break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
             }
         }
     }

@@ -179,7 +179,7 @@ namespace FluffyEars.Commands
             if(ctx.Member.GetRole().IsCHOrHigher())
             {
                 // Check if there are any notifications. If there are none, let the user know.
-                if (ReminderSystem.HasNotification())
+                if (ReminderSystem.HasNotificationsPending())
                 {
                     int debLength;
                     int page = 1;
