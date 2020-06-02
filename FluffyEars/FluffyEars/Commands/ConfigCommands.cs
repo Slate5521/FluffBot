@@ -22,7 +22,7 @@ namespace FluffyEars.Commands
             [Description("The channel to set the filter logs to.")] DiscordChannel chan)
         {
             // Check if the user can use these sorts of commands.
-            if (ctx.Member.GetRole().IsBotManagerOrHigher())
+            if (ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
@@ -58,7 +58,7 @@ namespace FluffyEars.Commands
             [Description("Channel to exclude.")] DiscordChannel chan)
         {
             // Check if the user can use config commands.
-            if (ctx.Member.GetRole().IsBotManagerOrHigher())
+            if (ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
                 await ctx.Channel.TriggerTypingAsync();
 
@@ -92,7 +92,7 @@ namespace FluffyEars.Commands
             [Description("Exclude a channel")]DiscordChannel chan)
         {
             // Check if the user can use config commands.
-            if (ctx.Member.GetRole().IsBotManagerOrHigher())
+            if (ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
                 await ctx.Channel.TriggerTypingAsync();
 
@@ -124,7 +124,7 @@ namespace FluffyEars.Commands
             Description("List the excluded channels.")]
         public async Task ListExcludes(CommandContext ctx)
         {
-            if (ctx.Member.GetRole().IsCHOrHigher())
+            if (ctx.Member.GetHighestRole().IsCHOrHigher())
             {
                 await ctx.Channel.TriggerTypingAsync();
 

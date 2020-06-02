@@ -23,7 +23,7 @@ namespace FluffyEars.Commands
         public async Task FilterAddWords(CommandContext ctx, params string[] words)
         {
             // Check if the user can use commands.
-            if (ctx.Member.GetRole().IsSeniorModOrHigher())
+            if (ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
@@ -71,7 +71,7 @@ namespace FluffyEars.Commands
         public async Task RemoveFilterWords(CommandContext ctx, params string[] words)
         {
             // Check if the user can use commands.
-            if (ctx.Member.GetRole().IsSeniorModOrHigher())
+            if (ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
@@ -118,7 +118,7 @@ namespace FluffyEars.Commands
         [Command("filterlist")]
         public async Task ListFilterWords(CommandContext ctx)
         {
-            if (ctx.Member.GetRole().IsModOrHigher())
+            if (ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 StringBuilder sb = new StringBuilder();
 
@@ -141,7 +141,7 @@ namespace FluffyEars.Commands
         [Command("+filterexclude")]
         public async Task FilterExclude(CommandContext ctx, string word)
         {
-            if (ctx.Member.GetRole().IsSeniorModOrHigher())
+            if (ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
@@ -172,7 +172,7 @@ namespace FluffyEars.Commands
         [Command("-filterexclude")]
         public async Task FilterInclude(CommandContext ctx, string word)
         {
-            if (ctx.Member.GetRole().IsSeniorModOrHigher())
+            if (ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
@@ -197,7 +197,7 @@ namespace FluffyEars.Commands
         [Command("filterexcludes")]
         public async Task ListFilterWordExcludes(CommandContext ctx)
         {
-            if (ctx.Member.GetRole().IsModOrHigher())
+            if (ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 StringBuilder sb = new StringBuilder();
 
