@@ -87,10 +87,25 @@ namespace FluffyEars.Commands
                 }
 
                 sb.Append(timeSpan.Minutes);
-                sb.Append(@" minutes");
+                sb.Append(@" minute");
 
                 if (timeSpan.Minutes > 1)
-                    sb.Append(' ');
+                    sb.Append('s');
+            }
+
+            if (timeSpan.Seconds > 0)
+            {
+                if (placeCommaSpace)
+                {
+                    sb.Append(commaSpace);
+                    sb.Append(@"and ");
+                }
+
+                sb.Append(timeSpan.Seconds);
+                sb.Append(@" second");
+
+                if (timeSpan.Seconds > 1)
+                    sb.Append('s');
             }
 
             sb.Append(@" ago)");
