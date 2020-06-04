@@ -18,31 +18,31 @@ namespace FluffyEars.Commands
 
         #region Word Filter
         /// <summary>Add bad word(s) to the bad word list.</summary>
-        /// <param name="words">The supposed list.</param>
+        /// <param name="phrases">The supposed list.</param>
         [Command("+filter")]
-        public async Task FilterAddWords(CommandContext ctx, params string[] words)
+        public async Task FilterAddWords(CommandContext ctx, params string[] phrases)
         {
             // Check if the user can use commands.
             if (ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
-                StringBuilder sb_fail = new StringBuilder();    // A list of words we haven't been able to add.
-                StringBuilder sb_success = new StringBuilder(); // A list of words we were able to add.
+                StringBuilder sb_fail = new StringBuilder();    // A list of phrases we haven't been able to add.
+                StringBuilder sb_success = new StringBuilder(); // A list of phrases we were able to add.
                 DiscordEmbedBuilder deb;
 
-                foreach (string word in words)
+                foreach (string phrase in phrases)
                 {
                     // Check if this is in the filter list or exclude list. If it is, we were unsuccessful at adding it to the list.
-                    bool success = !FilterSystem.IsWord(word) && !Excludes.IsExcluded(word);
+                    bool success = !FilterSystem.IsWord(phrase) && !Excludes.IsExcluded(phrase);
 
                     if (success)
                     {
-                        FilterSystem.AddWord(word);
-                        sb_success.Append(word + @", ");
+                        FilterSystem.AddWord(phrase);
+                        sb_success.Append($"{phrase}, ");
                     }
                     else
-                        sb_fail.Append(word + @", ");
+                        sb_fail.Append($"{phrase}, ");
                 }
 
                 // DEB!
@@ -68,29 +68,29 @@ namespace FluffyEars.Commands
 
         /// <summary>Remove a single bad word from the bad word list, if it exists.</summary>
         [Command("-filter")]
-        public async Task RemoveFilterWords(CommandContext ctx, params string[] words)
+        public async Task RemoveFilterWords(CommandContext ctx, params string[] phrases)
         {
             // Check if the user can use commands.
             if (ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
-                StringBuilder sb_fail = new StringBuilder();    // A list of words we haven't been able to add.
-                StringBuilder sb_success = new StringBuilder(); // A list of words we were able to add.
+                StringBuilder sb_fail = new StringBuilder();    // A list of phrases we haven't been able to add.
+                StringBuilder sb_success = new StringBuilder(); // A list of phrases we were able to add.
                 DiscordEmbedBuilder deb;
 
-                foreach (string word in words)
+                foreach (string phrase in phrases)
                 {
                     // Check if this is already in the filter list. If it is not, we were unsuccessful at adding it to the list.
-                    bool success = FilterSystem.IsWord(word);
+                    bool success = FilterSystem.IsWord(phrase);
 
                     if (success)
                     {
-                        FilterSystem.RemoveWord(word);
-                        sb_success.Append(word + @", ");
+                        FilterSystem.RemoveWord(phrase);
+                        sb_success.Append($"{phrase}, ");
                     }
                     else
-                        sb_fail.Append(word + @", ");
+                        sb_fail.Append($"{phrase}, ");
                 }
 
                 // DEB!

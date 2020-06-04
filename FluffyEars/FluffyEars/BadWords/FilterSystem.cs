@@ -28,11 +28,14 @@ namespace FluffyEars.BadWords
    jgs  o( )_\_";
         private static SaveFile saveFile = new SaveFile(BaseFile);
         static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
-        private static string regexPattern = String.Empty; // All of filterList in a pattern.
+        private static Regex[] regexSearchList;
+
 
         public static void Default()
         {
             filterList = new List<string>();
+            regexSearchList = new Regex[0];
+
             Save();
         }
         public static void Save()
@@ -55,23 +58,17 @@ namespace FluffyEars.BadWords
         /// <summary>This updates the RegEx megastring, containing all the filter words but in a word1|word2 format.</summary>
         private static void UpdatePatternString()
         {
-            StringBuilder sb = new StringBuilder();
-
             //List<string> filterListDesc = filterList.OrderByDescending(a => a.Length).ToList();
             List<string> filterListDesc = filterList;
             filterListDesc.Sort();
             filterListDesc.Reverse();
+            
+            regexSearchList = new Regex[filterListDesc.Count];
 
-            foreach (string pattern in filterListDesc)
-            {
-                sb.Append(pattern);
+            for (int i = 0; i < filterListDesc.Count; i++)
+                regexSearchList[i] = new Regex(filterListDesc[i], regexOptions);
 
-                // If this is not the last filter word, add an | separator. 
-                if (!filterListDesc.Last().Equals(pattern))
-                    sb.Append('|');
-            }
 
-            regexPattern = sb.ToString();
         }
 
         public static bool IsWord(string word) => filterList.Contains(word);
@@ -96,23 +93,27 @@ namespace FluffyEars.BadWords
 
             if (filterList.Count > 0)
             {
-                MatchCollection mc = Regex.Matches(message, regexPattern, regexOptions);
-
-                if (mc.Count > 0)
+                foreach (Regex regexPattern in regexSearchList)
                 {
-                    int annoteSymbolsAdded = 0;
-                    // Let's check every bad word
-                    for(int i = 0; i < mc.Count; i++)
-                    {
-                        Match match = mc[i];
-                        string badWord = match.Value;
-                        int badWordIndex = match.Index;
+                    MatchCollection mc = regexPattern.Matches(message);
+                        //Matches(message, regexPattern, regexOptions);
 
-                        if (!Excludes.IsExcluded(message, badWord, badWordIndex))
+                    if (mc.Count > 0)
+                    {
+                        int annoteSymbolsAdded = 0;
+                        // Let's check every bad word
+                        for (int i = 0; i < mc.Count; i++)
                         {
-                            returnVal.Add(AttemptGetFullBadWord(message, badWordIndex, mc[i].Length, out int startIndex, out int endIndex));
-                            sb.Insert(startIndex + annoteSymbolsAdded++, '%');
-                            sb.Insert(endIndex + annoteSymbolsAdded++, '%');
+                            Match match = mc[i];
+                            string badWord = match.Value;
+                            int badWordIndex = match.Index;
+
+                            if (!Excludes.IsExcluded(message, badWord, badWordIndex))
+                            {
+                                returnVal.Add(AttemptGetFullBadWord(message, badWordIndex, mc[i].Length, out int startIndex, out int endIndex));
+                                sb.Insert(startIndex + annoteSymbolsAdded++, '%');
+                                sb.Insert(endIndex + annoteSymbolsAdded++, '%');
+                            }
                         }
                     }
                 }
