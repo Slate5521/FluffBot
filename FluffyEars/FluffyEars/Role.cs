@@ -21,12 +21,19 @@ namespace FluffyEars
 
     static class RoleExtensions
     {
-        public static bool IsCHOrHigher(this Role role) => role >= Role.CH;
-        public static bool IsModOrHigher(this Role role) => role >= Role.Moderator;
-        public static bool IsSeniorModOrHigher(this Role role) => role >= Role.SeniorModerator;
-        public static bool IsBotManagerOrHigher(this Role role) => role >= Role.BotManager;
-        public static bool IsAdminOrHigher(this Role role) => role >= Role.Admin;
-        public static bool IsOwner(this Role role) => role == Role.Owner;
+        public static bool IsCHOrHigher(this Role role) 
+            => role >= Role.CH;
+        public static bool IsModOrHigher(this Role role) 
+            => role >= Role.Moderator;
+        public static bool IsSeniorModOrHigher(this Role role) 
+            => role >= Role.SeniorModerator;
+        public static bool IsBotManagerOrHigher(this Role role) 
+            => role >= Role.BotManager;
+        public static bool IsAdminOrHigher(this Role role) 
+            => role >= Role.Admin;
+        public static bool IsOwner(this Role role) 
+            => role == Role.Owner;
+
         public static Role GetHighestRole(this DiscordMember user)
         { 
             // This method is an absolute dumpster fire when it comes to SESE-based programming.
@@ -34,7 +41,7 @@ namespace FluffyEars
             if(user.Guild.Owner.Id.Equals(user.Id))
                 return Role.Owner;
           
-            List<ulong> roles = user.Roles.Select(a => a.Id).ToList();
+            var roles = user.Roles.Select(a => a.Id).ToList();
 
             //                 RIMWORLD ROLES      ||                DEV SERVER ROLES
             if (roles.Contains(214524811433607168) || roles.Contains(673765748514095115)) // Admin
