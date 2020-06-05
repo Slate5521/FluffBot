@@ -18,7 +18,6 @@ namespace FluffyEars.BadWords
         public static event FilterTriggeredEventHandler FilterTriggered;
         public delegate void FilterTriggeredEventHandler(FilterEventArgs e);
 
-        private static List<string> filterList;
         public const string BaseFile = "filter";
         private static readonly object lockObj = (object)@"
          \\
@@ -28,79 +27,76 @@ namespace FluffyEars.BadWords
    jgs  o( )_\_";
         private static SaveFile saveFile = new SaveFile(BaseFile);
         static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
-        private static Regex[] regexSearchList;
 
+        private static List<string> maskList;
+        private static Regex[] regexList;
 
         public static void Default()
         {
-            filterList = new List<string>();
-            regexSearchList = new Regex[0];
+            maskList = new List<string>();
+            regexList = new Regex[0];
 
             Save();
         }
         public static void Save()
         {
-            saveFile.Save<List<string>>(filterList, lockObj);
+            saveFile.Save<List<string>>(maskList, lockObj);
 
-            UpdatePatternString();
+            UpdateRegexList();
         }
         public static bool CanLoad() => saveFile.IsExistingSaveFile();
         public static void Load()
         {
             if (CanLoad())
             {
-                filterList = saveFile.Load<List<string>>(lockObj);
-                UpdatePatternString();
+                maskList = saveFile.Load<List<string>>(lockObj);
+                UpdateRegexList();
             }
             else Default();
         }
 
         /// <summary>This updates the RegEx megastring, containing all the filter words but in a word1|word2 format.</summary>
-        private static void UpdatePatternString()
+        private static void UpdateRegexList()
         {
-            //List<string> filterListDesc = filterList.OrderByDescending(a => a.Length).ToList();
-            List<string> filterListDesc = filterList;
-            filterListDesc.Sort();
-            filterListDesc.Reverse();
+            List<string> maskListDesc = maskList;
+            maskListDesc.Sort();
+            maskListDesc.Reverse();
             
-            regexSearchList = new Regex[filterListDesc.Count];
+            regexList = new Regex[maskListDesc.Count];
 
-            for (int i = 0; i < filterListDesc.Count; i++)
-                regexSearchList[i] = new Regex(filterListDesc[i], regexOptions);
-
-
+            for (int i = 0; i < maskListDesc.Count; i++)
+                regexList[i] = new Regex(maskListDesc[i], regexOptions);
         }
 
-        public static bool IsWord(string word) => filterList.Contains(word);
-        public static List<string> GetWords() => filterList;
+        public static bool IsMask(string mask) => maskList.Contains(mask);
+        public static List<string> GetMasks() => maskList;
 
-        public static void AddWord(string word)
+        public static void AddMask(string mask)
         {
-            filterList.Add(word);
-            UpdatePatternString();
+            maskList.Add(mask);
+            UpdateRegexList();
         }
-        public static void RemoveWord(string word)
+        public static void RemoveMask(string mask)
         {
-            filterList.Remove(word);
-            UpdatePatternString();
+            maskList.Remove(mask);
+            UpdateRegexList();
         }
 
         public static List<string> GetBadWords(string message, out string notatedMessage)
         {
             List<string> returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
-            notatedMessage = String.Empty;
             StringBuilder sb = new StringBuilder(message);
 
-            if (filterList.Count > 0)
+            if (maskList.Count > 0)
             {
-                foreach (Regex regexPattern in regexSearchList)
+                int annoteSymbolsAdded = 0;
+
+                foreach (Regex regexPattern in regexList)
                 {
                     MatchCollection mc = regexPattern.Matches(message);
-                        //Matches(message, regexPattern, regexOptions);
 
                     if (mc.Count > 0)
                     {
-                        int annoteSymbolsAdded = 0;
                         // Let's check every bad word
                         for (int i = 0; i < mc.Count; i++)
                         {
@@ -119,42 +115,45 @@ namespace FluffyEars.BadWords
                 }
             }
 
-            if (sb.Length > 0)
-                notatedMessage = sb.ToString();
+            notatedMessage = sb.ToString();
 
-            if (notatedMessage.Length > 1000)
-                notatedMessage = notatedMessage.Substring(0, 1000) + @"...";
+            if (sb.Length > 1500)
+                notatedMessage = $"{notatedMessage.Substring(0, 1500)}...\n**message too long to preview.**";
 
             return returnVal;
         }
 
         private static string AttemptGetFullBadWord(string message, int badWordIndex, int badWordLength, out int startIndex, out int endIndex)
         {
-            int i_;
+            int i;
             string returnVal;
-            bool found_;
+            bool found;
 
             // Get the index of the space before the word.
             startIndex = badWordIndex; // Default value if index not found.
-            found_ = false; // We haven't found anything yet.
-            i_ = badWordIndex; while (!found_ && --i_ >= 0)
+            found = false; // We haven't found anything yet.
+            i = badWordIndex; 
+
+            while (!found && --i >= 0)
             {
-                if(message[i_] == ' ')
+                if(message[i] == ' ')
                 {
-                    startIndex = i_ + 1;
-                    found_ = true;
+                    startIndex = i + 1;
+                    found = true;
                 }
             }
 
             // Get the index of the space after the word.
             endIndex = message.Length; // Default value if index not found.
-            found_ = false; // We haven't found anything yet.
-            i_ = badWordIndex + badWordLength - 1; while(!found_ && ++i_ < message.Length)
+            found = false; // We haven't found anything yet.
+            i = badWordIndex + badWordLength - 1; 
+            
+            while(!found && ++i < message.Length)
             {
-                if(i_ <= message.Length && message[i_] == ' ')
+                if(i <= message.Length && message[i] == ' ')
                 {
-                    endIndex = i_;
-                    found_ = true;
+                    endIndex = i;
+                    found = true;
                 }
             }
 
@@ -184,7 +183,7 @@ namespace FluffyEars.BadWords
             if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
                 CheckMessage(e.Message);
         }
-        
+
         /// <summary>Check the messages for any Bad Words aka slurs.</summary>
         /// <param name="message">The message object to inspect.</param>
         private static void CheckMessage(DiscordMessage message)

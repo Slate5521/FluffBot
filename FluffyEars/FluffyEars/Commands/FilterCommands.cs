@@ -34,11 +34,11 @@ namespace FluffyEars.Commands
                 foreach (string phrase in phrases)
                 {
                     // Check if this is in the filter list or exclude list. If it is, we were unsuccessful at adding it to the list.
-                    bool success = !FilterSystem.IsWord(phrase) && !Excludes.IsExcluded(phrase);
+                    bool success = !FilterSystem.IsMask(phrase) && !Excludes.IsExcluded(phrase);
 
                     if (success)
                     {
-                        FilterSystem.AddWord(phrase);
+                        FilterSystem.AddMask(phrase);
                         sb_success.Append($"{phrase}, ");
                     }
                     else
@@ -82,11 +82,11 @@ namespace FluffyEars.Commands
                 foreach (string phrase in phrases)
                 {
                     // Check if this is already in the filter list. If it is not, we were unsuccessful at adding it to the list.
-                    bool success = FilterSystem.IsWord(phrase);
+                    bool success = FilterSystem.IsMask(phrase);
 
                     if (success)
                     {
-                        FilterSystem.RemoveWord(phrase);
+                        FilterSystem.RemoveMask(phrase);
                         sb_success.Append($"{phrase}, ");
                     }
                     else
@@ -122,7 +122,7 @@ namespace FluffyEars.Commands
             {
                 StringBuilder sb = new StringBuilder();
 
-                foreach (string word in FilterSystem.GetWords())
+                foreach (string word in FilterSystem.GetMasks())
                     sb.AppendLine(word);
 
                 DiscordEmbedBuilder deb = new DiscordEmbedBuilder()
@@ -146,7 +146,7 @@ namespace FluffyEars.Commands
                 await ctx.TriggerTypingAsync();
 
                 // Cancels:
-                if (FilterSystem.IsWord(word))
+                if (FilterSystem.IsMask(word))
                 {
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetErrMessage(@"Cannot add that word. It's a filter word..."));
