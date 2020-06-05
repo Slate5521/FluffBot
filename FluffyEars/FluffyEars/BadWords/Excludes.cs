@@ -8,8 +8,6 @@ namespace FluffyEars.BadWords
 {
     public static class Excludes
     {
-        /// <summary>List of words to exclude.</summary>
-        private static List<string> excludeList;
         public const string BaseFile = "wordexcludes";
         private static readonly object lockObj = (object)@"
                ((`\
@@ -19,6 +17,9 @@ namespace FluffyEars.BadWords
        _|    /_  \ \_\_
 jgs   {_\______\-'\__\_\";
         private static SaveFile saveFile = new SaveFile(BaseFile);
+
+        /// <summary>List of words to exclude.</summary>
+        private static List<string> excludeList;
 
         public static void Default()
         {
@@ -94,29 +95,6 @@ jgs   {_\______\-'\__\_\";
 
                 }
             }
-
-            return returnVal;
-        }
-
-        /// <summary>
-        /// Returns a list of the indexes of all occurrences of a substring in this string.
-        /// </summary>
-        /// <param name="word"></param>
-        private static List<int> AllIndexesOf(this string str, string word, int startIndex)
-        {
-            List<int> returnVal = new List<int>();
-
-            int i = 0; do
-            {
-                i = str.IndexOf(word, i);
-                
-                if (i != -1)
-                {
-                    returnVal.Add(i);
-                    // Every time we find a word, we increment by its length so we can skip that word.
-                    i += word.Length;
-                }
-            } while (i != -1);
 
             return returnVal;
         }
