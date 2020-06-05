@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using FluffyEars.Reminders;
 using FluffyEars.BadWords;
 using DSharpPlus.CommandsNext.Exceptions;
+using FluffyEars.Commands;
 
 namespace FluffyEars
 {
@@ -52,13 +53,14 @@ namespace FluffyEars
             Commands.CommandExecuted += Commands_CommandExecuted;
             Commands.CommandErrored += Commands_CommandErrored;
 
-            Commands.RegisterCommands<Commands.ConfigCommands>();
-            Commands.RegisterCommands<Commands.FilterCommands>();
-            Commands.RegisterCommands<Commands.ReminderCommands>();
-            Commands.RegisterCommands<Commands.RequestedCommands>();
+            Commands.RegisterCommands<ConfigCommands>();
+            Commands.RegisterCommands<FilterCommands>();
+            Commands.RegisterCommands<ReminderCommands>();
+            Commands.RegisterCommands<RequestedCommands>();
+            Commands.RegisterCommands<FrozenCommands>();
 
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
-            BotClient.MessageCreated += FROZEN.BotClient_MessageCreated;
+            BotClient.MessageCreated += FrozenCommands.BotClient_MessageCreated;
             BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;

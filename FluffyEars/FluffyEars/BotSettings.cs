@@ -29,6 +29,8 @@ namespace FluffyEars
             public List<ulong> ExcludedChannels;
             /// <summary>Whether or not the bot should announce it has started.</summary>
             public bool StartMessageEnabled;
+
+            public List<string> FrozenNames;
         }
 
         /// <summary>Default bot settings.</summary>
@@ -37,6 +39,13 @@ namespace FluffyEars
             FilterChannelId = 674884683166646283,
             ExcludedChannels = new List<ulong>(),
             StartMessageEnabled = false,
+            FrozenNames = new List<string>() 
+            { 
+                "frozen",
+                "frozo",
+                "forza",
+                "freezy"
+            }
         };
 
         /// <summary>Bot settings!</summary>
@@ -99,6 +108,24 @@ namespace FluffyEars
         }
 
         #endregion Initialization, deconstruction commands
+
+        public static void AddFrozenName(string name)
+        {
+            if (!IsFrozenName(name))
+                botSettings.FrozenNames.Add(name);
+        }
+
+        public static void RemoveFrozenName(string name)
+        {
+            if (IsFrozenName(name))
+                botSettings.FrozenNames.Remove(name);
+        }
+
+        public static bool IsFrozenName(string name)
+            => botSettings.FrozenNames.Contains(name);
+
+        public static string[] GetFrozenNames()
+            => botSettings.FrozenNames.ToArray();
 
         #region Channel exclusion
 
