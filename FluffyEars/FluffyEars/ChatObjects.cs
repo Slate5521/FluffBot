@@ -21,6 +21,9 @@ namespace FluffyEars
         public const string URL_REMINDER_EXCLAIM = @"https://i.imgur.com/NUCrbSl.png";
         public const string URL_REMINDER_DELETED = @"https://i.imgur.com/OnTaJdd.png";
 
+        public static DiscordColor SuccessColor = DiscordColor.Green;
+        public static DiscordColor ErrColor = DiscordColor.Red;
+        public static DiscordColor NeutralColor = DiscordColor.MidnightBlue;
 
         public static string GetSuccessMessage(string message)
             => $"{SUCCESS_PREFIX} {message}";
@@ -36,5 +39,29 @@ namespace FluffyEars
 
         public static string GetMention(ulong userId)
             => $"<@{userId}>";
+
+        public static DiscordEmbed FormatEmbedResponse(string title, string description, DiscordColor color, string thumbnail = @"", params DiscordEmbedField[] fields)
+        {
+            var deb = new DiscordEmbedBuilder();
+
+            deb.WithTitle(title);
+            deb.WithDescription(description);
+            deb.WithColor(color);
+
+            if (thumbnail.Length > 0)
+                deb.WithThumbnail(thumbnail);
+
+            foreach(var field in fields)
+            {
+                deb.AddField
+                    (
+                        name:   field.Name,
+                        value:  field.Value,
+                        inline: field.Inline
+                    );
+            }
+
+            return deb.Build();
+        }
     }
 }
