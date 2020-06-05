@@ -166,7 +166,6 @@ namespace FluffyEars.Commands
 
                     await ctx.Channel.SendMessageAsync(
                         ChatObjects.GetSuccessMessage(@"I removed that phrase from exclusion!"));
-
                 }
             }
         }
