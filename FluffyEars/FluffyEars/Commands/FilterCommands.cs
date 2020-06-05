@@ -47,6 +47,7 @@ namespace FluffyEars.Commands
                 }
 
                 deb.WithThumbnail(ChatObjects.URL_FILTER_ADD);
+                deb.AddField(@"Mask", $"`{mask}`");
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
             }
@@ -66,9 +67,7 @@ namespace FluffyEars.Commands
                 // DEB!
                 DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
 
-                bool success = FilterSystem.IsMask(mask) && Excludes.IsExcluded(mask);
-
-                if (success)
+                if (FilterSystem.IsMask(mask))
                 {
                     FilterSystem.RemoveMask(mask);
                     FilterSystem.Save();
@@ -83,6 +82,7 @@ namespace FluffyEars.Commands
                 }
 
                 deb.WithThumbnail(ChatObjects.URL_FILTER_ADD);
+                deb.AddField(@"Mask", $"`{mask}`");
 
                 await ctx.Channel.SendMessageAsync(embed: deb.Build());
             }

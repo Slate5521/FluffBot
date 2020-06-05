@@ -77,6 +77,17 @@ namespace FluffyEars
             await Task.Delay(-1);
         }
 
+        public static async Task NotifyFilterChannel(DiscordEmbed embed, string text = @"")
+        {
+            var auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
+
+            await auditChannel.SendMessageAsync
+                (
+                    content: text == String.Empty ? null : text,
+                    embed: embed
+                ).ConfigureAwait(false);
+        }
+
         #endregion Public Methods
         // ################################
         #region Private Methods
@@ -164,17 +175,6 @@ namespace FluffyEars
             return authKey;
         }
 
-        private static async Task NotifyFilterChannel(DiscordEmbed embed, string text = @"")
-        {
-            var auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
-
-            await auditChannel.SendMessageAsync
-                (
-                    content: text == String.Empty ? null : text,
-                    embed: embed
-                ).ConfigureAwait(false);
-        }
-
         #endregion Private Methods
         // ################################
         #region Event Listeners
@@ -236,37 +236,7 @@ namespace FluffyEars
         }
 
         private async void BotClient_FilterTriggered(FilterEventArgs e)
-        {
-            var stringBuilder = new StringBuilder();
-
-            foreach (string str in e.BadWords)
-            {
-                stringBuilder.Append(str);
-                stringBuilder.Append(' ');
-            }
-
-            // DEB!
-            var deb = new DiscordEmbedBuilder();
-
-            deb.WithTitle("Filter: Word Detected");
-            deb.WithColor(DiscordColor.Red);
-
-            deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```{1}```",
-                stringBuilder.ToString(), e.NotatedMessage));
-
-            //deb.WithDescription(String.Format("{0} has triggered the filter system in {1}.", e.User.Mention, e.Channel.Mention));
-
-            deb.AddField(@"Author ID", e.User.Id.ToString(), inline: true);
-            deb.AddField(@"Author Username", e.User.Username + '#' + e.User.Discriminator, inline: true);
-            deb.AddField(@"Author Mention", e.User.Mention, inline: true);
-            deb.AddField(@"Channel", e.Channel.Mention, inline: true);
-            deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(), inline: true);
-            deb.AddField(@"Link", ChatObjects.GetMessageUrl(e.Message));
-
-            deb.WithThumbnail(ChatObjects.URL_FILTER_BUBBLE);
-
-            await NotifyFilterChannel(deb.Build());
-        }
+            => await FilterSystem.HandleFilterTriggered(e);
 
         /// <summary>Some shit broke.</summary>
         private Task BotClient_ClientErrored(ClientErrorEventArgs e)

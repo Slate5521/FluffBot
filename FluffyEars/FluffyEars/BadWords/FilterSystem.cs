@@ -107,6 +107,39 @@ namespace FluffyEars.BadWords
             UpdateRegexList();
         }
 
+        public static async Task HandleFilterTriggered(FilterEventArgs e)
+        {
+            var stringBuilder = new StringBuilder();
+
+            foreach (string str in e.BadWords)
+            {
+                stringBuilder.Append(str);
+                stringBuilder.Append(' ');
+            }
+
+            // DEB!
+            var deb = new DiscordEmbedBuilder();
+
+            deb.WithTitle("Filter: Word Detected");
+            deb.WithColor(DiscordColor.Red);
+
+            deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```{1}```",
+                stringBuilder.ToString(), e.NotatedMessage));
+
+            //deb.WithDescription(String.Format("{0} has triggered the filter system in {1}.", e.User.Mention, e.Channel.Mention));
+
+            deb.AddField(@"Author ID", e.User.Id.ToString(), inline: true);
+            deb.AddField(@"Author Username", e.User.Username + '#' + e.User.Discriminator, inline: true);
+            deb.AddField(@"Author Mention", e.User.Mention, inline: true);
+            deb.AddField(@"Channel", e.Channel.Mention, inline: true);
+            deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(), inline: true);
+            deb.AddField(@"Link", ChatObjects.GetMessageUrl(e.Message));
+
+            deb.WithThumbnail(ChatObjects.URL_FILTER_BUBBLE);
+
+            await Bot.NotifyFilterChannel(deb.Build());
+        }
+
         public static List<string> GetBadWords(string message, out string notatedMessage)
         {
             var returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
@@ -128,12 +161,13 @@ namespace FluffyEars.BadWords
                             Match match = mc[i];
                             string badWord = match.Value;
                             int badWordIndex = match.Index;
+                            
+                            returnVal.Add(badWord);
 
                             if (!Excludes.IsExcluded(message, badWord, badWordIndex))
                             {
-                                returnVal.Add(AttemptGetFullBadWord(message, badWordIndex, mc[i].Length, out int startIndex, out int endIndex));
-                                stringBuilder.Insert(startIndex + annoteSymbolsAdded++, '%');
-                                stringBuilder.Insert(endIndex + annoteSymbolsAdded++, '%');
+                                stringBuilder.Insert(badWordIndex + annoteSymbolsAdded++, '%');
+                                stringBuilder.Insert(badWordIndex + badWord.Length + annoteSymbolsAdded++, '%');
                             } // end if
                         } // end for
                     } // end if
@@ -169,52 +203,6 @@ namespace FluffyEars.BadWords
             }
         }
 
-        private static string AttemptGetFullBadWord(string message, int badWordIndex, int badWordLength, out int startIndex, out int endIndex)
-        {
-            int i;
-            string returnVal;
-            bool found;
-
-            // Get the index of the space before the word.
-            startIndex = badWordIndex; // Default value if index not found.
-            found = false; // We haven't found anything yet.
-            i = badWordIndex; 
-
-            while (!found && --i >= 0)
-            {
-                if(message[i] == ' ')
-                {
-                    startIndex = i + 1;
-                    found = true;
-                }
-            }
-
-            // Get the index of the space after the word.
-            endIndex = message.Length; // Default value if index not found.
-            found = false; // We haven't found anything yet.
-            i = badWordIndex + badWordLength - 1; 
-            
-            while(!found && ++i < message.Length)
-            {
-                if(i <= message.Length && message[i] == ' ')
-                {
-                    endIndex = i;
-                    found = true;
-                }
-            }
-
-            if (badWordIndex >= 0 && badWordIndex + badWordLength <= message.Length)
-            {
-                returnVal = message.Substring(startIndex, endIndex - startIndex);
-            }
-            else
-            {
-                returnVal = message.Substring(badWordIndex, badWordLength);
-            }
-
-            return returnVal;
-        }
-
         /// <summary>Check the messages for any Bad Words aka slurs.</summary>
         /// <param name="message">The message object to inspect.</param>
         private static void CheckMessage(DiscordMessage message)
@@ -248,6 +236,11 @@ namespace FluffyEars.BadWords
         {
             FilterTriggeredEventHandler handler = FilterTriggered;
             handler?.Invoke(e);
+        }
+
+        internal static Task HandleFilterTriggered()
+        {
+            throw new NotImplementedException();
         }
     }
 }
