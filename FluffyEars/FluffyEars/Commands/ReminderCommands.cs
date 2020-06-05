@@ -26,7 +26,7 @@ namespace FluffyEars.Commands
         [Command("+reminder")]
         public async Task AddReminder(CommandContext ctx, params string[] paramsList)
         {
-            if (ctx.Member.GetHighestRole().IsCHOrHigher())
+            if (ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 
                 string args = ctx.RawArgumentString;
@@ -134,7 +134,7 @@ namespace FluffyEars.Commands
         [Command("-reminder")]
         public async Task RemoveReminder(CommandContext ctx, string reminderId)
         {
-            if(ctx.Member.GetHighestRole().IsCHOrHigher())
+            if(ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 await ctx.TriggerTypingAsync();
 
@@ -176,7 +176,7 @@ namespace FluffyEars.Commands
         [Command("reminderlist")]
         public async Task ListReminders(CommandContext ctx)
         {
-            if(ctx.Member.GetHighestRole().IsCHOrHigher())
+            if(ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 // Check if there are any notifications. If there are none, let the user know.
                 if (ReminderSystem.HasNotificationsPending())

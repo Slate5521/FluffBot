@@ -21,7 +21,17 @@ namespace FluffyEars.Commands
         public async Task SetFilterChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use these sorts of commands.
-            if (ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
             {
                 DiscordEmbed embedResponse;
                 bool success = true;
@@ -80,8 +90,18 @@ namespace FluffyEars.Commands
         public async Task IncludeChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use config commands.
-            if (ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else 
+            { 
                 DiscordEmbed embedResponse;
                 bool success = true;
 
@@ -137,8 +157,18 @@ namespace FluffyEars.Commands
         public async Task ExcludeChannel(CommandContext ctx, DiscordChannel chan)
         {
             // Check if the user can use config commands.
-            if (ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else 
+            { 
                 DiscordEmbed embedResponse;
                 bool success = true;
 
@@ -193,8 +223,18 @@ namespace FluffyEars.Commands
         [Command("chanexcludes")]
         public async Task ListExcludes(CommandContext ctx)
         {
-            if (ctx.Member.GetHighestRole().IsCHOrHigher())
+            if (!ctx.Member.GetHighestRole().IsCSOrHigher())
             {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.CS,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
+            { 
                 await ctx.Channel.TriggerTypingAsync();
 
                 DiscordEmbed embedResponse;
@@ -235,8 +275,18 @@ namespace FluffyEars.Commands
         [Command("startmessageenabled")]
         public async Task StartMessageEnabled(CommandContext ctx, bool enabled)
         {
-            if(ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
+            { 
                 await ctx.TriggerTypingAsync();
 
                 DiscordEmbed embedResponse;

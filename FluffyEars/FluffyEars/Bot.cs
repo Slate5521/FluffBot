@@ -88,6 +88,21 @@ namespace FluffyEars
                 ).ConfigureAwait(false);
         }
 
+        public static async Task NotifyInvalidPermissions(Role requiredRole, string command, DiscordChannel channel, DiscordMember caller)
+        {
+            var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
+                (
+                    title: "Invalid Permissions",
+                    description: ChatObjects.GetErrMessage($"Hello {caller.Mention}, you do not have the permissions required to use that command..."),
+                    color: ChatObjects.ErrColor
+                ));
+
+            deb.AddField(@"Command", command, true);
+            deb.AddField(@"Role required", requiredRole.ToName(), true);
+
+            await channel.SendMessageAsync(embed: deb.Build());
+        }
+
         #endregion Public Methods
         // ################################
         #region Private Methods

@@ -13,7 +13,7 @@ namespace FluffyEars.Commands
         [Command("userinfo")]
         public async Task GetUserInfo(CommandContext ctx, DiscordMember member)
         {
-            if (ctx.Member.GetHighestRole().IsCHOrHigher())
+            if (ctx.Member.GetHighestRole().IsCSOrHigher())
             {
 
                 await ctx.Channel.TriggerTypingAsync();

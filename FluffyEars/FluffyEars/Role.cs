@@ -11,7 +11,7 @@ namespace FluffyEars
     enum Role
     {
         Colonist = 0,
-        CH = 1,
+        CS = 1,
         Moderator = 2,
         SeniorModerator = 3,
         BotManager = 4,
@@ -21,8 +21,8 @@ namespace FluffyEars
 
     static class RoleExtensions
     {
-        public static bool IsCHOrHigher(this Role role) 
-            => role >= Role.CH;
+        public static bool IsCSOrHigher(this Role role) 
+            => role >= Role.CS;
         public static bool IsModOrHigher(this Role role) 
             => role >= Role.Moderator;
         public static bool IsSeniorModOrHigher(this Role role) 
@@ -53,9 +53,28 @@ namespace FluffyEars
             if (roles.Contains(214527027112312834) || roles.Contains(673765713600708672)) // Mod
                 return Role.Moderator;
             if (roles.Contains(326891962697383936) || roles.Contains(673765694982193173)) // Community Helper
-                return Role.CH;
+                return Role.CS;
 
             return Role.Colonist;
+        }
+
+        public static string ToName(this Role role)
+        {
+            string returnVal;
+
+            switch(role)
+            {
+                case Role.Colonist:        returnVal = @"Colonist";          break;
+                case Role.CS:              returnVal = @"Community Support"; break;
+                case Role.Moderator:       returnVal = @"Moderator";         break;
+                case Role.SeniorModerator: returnVal = "Senior Moderator";   break;
+                case Role.BotManager:      returnVal = "Bot Manager";        break;
+                case Role.Admin:           returnVal = "Admin";              break;
+                case Role.Owner:           returnVal = "Server Owner";       break;
+                default:                   returnVal = @"ERROR";             break;
+            }
+
+            return returnVal;
         }
     }
 }
