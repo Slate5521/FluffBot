@@ -23,6 +23,10 @@ namespace FluffyEars
         /// <summary>CommandNextModule</summary>
         public CommandsNextExtension Commands;
 
+        public Bot() { }
+
+        #region Public Methods
+
         /// <summary>Start this shit up!</summary>
         public async Task RunAsync()
         {
@@ -50,14 +54,14 @@ namespace FluffyEars
 
             Commands = BotClient.UseCommandsNext(commandConfig);
 
-            Commands.CommandExecuted += Commands_CommandExecuted;
-            Commands.CommandErrored += Commands_CommandErrored;
-
             Commands.RegisterCommands<ConfigCommands>();
             Commands.RegisterCommands<FilterCommands>();
             Commands.RegisterCommands<ReminderCommands>();
             Commands.RegisterCommands<RequestedCommands>();
             Commands.RegisterCommands<FrozenCommands>();
+
+            Commands.CommandExecuted += Commands_CommandExecuted;
+            Commands.CommandErrored += Commands_CommandErrored;
 
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FrozenCommands.BotClient_MessageCreated;
@@ -72,6 +76,109 @@ namespace FluffyEars
             await BotClient.ConnectAsync();
             await Task.Delay(-1);
         }
+
+        #endregion Public Methods
+        // ################################
+        #region Private Methods
+
+        private string LoadConfig()
+        {
+            var authKey = String.Empty;
+
+            // =================
+            // Load Authkey
+            Console.WriteLine(@"Loading bot config:");
+
+            Console.Write("\tAuthkey");
+            using (var fs = File.OpenRead(@"authkey"))
+            {
+                using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+                {
+                    authKey = sr.ReadToEnd();
+                }
+            }
+
+            if (authKey != String.Empty)
+            {
+                Console.WriteLine(@"... Loaded.");
+            }
+
+            // =================
+            // Bot settings
+
+            Console.Write("\tSettings");
+
+            if (BotSettings.CanLoad())
+            {
+                BotSettings.Load();
+                Console.WriteLine(@"... Loaded!");
+            }
+            else
+            {
+                BotSettings.Default();
+                Console.WriteLine(@"... Not found. Loading default values.");
+            }
+
+            // ---
+            Console.Write("\tReminders");
+
+            if (ReminderSystem.CanLoad())
+            {
+                ReminderSystem.Load();
+                Console.WriteLine(@"... Loaded!");
+            }
+            else
+            {
+                ReminderSystem.Default();
+                Console.WriteLine(@"... Not found. Instantiating default values.");
+            }
+
+            // ---
+            Console.Write("\tBadwords");
+
+            if (FilterSystem.CanLoad())
+            {
+                FilterSystem.Load();
+                Console.WriteLine(@"... Loaded!");
+            }
+            else
+            {
+                FilterSystem.Default();
+                Console.WriteLine(@"... Not found. Instantiating default values.");
+            }
+
+            // ---
+            Console.Write("\tExcludes");
+
+            if (Excludes.CanLoad())
+            {
+                Excludes.Load();
+                Console.WriteLine(@"... Loaded!");
+            }
+            else
+            {
+                Excludes.Default();
+                Console.WriteLine(@"... Not found. Instantiating default values.");
+            }
+
+            return authKey;
+        }
+
+        private static async Task NotifyFilterChannel(DiscordEmbed embed, string text = @"")
+        {
+            var auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
+
+            await auditChannel.SendMessageAsync
+                (
+                    content: text == String.Empty ? null : text,
+                    embed: embed
+                ).ConfigureAwait(false);
+        }
+
+        #endregion Private Methods
+        // ################################
+        #region Event Listeners
+
         private async Task BotClient_Ready(ReadyEventArgs e)
         {
             if (BotSettings.StartMessageEnabled)
@@ -86,7 +193,15 @@ namespace FluffyEars
                 catch { }
             }
             
-            await SelfAudit.LogSomething(Bot.BotClient.CurrentUser, @"n/a", @"The bot has started.", @"Startup", String.Empty, DiscordColor.IndianRed);
+            SelfAudit.LogSomething
+                (
+                    who: BotClient.CurrentUser, 
+                    messageUrl: @"n/a", 
+                    description: @"The bot has started.", 
+                    command: @"Startup", 
+                    arguments: String.Empty, 
+                    color: DiscordColor.IndianRed
+                ).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
 
@@ -120,99 +235,24 @@ namespace FluffyEars
             return Task.CompletedTask;
         }
 
-        private string LoadConfig()
-        {
-            string authKey = String.Empty;
-
-            // =================
-            // Load Authkey
-            Console.WriteLine(@"Loading bot config:");
-
-            Console.Write("\tAuthkey");
-            using (var fs = File.OpenRead(@"authkey"))
-            {
-                using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                {
-                    authKey = sr.ReadToEnd();
-                }
-            }
-
-            if (authKey != String.Empty)
-                Console.WriteLine(@"... Loaded.");
-
-            // =================
-            // Bot settings
-
-            Console.Write("\tSettings");
-
-            if (BotSettings.CanLoad())
-            {
-                BotSettings.Load();
-                Console.WriteLine("... Loaded!");
-            }
-            else
-            {
-                BotSettings.Default();
-                Console.WriteLine("... Not found. Loading default values.");
-            }
-
-            Console.Write("\tReminders");
-
-            if (ReminderSystem.CanLoad())
-            {
-                ReminderSystem.Load();
-                Console.WriteLine("... Loaded!");
-            }
-            else
-            {
-                ReminderSystem.Default();
-                Console.WriteLine("... Not found. Instantiating default values.");
-            }
-
-            Console.Write("\tBadwords");
-
-            if (FilterSystem.CanLoad())
-            {
-                FilterSystem.Load();
-                Console.WriteLine("... Loaded!");
-            }
-            else
-            {
-                FilterSystem.Default();
-                Console.WriteLine("... Not found. Instantiating default values.");
-            }
-
-            Console.Write("\tExcludes");
-
-            if (Excludes.CanLoad())
-            {
-                Excludes.Load();
-                Console.WriteLine("... Loaded!");
-            }
-            else
-            {
-                Excludes.Default();
-                Console.WriteLine("... Not found. Instantiating default values.");
-            }
-
-            return authKey;
-        }
-
         private async void BotClient_FilterTriggered(FilterEventArgs e)
         {
-            StringBuilder sb = new StringBuilder();
+            var stringBuilder = new StringBuilder();
 
-            foreach(string str in e.BadWords)
-                sb.Append(str + ' ');
+            foreach (string str in e.BadWords)
+            {
+                stringBuilder.Append(str);
+                stringBuilder.Append(' ');
+            }
 
             // DEB!
-            DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+            var deb = new DiscordEmbedBuilder();
 
             deb.WithTitle("Filter: Word Detected");
             deb.WithColor(DiscordColor.Red);
 
             deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```{1}```",
-                sb.ToString(), e.NotatedMessage));
+                stringBuilder.ToString(), e.NotatedMessage));
 
             //deb.WithDescription(String.Format("{0} has triggered the filter system in {1}.", e.User.Mention, e.Channel.Mention));
 
@@ -228,17 +268,6 @@ namespace FluffyEars
             await NotifyFilterChannel(deb.Build());
         }
 
-        private static async Task NotifyFilterChannel(DiscordEmbed embed, string text = @"")
-        {
-            DiscordChannel auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
-
-            await auditChannel.SendMessageAsync
-                (
-                    content: text == String.Empty ? null : text,
-                    embed: embed
-                ).ConfigureAwait(false);
-        }
-
         /// <summary>Some shit broke.</summary>
         private Task BotClient_ClientErrored(ClientErrorEventArgs e)
         {
@@ -247,5 +276,7 @@ namespace FluffyEars
 
             return Task.CompletedTask;
         }
+
+        #endregion Event Listeners
     }
 }
