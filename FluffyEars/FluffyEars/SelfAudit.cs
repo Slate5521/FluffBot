@@ -16,7 +16,7 @@ namespace FluffyEars
         public static async Task LogSomething(DiscordUser who, string messageUrl, string description, string command, string arguments, DiscordColor color)
         {
             // DEB!
-            DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+            var deb = new DiscordEmbedBuilder();
             deb.WithColor(color);
 
             deb.AddField(@"User", who.Mention, true);
@@ -25,7 +25,9 @@ namespace FluffyEars
             deb.AddField(@"Command", command, true);
 
             if (arguments.Length > 0)
+            {
                 deb.AddField(@"Arguments", command, true);
+            }
 
             deb.AddField(@"Link", messageUrl);
 
