@@ -47,10 +47,13 @@ namespace FluffyEars.Reminders
                 Reminder[] returnVal;
 
                 if (reminders_ is null || reminders_.Count == 0)
+                {
                     returnVal = Array.Empty<Reminder>();
+                }
                 else
+                {
                     returnVal = reminders_.OrderBy(a => a.Time).ToArray();
-
+                }
                 return returnVal;
             }
         }
@@ -159,7 +162,7 @@ namespace FluffyEars.Reminders
 
         #endregion Public Methods
         // ################################
-        // Event Listener
+        #region Event Listener
 
         /// <summary>Called when the bot is heartbeated.</summary>
         internal static async Task BotClient_Heartbeated(HeartbeatEventArgs e)
@@ -243,5 +246,7 @@ namespace FluffyEars.Reminders
                 } // end else
             } // end while
         } // end method
+
+        #endregion Event Listener
     }
 }
