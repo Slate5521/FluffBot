@@ -36,6 +36,8 @@ namespace FluffyEars
             baseFileName = baseFile;
         }
 
+        #region Public Methods
+
         /// <summary>Save information to savefile.</summary>
         /// <param name="lockObj">Locking object for class.</param>
         public void Save<T>(T saveData, object lockObj)
@@ -75,9 +77,6 @@ namespace FluffyEars
             }
         }
 
-        /// <summary>Get MD5 file string from FileBase.</summary>
-        private string GetMD5File(string fileBase) => fileBase + @".md5";
-
         /// <summary>Load information from SaveFile.</summary>
         /// <typeparam name="T">Json serializable struct holding information.</typeparam>
         /// <param name="lockObj">Locking object for class.</param>
@@ -90,19 +89,28 @@ namespace FluffyEars
             if (!loadFile.Equals(String.Empty))
             {
                 string fileContents;
-                
+
                 lock (lockObj)
                     fileContents = ReadFile(loadFile);
 
                 if (!fileContents.Equals(String.Empty))
                     returnVal = (T)JsonConvert.DeserializeObject(fileContents, typeof(T));
                 else throw new SaveFileException("SaveFile found, unable to load contents.");
-                    
+
             }
             else throw new SaveFileException("Unable to load a SaveFile.");
 
             return returnVal;
         }
+
+        // If either of these exists, it's an existing save file.
+        /// <summary>Check if the save file exists.</summary>
+        /// <returns>True if save file exists.</returns>
+        public bool IsExistingSaveFile() => File.Exists(BaseFileA) || File.Exists(BaseFileB);
+
+        #endregion Public Methods
+        // ################################
+        #region Private Methods
 
         /// <summary>Gets the save file we should save to.</summary>
         private string GetNextSaveFile()
@@ -112,22 +120,27 @@ namespace FluffyEars
             bool bfAExists = File.Exists(BaseFileA);
             bool bfBExists = File.Exists(BaseFileB);
 
-            // If both files exists, we need to see which one is the oldest one and return it.
-            // ...
-            if (bfAExists && bfBExists)
+            if (bfAExists && bfBExists) // If both files exists, we need to see which one is the oldest one and return it.
+            { 
                 returnVal = // If bfA creation time is greater than (more recent) than bfB, then bfA is the most recent, therefore bfB is the
                             // oldest, and we return that (1: bfB) instead. On the contrary, if bfA is NOT greater (less recent) than bfB, that means
                             // bfA is the oldest, and we return that (2: bfA) instead.
                     File.GetLastWriteTime(BaseFileA).Ticks >= File.GetLastWriteTime(BaseFileB).Ticks ?
                             /*(1)*/ BaseFileB :
-                            /*(2)*/ BaseFileA;
-            else if (bfAExists && !bfBExists) // If bfA exists AND bfB does NOT exist, return bfB.
+                            /*(2)*/ BaseFileA ;
+            }
+            else if (bfAExists && !bfBExists) // If bfA exists AND bfB does NOT exist, return bfB. 
+            { 
                 returnVal = BaseFileB;
+            }
             else if (!bfAExists && bfBExists) // If BfA does NOT exist and BfB exists, return bfA.
+            { 
                 returnVal = BaseFileA;
+            }
             else // Just return BaseFileA if there's nothing else.
+            { 
                 returnVal = BaseFileA;
-
+            }
             return returnVal;
         }
 
@@ -137,14 +150,17 @@ namespace FluffyEars
         {
             string returnVal;
 
+            string oldestFile; 
+            string newestFile;
+
             bool bfAExists = File.Exists(BaseFileA);
             bool bfBExists = File.Exists(BaseFileB);
 
             if (!bfAExists && !bfBExists)
+            {
                 throw new SaveFileException("Save files could not load: Not found.");
+            }
 
-            string oldestFile; // String.Empty is our sentinel value.
-            string newestFile;
 
             // If both files exists, we need to see which is the oldest and newest.
             if(bfAExists && bfBExists)
@@ -156,27 +172,28 @@ namespace FluffyEars
                 {
                     newestFile = BaseFileA;
                     oldestFile = BaseFileB;
-                } else
+                }
+                else
                 {
                     newestFile = BaseFileB;
                     oldestFile = BaseFileA;
-                }
-            } 
+                } // end else
+            } // end if
             else if(bfAExists && !bfBExists)
             {
                 newestFile = BaseFileA;
                 oldestFile = String.Empty;
-            }
+            } // end else if
             else if(!bfAExists && bfBExists)
             {
                 newestFile = BaseFileB;
                 oldestFile = String.Empty;
-            }
+            } // end else if
             else
             {
                 newestFile = String.Empty;
                 oldestFile = String.Empty;
-            }
+            } // end else
 
             // Great. Now we have our newest file and oldest file with String.Empty as a sentinel value indicating it couldn't be found for some
             // reason. Hopefully it was found.
@@ -207,22 +224,22 @@ namespace FluffyEars
                 // Let's try load the MD5s of the newer files.
                 if (newFileExists && newestFileMD5Exists)
                 {
-                    newFileTrueMD5 = ReadFile(newestFileMD5);
-                    newFileMD5 = GetFileMD5(newestFile);
+                    newFileTrueMD5   = ReadFile(newestFileMD5);
+                    newFileMD5       = GetFileMD5(newestFile);
                     newFileIntegrity = CompareMD5(newFileTrueMD5, newFileMD5) && IsValidJson(newestFile);
                 }
                 else
                 {
-                    newFileTrueMD5 = String.Empty;
-                    newFileMD5 = String.Empty;
+                    newFileTrueMD5   = String.Empty;
+                    newFileMD5       = String.Empty;
                     newFileIntegrity = false;
                 }
 
                 // Let's try load the MD5s of the older files.
                 if (oldFileExists && oldestFileMD5Exists)
                 {
-                    oldFileTrueMD5 = ReadFile(oldestFileMD5);
-                    oldFileMD5 = GetFileMD5(oldestFile);
+                    oldFileTrueMD5   = ReadFile(oldestFileMD5);
+                    oldFileMD5       = GetFileMD5(oldestFile);
                     oldFileIntegrity = CompareMD5(oldFileTrueMD5, oldFileMD5) && IsValidJson(oldestFile);
                 }
                 else 
@@ -242,35 +259,27 @@ namespace FluffyEars
                (newFileIntegrity && oldFileIntegrity))
             {
                 returnVal = newestFile;
-            } else // Uh oh, something fucked up.
+            } 
+            else // Uh oh, something fucked up.
             {
                 // If this scope is entered, the newest file has the most integrity
                 if (newFileExisting && newFileIntegrity)
+                {
                     returnVal = newestFile;
+                }
                 // If this scope is entered, the oldest file has the most integrity
                 else if (oldFileExisting & oldFileIntegrity)
+                {
                     returnVal = oldestFile;
+                }
                 // If this scope is entered, everything is fucked.
-                else throw new SaveFileException("Save files corrupt.");
-            }
+                else
+                {
+                    throw new SaveFileException("Save files corrupt.");
+                } // end else
+            } // end else
 
             return returnVal;
-        }
-
-        private bool IsValidJson(string file)
-        {
-            bool valid = true; // It's valid until proven otherwise.
-            string jsonContents = ReadFile(file);
-
-            try
-            {
-                JsonConvert.DeserializeObject(jsonContents);
-            } catch(JsonException je)
-            {
-                valid = false;
-            }
-
-            return valid;
         }
 
         /// <summary>Read information from file.</summary>
@@ -287,18 +296,19 @@ namespace FluffyEars
                     returnVal = sr.ReadToEnd();
                 }
             }
+
             return returnVal;
         }
+
+        /// <summary>Get MD5 file string from FileBase.</summary>
+        private string GetMD5File(string fileBase) 
+            => $"{fileBase}.md5";
 
         /// <summary>Get the file's MD5.</summary>
         /// <param name="file">File to get MD5 from.</param>
         /// <returns>The file's MD5.</returns>
-        public static string GetFileMD5(string file)
-        {
-            string fileContents = SaveFile.ReadFile(file);
-
-            return SaveFile.GetHash(fileContents);
-        }
+        private static string GetFileMD5(string file)
+            => GetHash(ReadFile(file));
 
         /// <summary>Gets a hash of a string in Base64.</summary>
         private static string GetHash(string contents)
@@ -313,6 +323,23 @@ namespace FluffyEars
             return Convert.ToBase64String(hash);
         }
 
+        private bool IsValidJson(string file)
+        {
+            bool valid = true; // It's valid until proven otherwise.
+            string jsonContents = ReadFile(file);
+
+            try
+            {
+                JsonConvert.DeserializeObject(jsonContents);
+            }
+            catch
+            {
+                valid = false;
+            }
+
+            return valid;
+        }
+
         /// <summary>Compare two MD5s.</summary>
         /// <param name="md5_1">First MD5.</param>
         /// <param name="md5_2">Second MD5.</param>
@@ -324,10 +351,6 @@ namespace FluffyEars
             return sc.Compare(md5_1, md5_2) == 0;
         }
 
-        // If either of these exists, it's an existing save file.
-        /// <summary>Check if the save file exists.</summary>
-        /// <returns>True if save file exists.</returns>
-        public bool IsExistingSaveFile() => File.Exists(BaseFileA) || File.Exists(BaseFileB);
-        
+        #endregion Private Methods
     }
 }
