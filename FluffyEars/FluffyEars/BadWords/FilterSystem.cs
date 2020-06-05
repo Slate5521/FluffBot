@@ -65,23 +65,25 @@ namespace FluffyEars.BadWords
 
         #endregion Save/Load Methods
         // ################################
-        #region Private Methods
+        #region Event Listeners
 
-        /// <summary>This updates the RegEx megastring, containing all the filter words but in a word1|word2 format.</summary>
-        private static void UpdateRegexList()
+        internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
-            List<string> maskListDesc = maskList;
-
-            maskListDesc.Sort();
-            maskListDesc.Reverse();
-            
-            regexList = new Regex[maskListDesc.Count];
-
-            for (int i = 0; i < maskListDesc.Count; i++)
-            {
-                regexList[i] = new Regex(maskListDesc[i], regexOptions);
-            }
+            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
+            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
+                CheckMessage(e.Message);
         }
+
+        internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
+        {
+            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
+            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
+                CheckMessage(e.Message);
+        }
+        
+        #endregion Event Listeners
+        // ################################
+        #region Public Methods
 
         public static bool IsMask(string mask) 
             => maskList.Contains(mask) || maskList.Contains(mask.Replace(@" ", @"\s"));
@@ -104,8 +106,8 @@ namespace FluffyEars.BadWords
 
         public static List<string> GetBadWords(string message, out string notatedMessage)
         {
-            List<string> returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
-            StringBuilder sb = new StringBuilder(message);
+            var returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
+            var stringBuilder = new StringBuilder(message);
 
             if (maskList.Count > 0)
             {
@@ -127,20 +129,41 @@ namespace FluffyEars.BadWords
                             if (!Excludes.IsExcluded(message, badWord, badWordIndex))
                             {
                                 returnVal.Add(AttemptGetFullBadWord(message, badWordIndex, mc[i].Length, out int startIndex, out int endIndex));
-                                sb.Insert(startIndex + annoteSymbolsAdded++, '%');
-                                sb.Insert(endIndex + annoteSymbolsAdded++, '%');
-                            }
-                        }
-                    }
-                }
+                                stringBuilder.Insert(startIndex + annoteSymbolsAdded++, '%');
+                                stringBuilder.Insert(endIndex + annoteSymbolsAdded++, '%');
+                            } // end if
+                        } // end for
+                    } // end if
+                } // end foreach
+            } // end if
+
+            notatedMessage = stringBuilder.ToString();
+
+            if (stringBuilder.Length > 1500)
+            {
+                notatedMessage = $"{notatedMessage.Substring(0, 1500)}...\n**message too long to preview.**";
             }
 
-            notatedMessage = sb.ToString();
-
-            if (sb.Length > 1500)
-                notatedMessage = $"{notatedMessage.Substring(0, 1500)}...\n**message too long to preview.**";
-
             return returnVal;
+        }
+
+        #endregion Public Methods
+        // ################################
+        #region Private Methods
+        /// <summary>This updates the RegEx megastring, containing all the filter words but in a word1|word2 format.</summary>
+        private static void UpdateRegexList()
+        {
+            var maskListDesc = maskList;
+
+            maskListDesc.Sort();
+            maskListDesc.Reverse();
+
+            regexList = new Regex[maskListDesc.Count];
+
+            for (int i = 0; i < maskListDesc.Count; i++)
+            {
+                regexList[i] = new Regex(maskListDesc[i], regexOptions);
+            }
         }
 
         private static string AttemptGetFullBadWord(string message, int badWordIndex, int badWordLength, out int startIndex, out int endIndex)
@@ -178,30 +201,15 @@ namespace FluffyEars.BadWords
             }
 
             if (badWordIndex >= 0 && badWordIndex + badWordLength <= message.Length)
+            {
                 returnVal = message.Substring(startIndex, endIndex - startIndex);
-            else returnVal = message.Substring(badWordIndex, badWordLength);
+            }
+            else
+            {
+                returnVal = message.Substring(badWordIndex, badWordLength);
+            }
 
             return returnVal;
-        }
-
-        static void OnFilterTriggered(FilterEventArgs e)
-        {
-            FilterTriggeredEventHandler handler = FilterTriggered;
-            handler?.Invoke(e);
-        }
-
-        internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
-        {
-            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
-            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
-                CheckMessage(e.Message);
-        }
-
-        internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
-        {
-            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
-            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
-                CheckMessage(e.Message);
         }
 
         /// <summary>Check the messages for any Bad Words aka slurs.</summary>
@@ -212,7 +220,8 @@ namespace FluffyEars.BadWords
             if (BotSettings.FilterChannelId != 0)
             {
                 string notatedMessage;
-                List<string> badWords = GetBadWords(message.Content, out notatedMessage); // The detected bad words.
+
+                var badWords = GetBadWords(message.Content, out notatedMessage); // The detected bad words.
 
                 if (badWords.Count > 0)
                 {
@@ -228,6 +237,14 @@ namespace FluffyEars.BadWords
                 }
             }
         }
+
+        #endregion Private Methods
+        // ################################
+        // Event Handler
+        static void OnFilterTriggered(FilterEventArgs e)
+        {
+            FilterTriggeredEventHandler handler = FilterTriggered;
+            handler?.Invoke(e);
+        }
     }
 }
-#endregion Main Methods
