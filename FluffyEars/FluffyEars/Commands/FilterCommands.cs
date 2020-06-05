@@ -199,6 +199,8 @@ namespace FluffyEars.Commands
             }
         }
 
+        #endregion Word Filter
+
         private static string ParamsToString(string[] paramsStr)
         {
             StringBuilder sb = new StringBuilder();
@@ -208,6 +210,5 @@ namespace FluffyEars.Commands
             return sb.ToString();
         }
 
-        #endregion Word Filter
     }
 }
