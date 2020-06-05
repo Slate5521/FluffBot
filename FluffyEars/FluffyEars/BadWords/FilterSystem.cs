@@ -60,7 +60,10 @@ namespace FluffyEars.BadWords
 
                 UpdateRegexList();
             }
-            else Default();
+            else
+            {
+                Default();
+            }
         }
 
         #endregion Save/Load Methods
