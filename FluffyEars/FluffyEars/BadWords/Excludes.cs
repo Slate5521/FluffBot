@@ -8,7 +8,6 @@ namespace FluffyEars.BadWords
 {
     public static class Excludes
     {
-        public const string BaseFile = "excludes";
         private static readonly object lockObj = (object)@"
                ((`\
             ___ \\ '--._
@@ -21,37 +20,39 @@ jgs   {_\______\-'\__\_\";
         /// <summary>List of words to exclude.</summary>
         private static List<string> excludeList;
 
+        public const string BaseFile = @"excludes";
+
+        #region Save/Load Methods
+
         public static void Default()
         {
             // Default values in this case is an empty list.
             excludeList = new List<string>();
+
             ReorganizeList();
             Save();
         }
 
         public static void Save()
-        {
-            saveFile.Save<List<string>>(excludeList, lockObj);
-        }
-        public static bool CanLoad() => saveFile.IsExistingSaveFile();
+            => saveFile.Save(excludeList, lockObj);
+        public static bool CanLoad() 
+            => saveFile.IsExistingSaveFile();
         public static void Load()
         {
             if (CanLoad())
             {
                 excludeList = saveFile.Load<List<string>>(lockObj);
                 ReorganizeList();
-            }
+            } 
             else Default();
         }
 
-        private static void ReorganizeList()
-        {
-            excludeList.Sort();
-            excludeList.Reverse();
-        }
-
+        #endregion Save/Load Methods
+        // ################################
+        #region Main Methods
         /// <summary>Check if a word is in the exclude list.</summary>
-        public static bool IsExcluded(string word) => excludeList.Contains(word.ToLower());
+        public static bool IsExcluded(string word) 
+            => excludeList.Contains(word.ToLower());
         public static bool IsExcluded(string msgOriginal, string badWord, int badWordIndex)
         {
             // The default return value is false because if there are no excluded words, then nothing can be excluded.
@@ -61,19 +62,27 @@ jgs   {_\______\-'\__\_\";
             if (excludeList.Count > 0) 
             {
                 // Let's loop through every excluded word to check them against the list.
-                foreach (string excludedPhrase in excludeList)
+                foreach (var excludedPhrase in excludeList)
                 {
                     if (returnVal)
+                    {
                         break; // NON-SESE BREAK POINT! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! 
+                    }
 
                     int excludedPhraseLength = excludedPhrase.Length;
-
-                    int foundExcludeIndex = 0, scanIndex = 0; do
+                    int foundExcludeIndex = 0;
+                    int scanIndex = 0; 
+                    
+                    do
                     {
                         if (scanIndex <= msgOriginal.Length)
+                        {
                             foundExcludeIndex = msgLwr.IndexOf(excludedPhrase, scanIndex);
+                        }
                         else
+                        {
                             foundExcludeIndex = -1;
+                        }
 
                         if (foundExcludeIndex != -1)
                         {
@@ -87,29 +96,44 @@ jgs   {_\______\-'\__\_\";
                                         foundExcludeIndex + excludedPhraseLength <= msgOriginal.Length &&
                                         msgLwr.Substring(foundExcludeIndex, excludedPhraseLength).IndexOf(excludedPhrase) != -1;
 
-                            if(!returnVal)
+                            if (!returnVal)
+                            {
                                 scanIndex += foundExcludeIndex + excludedPhraseLength;
-                        }
-
+                            } 
+                        } // end if
                     } while (foundExcludeIndex != -1 && !returnVal);
-
-                }
-            }
+                } // end foreach
+            } // end if
 
             return returnVal;
+        }
+
+        private static void ReorganizeList()
+        {
+            excludeList.Sort();
+            excludeList.Reverse();
         }
 
         public static void AddPhrase(string phrase)
         {
             excludeList.Add(phrase.ToLower());
+
             ReorganizeList();
         }
+        
         public static void RemovePhrase(string phrase)
         {
             excludeList.Remove(phrase.ToLower());
+
             ReorganizeList();
         }
-        public static List<string> GetPhrases() => excludeList;
-        public static int GetPhraseCount() => excludeList.Count;
+
+        public static List<string> GetPhrases() 
+            => excludeList;
+        
+        public static int GetPhraseCount() 
+            => excludeList.Count;
+
+        #endregion Main Methods
     }
 }
