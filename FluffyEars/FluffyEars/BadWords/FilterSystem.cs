@@ -68,7 +68,7 @@ namespace FluffyEars.BadWords
                 regexList[i] = new Regex(maskListDesc[i], regexOptions);
         }
 
-        public static bool IsMask(string mask) => maskList.Contains(mask);
+        public static bool IsMask(string mask) => maskList.Contains(mask) || maskList.Contains(mask.Replace(@" ", @"\s"));
         public static List<string> GetMasks() => maskList;
 
         public static void AddMask(string mask)

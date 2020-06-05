@@ -8,7 +8,7 @@ namespace FluffyEars.BadWords
 {
     public static class Excludes
     {
-        public const string BaseFile = "wordexcludes";
+        public const string BaseFile = "excludes";
         private static readonly object lockObj = (object)@"
                ((`\
             ___ \\ '--._
@@ -61,17 +61,17 @@ jgs   {_\______\-'\__\_\";
             if (excludeList.Count > 0) 
             {
                 // Let's loop through every excluded word to check them against the list.
-                foreach (string excludedWord in excludeList)
+                foreach (string excludedPhrase in excludeList)
                 {
                     if (returnVal)
                         break; // NON-SESE BREAK POINT! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! 
 
-                    int excludedWordLength = excludedWord.Length;
+                    int excludedPhraseLength = excludedPhrase.Length;
 
                     int foundExcludeIndex = 0, scanIndex = 0; do
                     {
                         if (scanIndex <= msgOriginal.Length)
-                            foundExcludeIndex = msgLwr.IndexOf(excludedWord, scanIndex);
+                            foundExcludeIndex = msgLwr.IndexOf(excludedPhrase, scanIndex);
                         else
                             foundExcludeIndex = -1;
 
@@ -83,12 +83,12 @@ jgs   {_\______\-'\__\_\";
                             // (C) exception protect: let's make sure the substring we want to get next is within bounds of the message.
                             // (D) the found excluded word contains the bad word.
                             returnVal = badWordIndex >= foundExcludeIndex &&
-                                        badWordIndex + badWord.Length <= foundExcludeIndex + excludedWordLength &&
-                                        foundExcludeIndex + excludedWordLength <= msgOriginal.Length &&
-                                        msgLwr.Substring(foundExcludeIndex, excludedWordLength).IndexOf(excludedWord) != -1;
+                                        badWordIndex + badWord.Length <= foundExcludeIndex + excludedPhraseLength &&
+                                        foundExcludeIndex + excludedPhraseLength <= msgOriginal.Length &&
+                                        msgLwr.Substring(foundExcludeIndex, excludedPhraseLength).IndexOf(excludedPhrase) != -1;
 
                             if(!returnVal)
-                                scanIndex += foundExcludeIndex + excludedWordLength;
+                                scanIndex += foundExcludeIndex + excludedPhraseLength;
                         }
 
                     } while (foundExcludeIndex != -1 && !returnVal);
@@ -99,17 +99,17 @@ jgs   {_\______\-'\__\_\";
             return returnVal;
         }
 
-        public static void AddWord(string word)
+        public static void AddPhrase(string phrase)
         {
-            excludeList.Add(word.ToLower());
+            excludeList.Add(phrase.ToLower());
             ReorganizeList();
         }
-        public static void RemoveWord(string word)
+        public static void RemovePhrase(string phrase)
         {
-            excludeList.Remove(word.ToLower());
+            excludeList.Remove(phrase.ToLower());
             ReorganizeList();
         }
-            public static List<string> GetWords() => excludeList;
-        public static int GetWordCount() => excludeList.Count;
+        public static List<string> GetPhrases() => excludeList;
+        public static int GetPhraseCount() => excludeList.Count;
     }
 }
