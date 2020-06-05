@@ -236,7 +236,34 @@ namespace FluffyEars.Commands
         public async Task StartMessageEnabled(CommandContext ctx, bool enabled)
         {
             if(ctx.Member.GetHighestRole().IsBotManagerOrHigher())
-            { 
+            {
+                await ctx.TriggerTypingAsync();
+
+                DiscordEmbed embedResponse;
+
+                BotSettings.StartMessageEnabled = enabled;
+                BotSettings.Save();
+
+                var stringBuilder = new StringBuilder();
+                stringBuilder.Append(@"I have ");
+                
+                if(enabled)
+                {
+                    stringBuilder.Append(@"enabled start messaging! :D");
+                } 
+                else
+                {
+                    stringBuilder.Append(@"disabled start messaging... ;-;");
+                }
+
+                embedResponse = ChatObjects.FormatEmbedResponse
+                    (
+                        title: @"Excluded channels",
+                        description: ChatObjects.GetNeutralMessage(stringBuilder.ToString()),
+                        color: ChatObjects.NeutralColor
+                    );
+
+                await ctx.Channel.SendMessageAsync(embed: embedResponse);
             }
         }
     }
