@@ -18,7 +18,6 @@ namespace FluffyEars.BadWords
         public static event FilterTriggeredEventHandler FilterTriggered;
         public delegate void FilterTriggeredEventHandler(FilterEventArgs e);
 
-        public const string BaseFile = "filter";
         private static readonly object lockObj = (object)@"
          \\
           \\_
@@ -26,59 +25,80 @@ namespace FluffyEars.BadWords
           / )
    jgs  o( )_\_";
         private static SaveFile saveFile = new SaveFile(BaseFile);
-        static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
+        private static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
 
         private static List<string> maskList;
         private static Regex[] regexList;
 
+        private const string BaseFile = "filter";
+
+        #region Save/Load Methods
+
         public static void Default()
         {
-            maskList = new List<string>();
+            maskList  = new List<string>();
             regexList = new Regex[0];
 
             Save();
         }
+
         public static void Save()
         {
-            saveFile.Save<List<string>>(maskList, lockObj);
+            saveFile.Save(maskList, lockObj);
 
             UpdateRegexList();
         }
-        public static bool CanLoad() => saveFile.IsExistingSaveFile();
+
+        public static bool CanLoad() 
+            => saveFile.IsExistingSaveFile();
+
         public static void Load()
         {
             if (CanLoad())
             {
                 maskList = saveFile.Load<List<string>>(lockObj);
+
                 UpdateRegexList();
             }
             else Default();
         }
 
+        #endregion Save/Load Methods
+        // ################################
+        #region Private Methods
+
         /// <summary>This updates the RegEx megastring, containing all the filter words but in a word1|word2 format.</summary>
         private static void UpdateRegexList()
         {
             List<string> maskListDesc = maskList;
+
             maskListDesc.Sort();
             maskListDesc.Reverse();
             
             regexList = new Regex[maskListDesc.Count];
 
             for (int i = 0; i < maskListDesc.Count; i++)
+            {
                 regexList[i] = new Regex(maskListDesc[i], regexOptions);
+            }
         }
 
-        public static bool IsMask(string mask) => maskList.Contains(mask) || maskList.Contains(mask.Replace(@" ", @"\s"));
-        public static List<string> GetMasks() => maskList;
+        public static bool IsMask(string mask) 
+            => maskList.Contains(mask) || maskList.Contains(mask.Replace(@" ", @"\s"));
+        
+        public static List<string> GetMasks() 
+            => maskList;
 
         public static void AddMask(string mask)
         {
             maskList.Add(mask);
+
             UpdateRegexList();
         }
         public static void RemoveMask(string mask)
         {
             maskList.Remove(mask);
+
             UpdateRegexList();
         }
 
@@ -210,3 +230,4 @@ namespace FluffyEars.BadWords
         }
     }
 }
+#endregion Main Methods

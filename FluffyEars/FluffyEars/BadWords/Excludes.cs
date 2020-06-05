@@ -49,8 +49,9 @@ jgs   {_\______\-'\__\_\";
 
         #endregion Save/Load Methods
         // ################################
-        #region Main Methods
-        /// <summary>Check if a word is in the exclude list.</summary>
+        #region Public Methods
+
+        /// <summary>Check if a word isin the exclude list.</summary>
         public static bool IsExcluded(string word) 
             => excludeList.Contains(word.ToLower());
         public static bool IsExcluded(string msgOriginal, string badWord, int badWordIndex)
@@ -107,6 +108,28 @@ jgs   {_\______\-'\__\_\";
 
             return returnVal;
         }
+        public static void AddPhrase(string phrase)
+        {
+            excludeList.Add(phrase.ToLower());
+
+            ReorganizeList();
+        }
+
+        public static void RemovePhrase(string phrase)
+        {
+            excludeList.Remove(phrase.ToLower());
+
+            ReorganizeList();
+        }
+        public static List<string> GetPhrases()
+            => excludeList;
+
+        public static int GetPhraseCount()
+            => excludeList.Count;
+
+        #endregion Public Methods
+        // ################################
+        #region Private Methods
 
         private static void ReorganizeList()
         {
@@ -114,26 +137,6 @@ jgs   {_\______\-'\__\_\";
             excludeList.Reverse();
         }
 
-        public static void AddPhrase(string phrase)
-        {
-            excludeList.Add(phrase.ToLower());
-
-            ReorganizeList();
-        }
-        
-        public static void RemovePhrase(string phrase)
-        {
-            excludeList.Remove(phrase.ToLower());
-
-            ReorganizeList();
-        }
-
-        public static List<string> GetPhrases() 
-            => excludeList;
-        
-        public static int GetPhraseCount() 
-            => excludeList.Count;
-
-        #endregion Main Methods
+        #endregion Private Methods
     }
 }
