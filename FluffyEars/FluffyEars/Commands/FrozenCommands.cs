@@ -80,9 +80,21 @@ namespace FluffyEars.Commands
             if (e.Author.Id != 669347771312111619 && BotSettings.GetFrozenNames().Any(e.Message.Content.ToLower().Contains) && !e.Author.IsBot)
             {
                 DiscordChannel chan = await Bot.BotClient.GetChannelAsync(679933620034600960);
-                await chan.SendMessageAsync(String.Format("<@113829933071073287> Someone mentioned you!\n{0}",
-                    String.Format("https://discordapp.com/channels/{0}/{1}/{2}", e.Channel.GuildId, e.Channel.Id, e.Message.Id)));
-                await chan.SendMessageAsync(e.Message.Content);
+
+                var deb = new DiscordEmbedBuilder(
+                    ChatObjects.FormatEmbedResponse
+                        (
+                            title: "Mention",
+                            description: e.Message.Content.Length > 1500 ? $"```{e.Message.Content.Substring(0, 1500)} . . .\n**too long to preview**```" : $"```{e.Message.Content}```",
+                            thumbnail: e.Message.Author.AvatarUrl,
+                            color: ChatObjects.NeutralColor
+                        ));
+
+                deb.AddField(@"Mentioner", $"{e.Message.Author.Username}#{e.Message.Author.Discriminator}", true);
+                deb.AddField(@"Channel", $"#{e.Message.Channel.Name}", true);
+                deb.AddField(@"Link", ChatObjects.GetMessageUrl(e.Message));
+
+                await chan.SendMessageAsync(ChatObjects.GetMention(113829933071073287), embed: deb.Build());
             }
 
         }
