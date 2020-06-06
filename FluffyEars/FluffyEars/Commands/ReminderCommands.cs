@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluffyEars.Reminders;
 using System.Text.RegularExpressions;
+using System.Collections;
 
 namespace FluffyEars.Commands
 {
@@ -26,110 +27,185 @@ namespace FluffyEars.Commands
         [Command("+reminder")]
         public async Task AddReminder(CommandContext ctx, params string[] paramsList)
         {
-            if (ctx.Member.GetHighestRole().IsCSOrHigher())
+            if (!ctx.Member.GetHighestRole().IsCSOrHigher())
             {
-                
+                await Bot.NotifyInvalidPermissions
+                       (
+                           requiredRole: Role.CS,
+                           command: ctx.Command.Name,
+                           channel: ctx.Channel,
+                           caller: ctx.Member
+                       );
+            }
+            else
+            {
                 string args = ctx.RawArgumentString;
-                int firstQuote = args.IndexOf('[');
-                int secondQuote = args.LastIndexOf(']');
 
-                // Let's try to get the date, first of all.
-                string dateSubstring;
+                // Firstly get all the matches.
+                MatchCollection regexMatches = DateRegex.Matches(args);
+                BitArray regexCoverage = new BitArray(args.Length);
+                var dto = ctx.Message.CreationTimestamp;
+                List<ulong> mentions = new List<ulong>();
 
-                // If there's no quote, let's just see what happens if we put the whole string in.
-                if (firstQuote == -1)
-                    dateSubstring = args.TrimStart();
-                else dateSubstring = args.TrimStart(' ').Substring(0, firstQuote);
+                // String processing - find the message and get the reminder end date. 
+                // To find what's not a date, we simply look for the first character that isn't in the boundaries of a Regex match. 
+                //
+                // Structure of a possible string:
+                //
+                //             Date String | Message String
+                //  DATE, DATE, DATE, DATE | message
+                //
+                // Beyond the Date String we want to stop processing time information as people may reference time in the message string, so we don't
+                // erronously want that data added to the date string.
 
-                MatchCollection matches = DateRegex.Matches(dateSubstring);
 
-                DateTimeOffset dto = ctx.Message.CreationTimestamp.UtcDateTime;
-
-                foreach(Match match in matches)
+                // Populate the regexCoverage...
+                foreach (Match match in regexMatches)
                 {
-                    if(match.Groups.Count == 3)
+                    for(int i = match.Index; i < match.Index + match.Length; i++)
                     {
-                        // Check if it's an integer just in case...
-                        if (Int32.TryParse(match.Groups[1].Value, out int measure))
-                        {
-                            InterpretTime(
-                                measure: measure,
-                                unit: match.Groups[2].Value,
-                                dto: ref dto);
-                        }
+                        regexCoverage[i] = true;
                     }
                 }
 
-                // Cancels: ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+                // So I want to explain what I'm about to do here. Every value in regexCoverage[] indicates if that's part of the initial time
+                // string. We want to use it to determine if something is a message or a time value, so if at any point, we run into something that
+                // isn't a time string, we want to set every instance thereafter as false so we know it's part of a message.
+                if (regexMatches.Count > 0)
+                {
+                    bool value = regexCoverage[0];
+                    for (int k = 1; k < regexCoverage.Count; k++)
+                    {
+                        if (!IsWhitespace(args[k]))
+                        {
+                            if (!regexCoverage[k] && value)
+                            {
+                                value = false;
+                            }
 
-                if (dto.UtcTicks == ctx.Message.CreationTimestamp.UtcTicks)
-                {   // No time has been added.
-                    await ctx.Channel.SendMessageAsync(
-                        ChatObjects.GetErrMessage(@"Invalid time string..."));
-                    return;
+                            if (!value)
+                            {
+                                regexCoverage[k] = value;
+                            }
+                        }
+                    }
                 }
+                // We need to figure out where the date string ends.
+                string messageString = String.Empty;
+
+                int dateEndIndex = 0;
+                bool messageFound = false;
+                while(dateEndIndex < regexCoverage.Length && !messageFound) 
+                {
+                    char stringChar = args[dateEndIndex];
+                    bool inRegexBoundaries = regexCoverage[dateEndIndex];
+
+                    // This checks to see if the character is non-white-space and outside of any RegEx boundaries.
+                    messageFound = !IsWhitespace(stringChar) && !inRegexBoundaries;
+
+                    // If not found, continue; otherwise, keep incrementing.
+                    if(!messageFound)
+                    {
+                        dateEndIndex++;
+                    }
+                }
+
+                // If we aren't going out of bounds, let's set the string to this.
+                if(dateEndIndex < regexCoverage.Length)
+                {
+                    messageString = args.Substring(dateEndIndex);
+                }
+
+                // Get date information
+                foreach(Match match in regexMatches)
+                {
+                    // Only try to exclude Message String date information if a message string was found.
+                    if(!messageFound || (regexCoverage[match.Index] && regexCoverage[match.Index + match.Length - 1]))
+                    {
+                        InterpretTime(match.Groups[1].Value, match.Groups[2].Value, ref dto);
+                    }
+                }
+
+                // Get mentions
+                foreach(DiscordUser user in ctx.Message.MentionedUsers)
+                {
+                    ulong id = user.Id;
+
+                    if(!user.IsBot && !mentions.Contains(id))
+                    {
+                        mentions.Add(id);
+                    }
+                }
+
+                // At this point, now we have the DateTimeOffset describing when this reminder needs to be set off, and we have a message string if
+                // any. So now we just need to make sure it's within reasonable boundaries, set the reminder, and notify the user.
 
                 DateTimeOffset yearFromNow = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddYears(1);
-                if(dto.UtcTicks > yearFromNow.UtcTicks)
+                DiscordEmbed embed;
+                Reminder reminder;
+
+                if (dto.UtcTicks == ctx.Message.CreationTimestamp.UtcTicks)
+                {   // No time was added.
+                    embed = ChatObjects.FormatEmbedResponse
+                        (
+                            title: @"Unable to Add Reminder",
+                            description: ChatObjects.GetErrMessage(@"I was unable able to add the mask you gave me. You didn't supply me a valid time..."),
+                            color: ChatObjects.ErrColor,
+                            thumbnail: ChatObjects.URL_REMINDER_GENERIC
+                        );
+                }
+                else if (dto.UtcTicks > yearFromNow.UtcTicks)
                 {   // More than a year away.
-                    await ctx.Channel.SendMessageAsync(
-                        ChatObjects.GetErrMessage(@"That's more than one year away. Please reduce your time..."));
-                    return;
+                    embed = ChatObjects.FormatEmbedResponse
+                        (
+                            title: @"Unable Add Reminder",
+                            description: ChatObjects.GetErrMessage(@"I was unable able to add the mask you gave me. That's more than a year away..."),
+                            color: ChatObjects.ErrColor,
+                            thumbnail: ChatObjects.URL_REMINDER_GENERIC
+                        );
                 }
-
-                // Great, so now we have our time string. Now we need to try and figure out what our message string is.
-                string msgString = @"no message provided";
-                
-                // Just checking to make sure everything is in bounds.
-                if(firstQuote != -1 && firstQuote + 1 < args.Length && secondQuote - 1 > firstQuote)
+                else
                 {
-                    if (secondQuote == -1)
-                        msgString = args.Substring(firstQuote + 1);
-                    else msgString = args.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
-                }
+                    embed = ChatObjects.FormatEmbedResponse
+                        (
+                            title: @"Add Reminder",
+                            description: ChatObjects.GetSuccessMessage(@"I added the reminder you gave me!"),
+                            color: ChatObjects.SuccessColor,
+                            thumbnail: ChatObjects.URL_REMINDER_GENERIC
+                        );
 
-                // Now we have our message string. Let's see if there are any mentions.
-                IEnumerable<ulong> mentionIds =
-                    from mentionId in ctx.Message.MentionedUsers.Select(a => a.Id).Distinct()
-                    where mentionId != 669347771312111619 && // Do not allow mentions of the bot,
-                          mentionId != 676710243878830090 && // the dev bot,
-                          mentionId != ctx.Message.Author.Id // or the user who called the function.
-                    select mentionId;
+                    reminder = new Reminder
+                    {
+                        Text = messageString,
+                        Time = dto.ToUnixTimeMilliseconds(),
+                        User = ctx.Member.Id,
+                        Channel = ctx.Channel.Id,
+                        UsersToNotify = mentions.ToArray()
+                    };
 
+                    ReminderSystem.AddReminder(reminder);
+                    ReminderSystem.Save();
 
-                StringBuilder sb = new StringBuilder();
-                // DEB!
-                DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
-                
-                Reminder reminder = new Reminder
-                {
-                    Text = msgString,
-                    Time = dto.ToUnixTimeMilliseconds(),
-                    User = ctx.Member.Id,
-                    Channel = ctx.Channel.Id,
-                    UsersToNotify = mentionIds.ToArray()
-                };
+                    var deb = new DiscordEmbedBuilder(embed);
 
-                foreach (ulong mentionId in mentionIds)
-                    sb.Append(String.Format("<@{0}> ", mentionId));
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendJoin(' ', mentions.ToArray().Select(a => ChatObjects.GetMention(a)));
 
-                deb.WithTitle(@"Notification");
-                deb.AddField(@"User", ctx.Member.Mention);
-                deb.AddField(@"Time", dto.ToString());
-                deb.AddField(@"Message", msgString);
+                    deb.AddField(@"User", ctx.Member.Mention, true);
+                    deb.AddField(@"Time", dto.ToString(), true);
+                    deb.AddField(@"Notification Identifier", reminder.GetIdentifier(), false);
 
-                if (sb.Length > 0)
-                    deb.AddField(@"Users to notify:", sb.ToString().TrimEnd());
+                    if (stringBuilder.Length > 0)
+                        deb.AddField(@"Users to notify:", stringBuilder.ToString(), false);
 
-                deb.AddField(@"Notification Identifier", reminder.GetIdentifier());
-                deb.WithThumbnail(ChatObjects.URL_REMINDER_GENERIC);
+                    deb.AddField(@"Message",messageString, false);
 
-                ReminderSystem.AddReminder(reminder);
-                ReminderSystem.Save();
+                    embed = deb.Build();
+                } // end else
 
-                await ctx.Channel.SendMessageAsync(String.Empty, false, deb);
-            }
-        }
+                await ctx.Channel.SendMessageAsync(embed: embed);
+            } // end else
+        } // end method
 
         [Command("-reminder")]
         public async Task RemoveReminder(CommandContext ctx, string reminderId)
@@ -231,10 +307,10 @@ namespace FluffyEars.Commands
                 } else await ctx.Channel.SendMessageAsync("There are no notifications.");
             }
         }
-        private static void InterpretTime(int measure, string unit, ref DateTimeOffset dto)
+        private static void InterpretTime(string measureString, string unit, ref DateTimeOffset dto)
         {
             // Only continue if these two have a valid value.
-            if (measure > 0 && unit.Length > 0)
+            if (int.TryParse(measureString, out int measure) && measure > 0 && unit.Length > 0)
             {
                 switch (unit.ToLower())
                 {
@@ -268,6 +344,14 @@ namespace FluffyEars.Commands
                         break;
                 }
             }
+        }
+
+        private static bool IsWhitespace(char c)
+        {
+            return c.Equals(' ') ||
+                   c.Equals('\r') ||
+                   c.Equals('\n') ||
+                   c.Equals('\t');
         }
     }
 }
