@@ -5,6 +5,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity; 
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,6 +40,8 @@ namespace FluffyEars.Commands
             }
             else
             {
+                await ctx.TriggerTypingAsync();
+
                 string args = ctx.RawArgumentString;
 
                 // Firstly get all the matches.
@@ -210,103 +213,154 @@ namespace FluffyEars.Commands
         [Command("-reminder")]
         public async Task RemoveReminder(CommandContext ctx, string reminderId)
         {
-            if(ctx.Member.GetHighestRole().IsCSOrHigher())
+            if (!ctx.Member.GetHighestRole().IsCSOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                       (
+                           requiredRole: Role.CS,
+                           command: ctx.Command.Name,
+                           channel: ctx.Channel,
+                           caller: ctx.Member
+                       );
+            }
+            else
             {
                 await ctx.TriggerTypingAsync();
 
                 // Cancels:
-                if(!ReminderSystem.IsReminder(reminderId))
+                if (!ReminderSystem.IsReminder(reminderId))
                 {
                     await ctx.Channel.SendMessageAsync(
-                        ChatObjects.GetErrMessage(@"That is not a valid Reminder ID..."));
-                    return;
+                        embed:
+                        
+                        ChatObjects.FormatEmbedResponse
+                        (
+                            title: @"Unable to Remove Reminder",
+                            description: ChatObjects.GetErrMessage(@"I was unable to remove the reminder you gave me. That's an invalid ID..."),
+                            color: ChatObjects.ErrColor,
+                            thumbnail: ChatObjects.URL_REMINDER_GENERIC
+                        ));
                 }
+                else
+                {
+                    Reminder reminderToRemove = ReminderSystem.GetReminderFromId(reminderId);
 
-                Reminder reminderToRemove = ReminderSystem.GetReminderFromId(reminderId);
+                    var discordEmbedBuilder = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
+                        (
+                            title: @"Remove Reminder",
+                            description: ChatObjects.GetSuccessMessage(@"I able to remove the reminder you gave me!"),
+                            color: ChatObjects.SuccessColor,
+                            thumbnail: ChatObjects.URL_REMINDER_GENERIC
+                        ));
 
-                // DEB!
-                DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
+                    DateTimeOffset dto = DateTimeOffset.FromUnixTimeMilliseconds(reminderToRemove.Time); // The reminder's DTO.
+                    TimeSpan remainingTime = dto.Subtract(DateTimeOffset.UtcNow); // The remaining time left for the reminder.
+                    string originalAuthorMention = ChatObjects.GetMention(reminderToRemove.User);
 
-                DateTimeOffset dto = DateTimeOffset.FromUnixTimeMilliseconds(reminderToRemove.Time); // The reminder's DTO.
-                TimeSpan remainingTime = dto.Subtract(DateTimeOffset.UtcNow); // The remaining time left for the reminder.
-                string originalAuthorMention = String.Format("<@{0}>", reminderToRemove.User);
+                    discordEmbedBuilder.AddField(@"User", originalAuthorMention, true);
+                    discordEmbedBuilder.AddField(@"Time", dto.ToString(), true);
+                    discordEmbedBuilder.AddField(@"Notification Identifier", reminderId, false);
+                    discordEmbedBuilder.AddField(@"Remaining time",
+                        String.Format("{0}day {1}hr {2}min {3}sec", remainingTime.Days, remainingTime.Hours, remainingTime.Minutes, remainingTime.Seconds), false);
+                    discordEmbedBuilder.AddField(@"Message", reminderToRemove.Text, false);
 
-                deb.WithTitle(@"Notification Removed");
-                deb.AddField(@"User", originalAuthorMention);
-                deb.AddField(@"Time", dto.ToString());
-                deb.AddField(@"Remaining time", 
-                    String.Format("{0}day {1}hr {2}min {3}sec", remainingTime.Days, remainingTime.Hours, remainingTime.Minutes, remainingTime.Seconds));
-                deb.AddField(@"Message", reminderToRemove.Text);
-                deb.AddField(@"Notification Identifier", reminderId);
+                    ReminderSystem.RemoveReminder(reminderToRemove);
+                    ReminderSystem.Save();
 
-                deb.WithColor(DiscordColor.LightGray);
-                deb.WithThumbnail(ChatObjects.URL_REMINDER_DELETED);
-
-                ReminderSystem.RemoveReminder(reminderToRemove);
-                ReminderSystem.Save();
-
-                await ctx.Channel.SendMessageAsync(originalAuthorMention, false, deb);
-            }
-        }
+                    await ctx.Channel.SendMessageAsync(originalAuthorMention, embed: discordEmbedBuilder);
+                } // end else
+            } // end else
+        } // end method
 
         [Command("reminderlist")]
         public async Task ListReminders(CommandContext ctx)
         {
-            if(ctx.Member.GetHighestRole().IsCSOrHigher())
+            if (!ctx.Member.GetHighestRole().IsCSOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                       (
+                           requiredRole: Role.CS,
+                           command: ctx.Command.Name,
+                           channel: ctx.Channel,
+                           caller: ctx.Member
+                       );
+            }
+            else
             {
                 // Check if there are any notifications. If there are none, let the user know.
                 if (ReminderSystem.HasNotificationsPending())
                 {
-                    int debLength;
-                    int page = 1;
+                    var interactivity = ctx.Client.GetInteractivity();
+                    List<Page> pages = new List<Page>();
 
-                    // DEB!
-                    DiscordEmbedBuilder deb = new DiscordEmbedBuilder();
-                    deb.WithTitle(@"Reminder List Page " + page);
-                    deb.WithThumbnail(@"https://i.imgur.com/lOqo2k8.png");
-                    debLength = deb.Thumbnail.Url.Length;
-
-                    // Get a list of reminders, but ordered descending by their remind date.
                     Reminder[] reminderList = ReminderSystem.GetReminders().OrderByDescending(a => a.Time).ToArray();
-                    foreach (Reminder reminder in reminderList)
+
+                    var deb = new DiscordEmbedBuilder();
+
+                    int count = 0;
+
+                    const int REMINDERS_PER_PAGE = 5;
+                    for (int i = 0; i < reminderList.Length; i++)
                     {
-                        int reminderLength;
-                        StringBuilder sb = new StringBuilder();
+                        Reminder reminder = reminderList[i];
 
-                        Array.ForEach(reminder.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
-                            a => sb.Append(String.Format("<@{0}> ", a)));
-
-                        DateTimeOffset dto = DateTimeOffset.FromUnixTimeMilliseconds(reminder.Time);
-
-                        string str1 = dto.ToString("ddMMMyyyy HH:mm");
-                        string str2 = String.Format("<@{0}>: {1}\nMentions: {2}\nId: {3}",
-                            /*{0}*/ reminder.User, /*{1}*/ reminder.Text, /*{2}*/ sb.ToString(), /*{3}*/ reminder.GetIdentifier());
-
-                        reminderLength = sb.Length + str1.Length + str2.Length + deb.Title.Length;
-
-
-                        // So, if the resulting length is > 1600, we wanna send it and clear the embed.
-                        if (reminderLength + debLength > 1600)
+                        if (i % REMINDERS_PER_PAGE == 0 || i == reminderList.Length - 1)
                         {
-                            await ctx.Channel.SendMessageAsync(embed: deb);
+                            deb.WithDescription(ChatObjects.GetNeutralMessage($"Hello {ctx.Member.Mention}, please note you are the only one who can react to this message.\n\n**Showing {count} reminders out of a total of {reminderList.Length}.**"));
+
+                            if (i != 0)
+                            {
+                                pages.Add(new Page(embed: deb));
+                                count = 0;
+                            }
+
                             deb = new DiscordEmbedBuilder();
-                            deb.WithTitle(@"Reminder List Page " + ++page);
+
+                            deb.WithTitle($"Reminders Page {Math.Ceiling((i + 1.0f) / (float)REMINDERS_PER_PAGE)}/{(reminderList.Length + reminderList.Length % REMINDERS_PER_PAGE) / REMINDERS_PER_PAGE}");
+                            deb.WithColor(ChatObjects.NeutralColor);
                             deb.WithThumbnail(ChatObjects.URL_REMINDER_GENERIC);
-                            debLength = deb.Thumbnail.Url.Length;
                         }
 
-                        deb.AddField(str1, str2);
-                        debLength += reminderLength;
+                        var stringBuilder = new StringBuilder();
+                        // For every user (a), append them to sb in mention format <@id>.
+                        Array.ForEach(reminder.UsersToNotify, a => stringBuilder.Append($"{ChatObjects.GetMention(a)} "));
 
-                        // This checks for cases where we just finished with an embed, but we have one more reminder left. So if we do, let's send 
-                        // it.
-                        if(reminder.Equals(reminderList.Last()))
-                            await ctx.Channel.SendMessageAsync(embed: deb);
+                        var dto = DateTimeOffset.FromUnixTimeMilliseconds(reminder.Time);
+
+                        string name = dto.ToString("ddMMMyyyy HH:mm");
+                        string value = $"{ChatObjects.GetMention(reminder.User)}: {reminder.Text}\nMentions: {stringBuilder.ToString().TrimEnd()}\nId: {reminder.GetIdentifier()}";
+
+                        deb.AddField(name, value);
+                        count++;
                     }
 
-                } else await ctx.Channel.SendMessageAsync("There are no notifications.");
-            }
-        }
+                    var emojis = new PaginationEmojis
+                    {
+                        Left = DiscordEmoji.FromName(Bot.BotClient, @":arrow_backward:"),
+                        Right = DiscordEmoji.FromName(Bot.BotClient, @":arrow_forward:"),
+                        Stop = DiscordEmoji.FromName(Bot.BotClient, @":stop_button:"),
+                        SkipLeft = null,
+                        SkipRight = null
+                    };
+
+                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, emojis: emojis);
+                }
+                else
+                {
+                    await ctx.Channel.SendMessageAsync(
+                        embed:
+                    
+                        ChatObjects.FormatEmbedResponse
+                            (
+                                title: @"Reminders",
+                                description: ChatObjects.GetNeutralMessage(@"There are no reminders."),
+                                color: ChatObjects.NeutralColor,
+                                thumbnail: ChatObjects.URL_REMINDER_GENERIC
+                            ));
+                } // end else
+            } // end if
+        } // end method
+
         private static void InterpretTime(string measureString, string unit, ref DateTimeOffset dto)
         {
             // Only continue if these two have a valid value.

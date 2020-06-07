@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using FluffyEars.Reminders;
 using FluffyEars.BadWords;
 using DSharpPlus.CommandsNext.Exceptions;
+using DSharpPlus.Interactivity;
 using FluffyEars.Commands;
 
 namespace FluffyEars
@@ -22,6 +23,7 @@ namespace FluffyEars
         public static DiscordClient BotClient;
         /// <summary>CommandNextModule</summary>
         public CommandsNextExtension Commands;
+        public InteractivityExtension Interactivity { get; set; }
 
         public Bot() { }
 
@@ -51,6 +53,12 @@ namespace FluffyEars
                 EnableDefaultHelp = false,
                 EnableDms = true
             };
+
+            BotClient.UseInteractivity(new InteractivityConfiguration
+            {
+                PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore,
+                Timeout = TimeSpan.FromMinutes(2)
+            });
 
             Commands = BotClient.UseCommandsNext(commandConfig);
 
