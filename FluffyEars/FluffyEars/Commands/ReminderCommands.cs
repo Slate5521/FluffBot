@@ -327,10 +327,18 @@ namespace FluffyEars.Commands
 
                         var dto = DateTimeOffset.FromUnixTimeMilliseconds(reminder.Time);
 
-                        string name = dto.ToString("ddMMMyyyy HH:mm");
-                        string value = $"{ChatObjects.GetMention(reminder.User)}: {reminder.Text}\nMentions: {stringBuilder.ToString().TrimEnd()}\nId: {reminder.GetIdentifier()}";
+                        var valueStringBuilder = new StringBuilder();
+                        
+                        valueStringBuilder.Append($"{ChatObjects.GetMention(reminder.User)}: {reminder.Text}\n");
+                        if (reminder.UsersToNotify.Length > 0)
+                        {
+                            valueStringBuilder.Append($"**Mentions:** { stringBuilder.ToString().TrimEnd()}\n");
+                        }
+                        valueStringBuilder.Append($"**Id:** {reminder.GetIdentifier()}");
 
-                        deb.AddField(name, value);
+                        string name = dto.ToString("ddMMMyyyy HH:mm");
+
+                        deb.AddField(name, valueStringBuilder.ToString());
                         count++;
                     }
 
