@@ -179,7 +179,7 @@ namespace FluffyEars.Commands
 
                     reminder = new Reminder
                     {
-                        Text = messageString,
+                        Text = messageString.Length.Equals(0) ? @"n/a" : messageString.Length.ToString(),
                         Time = dto.ToUnixTimeMilliseconds(),
                         User = ctx.Member.Id,
                         Channel = ctx.Channel.Id,
@@ -201,7 +201,7 @@ namespace FluffyEars.Commands
                     if (stringBuilder.Length > 0)
                         deb.AddField(@"Users to notify:", stringBuilder.ToString(), false);
 
-                    deb.AddField(@"Message",messageString, false);
+                    deb.AddField(@"Message", messageString.Length.Equals(0) ? @"n/a" : messageString.Length.ToString(), false);
 
                     embed = deb.Build();
                 } // end else
