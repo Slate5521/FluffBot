@@ -298,28 +298,12 @@ namespace FluffyEars.Commands
                     var deb = new DiscordEmbedBuilder();
 
                     int count = 0;
+                    int curPage = 1;
 
                     const int REMINDERS_PER_PAGE = 5;
                     for (int i = 0; i < reminderList.Length; i++)
                     {
                         Reminder reminder = reminderList[i];
-
-                        if (i % REMINDERS_PER_PAGE == 0 || i == reminderList.Length - 1)
-                        {
-                            deb.WithDescription(ChatObjects.GetNeutralMessage($"Hello {ctx.Member.Mention}, please note you are the only one who can react to this message.\n\n**Showing {count} reminders out of a total of {reminderList.Length}.**"));
-
-                            if (i != 0)
-                            {
-                                pages.Add(new Page(embed: deb));
-                                count = 0;
-                            }
-
-                            deb = new DiscordEmbedBuilder();
-
-                            deb.WithTitle($"Reminders Page {Math.Ceiling((i + 1.0f) / (float)REMINDERS_PER_PAGE)}/{(reminderList.Length + reminderList.Length % REMINDERS_PER_PAGE) / REMINDERS_PER_PAGE}");
-                            deb.WithColor(ChatObjects.NeutralColor);
-                            deb.WithThumbnail(ChatObjects.URL_REMINDER_GENERIC);
-                        }
 
                         var stringBuilder = new StringBuilder();
                         // For every user (a), append them to sb in mention format <@id>.
@@ -340,7 +324,21 @@ namespace FluffyEars.Commands
 
                         deb.AddField(name, valueStringBuilder.ToString());
                         count++;
-                    }
+
+                        if (count == REMINDERS_PER_PAGE || i == reminderList.Length - 1)
+                        {
+                            deb.WithDescription(ChatObjects.GetNeutralMessage($"Hello {ctx.Member.Mention}, please note you are the only one who can react to this message.\n\n**Showing {count} reminders out of a total of {reminderList.Length}.**"));
+                            deb.WithTitle($"Reminders Page {curPage}/{Math.Ceiling((float)reminderList.Length / (float)REMINDERS_PER_PAGE)}");
+                            deb.WithColor(ChatObjects.NeutralColor);
+                            deb.WithThumbnail(ChatObjects.URL_REMINDER_GENERIC);
+
+                            pages.Add(new Page(embed: deb));
+                            count = 0;
+                            curPage++;
+
+                            deb = new DiscordEmbedBuilder();
+                        } // end if
+                    } // end for
 
                     var emojis = new PaginationEmojis
                     {
