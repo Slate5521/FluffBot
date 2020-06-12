@@ -26,9 +26,9 @@ namespace FluffyEars
         private string baseFileName;
 
         /// <summary>Get a string describing BaseFile.A</summary>
-        private string BaseFileA => baseFileName + @".A";
+        private string BaseFileA => Path.Combine(Directory.GetCurrentDirectory(), $"{baseFileName}.A");
         /// <summary>Get a string describing BaseFile.B</summary>
-        private string BaseFileB => baseFileName + @".B";
+        private string BaseFileB => Path.Combine(Directory.GetCurrentDirectory(), $"{baseFileName}.B");
 
         public SaveFile() { }
         public SaveFile(string baseFile)
@@ -107,6 +107,43 @@ namespace FluffyEars
         /// <summary>Check if the save file exists.</summary>
         /// <returns>True if save file exists.</returns>
         public bool IsExistingSaveFile() => File.Exists(BaseFileA) || File.Exists(BaseFileB);
+
+        /// <summary>Read information from file.</summary>
+        /// <param name="file">File to read from.</param>
+        /// <returns>File contents.</returns>
+        internal static string ReadFile(string file)
+        {
+            string returnVal;
+
+            using (FileStream fs = File.OpenRead(file))
+            {
+                using (StreamReader sr = new StreamReader(fs))
+                {
+                    returnVal = sr.ReadToEnd();
+                }
+            }
+
+            return returnVal;
+        }
+
+        /// <summary>Get the file's MD5.</summary>
+        /// <param name="file">File to get MD5 from.</param>
+        /// <returns>The file's MD5.</returns>
+        internal static string GetFileMD5(string file)
+            => GetHash(ReadFile(file));
+
+        /// <summary>Gets a hash of a string in Base64.</summary>
+        internal static string GetHash(string contents)
+        {
+            byte[] hash;
+
+            using (MD5 fileMD5 = MD5.Create())
+            {
+                hash = fileMD5.ComputeHash(Encoding.UTF8.GetBytes(contents));
+            }
+
+            return Convert.ToBase64String(hash);
+        }
 
         #endregion Public Methods
         // ################################
@@ -350,47 +387,10 @@ namespace FluffyEars
             return returnVal;
         }
 
-        /// <summary>Read information from file.</summary>
-        /// <param name="file">File to read from.</param>
-        /// <returns>File contents.</returns>
-        private static string ReadFile(string file)
-        {
-            string returnVal;
-
-            using (FileStream fs = File.OpenRead(file))
-            {
-                using (StreamReader sr = new StreamReader(fs))
-                {
-                    returnVal = sr.ReadToEnd();
-                }
-            }
-
-            return returnVal;
-        }
-
         /// <summary>Get MD5 file string from FileBase.</summary>
         private string GetMD5File(string fileBase) 
             => $"{fileBase}.md5";
-
-        /// <summary>Get the file's MD5.</summary>
-        /// <param name="file">File to get MD5 from.</param>
-        /// <returns>The file's MD5.</returns>
-        private static string GetFileMD5(string file)
-            => GetHash(ReadFile(file));
-
-        /// <summary>Gets a hash of a string in Base64.</summary>
-        private static string GetHash(string contents)
-        {
-            byte[] hash;
-            
-            using (MD5 fileMD5 = MD5.Create())
-            {
-                hash = fileMD5.ComputeHash(Encoding.UTF8.GetBytes(contents));
-            }
-
-            return Convert.ToBase64String(hash);
-        }
-
+        
         private bool IsValidJson(string file)
         {
             bool valid = true; // It's valid until proven otherwise.

@@ -131,7 +131,7 @@ namespace FluffyEars
             Console.WriteLine(@"Loading bot config:");
 
             Console.Write("\tAuthkey");
-            using (var fs = File.OpenRead(@"authkey"))
+            using (var fs = File.OpenRead(Path.Combine(Directory.GetCurrentDirectory(), @"authkey")))
             {
                 using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
                 {

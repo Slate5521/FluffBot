@@ -1,13 +1,51 @@
 ﻿// Program.cs
 
+using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+
 namespace FluffyEars
 {
     class Program
     {
         static void Main(string[] args)
         {
-            Bot bot = new Bot();
-            bot.RunAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            bool runBot = true;
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                string arg = args[i];
+
+                switch (arg)
+                {
+                    case "-md5": // Generate an md5 from a SaveFile file.
+
+                        // The file name
+                        var stringBuilder = new StringBuilder();
+                        stringBuilder.AppendJoin(' ', args.Skip(i + 1));
+
+                        GenerateMD5(stringBuilder.ToString());
+
+                        // We don't wan to run teh bot after this.
+                        runBot = false;
+
+                        break;
+                }
+            }
+
+            if (runBot)
+            {
+                Bot bot = new Bot();
+                bot.RunAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+        }
+
+        private static void GenerateMD5(string file)
+        {
+            string md5String = SaveFile.GetFileMD5(file);
+
+            File.WriteAllText($"{file}.md5", md5String);
         }
     }
 }
