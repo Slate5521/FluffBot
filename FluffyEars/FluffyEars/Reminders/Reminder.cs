@@ -40,6 +40,16 @@ namespace FluffyEars.Reminders
                    Channel == reminder.Channel;
         }
 
+        #region bunny
+
+        //   /\\=//\-"""-.        
+        //  / /6 6\ \     \        
+        //   =\_Y_/=  (_  ;{}     
+        //     /^//_/-/__/  jgs    
+        //     "" ""  """       
+
+        #endregion bunny
+
         public override int GetHashCode()
         {
             return HashCode.Combine(User, Text, Time, Channel);

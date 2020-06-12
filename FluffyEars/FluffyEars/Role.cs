@@ -19,6 +19,41 @@ namespace FluffyEars
         Owner = 6
     }
 
+    #region ... bunny!??
+
+    /*
+                                                        MMMMMMMMMMMMNmNMMMMMMMMMMMMMMMMMMMMMMMMMNmNMMMMMMMMMMMM
+                                                        MMMMMMMMMMMho::odNMMMMMMMMMMMMMMMMMMMNdsssshMMMMMMMMMMM
+                                                        MMMMMMMMMMdo`   -smMMMMMMMMMMMMMMMMMmyssssssdMMMMMMMMMM
+                                                        MMMMMMMMMMs/     `omMMMMMMMMMMMMMMMms///+osssMMMMMMMMMM
+                                                        MMMMMMMMMNs:      .smMMMMMMMMMMMMMms.     `+sNMMMMMMMMM
+                                                        MMMMMMMMMNs:       -yMMMMMMMMMMMMMy-       :sNMMMMMMMMM
+                                                        MMMMMMMMMMy/       `+dMMMMMMMMMMMd/        /yMMMMMMMMMM
+                                                        MMMMMMMMMMho      .:/sMMNNNNNNNMMs`        ohMMMMMMMMMM
+                                                        MMMMMMMMMMms.      ::+yyyyyyyyyyy/        .smMMMMMMMMMM
+                                                        MMMMMMMMMMMh/        .sssssssssss.        /hMMMMMMMMMMM
+                                                        MMMMMMMMMMMNs`        ossssssssso        `sNMMMMMMMMMMM
+                                                        MMMMMMMMMMMMh+        ::-.....-::        +hMMMMMMMMMMMM
+                                                        MMMMMMMMMMMmys-                         -symMMMMMMMMMMM
+                                                        MMMMMMMMMMmssso`       `               `osssmMMMMMMMMMM
+                                                        MMMMMMMMMNysso-       .+`               -ossyNMMMMMMMMM
+                                                        MMMMMMMMMdsss.    `//:o-       `.-//`    .sssdMMMMMMMMM
+                                                        MMMMMMMMMhss:     `osss+:     :+/.-+`     :sshMMMMMMMMM
+                                                        MMMMMMMMMyss`     `osso:       :/.-+`     `ssyMMMMMMMMM
+                                                        MMMMMMMMMhss    .  `:o`         `..`  .    sshMMMMMMMMM
+                                                        MMMMMMMMMNss- ./:`- -+   `...`      -`:/. -ssNMMMMMMMMM
+                                                        MMMMMMMMMMhso+/.-+- `.   :sss:      -+-./+oshMMMMMMMMMM
+                                                        MMMMMMMMMMMhss+o:`      .//-//.      `:o+sshMMMMMMMMMMM
+                                                        MMMMMMMMMMMMdssss+:-``  ``   ``  ``-:+ssssdMMMMMMMMMMMM
+                                                        MMMMMMMMMMMMMmyssssssso+++///+++osssssssymMMMMMMMMMMMMM
+                                                        MMMMMMMMMMMMMMMmhssssssssssssssssssssshmMMMMMMMMMMMMMMM
+                                                        MMMMMMMMMMMMMMMMMNmhysssssssssssssyhmNMMMMMMMMMMMMMMMMM
+                                                        MMMMMMMMMMMMMMMMMMMMMNNmdddddddmNNMMMMMMMMMMMMMMMMMMMMM
+                                                        MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM
+     */
+
+    #endregion
+
     static class RoleExtensions
     {
         public static bool IsCSOrHigher(this Role role) 
@@ -34,6 +69,7 @@ namespace FluffyEars
         public static bool IsOwner(this Role role) 
             => role == Role.Owner;
 
+        /// <summary>Get the highest ranking role the user has.</summary>
         public static Role GetHighestRole(this DiscordMember user)
         { 
             // This method is an absolute dumpster fire when it comes to SESE-based programming.
@@ -58,6 +94,7 @@ namespace FluffyEars
             return Role.Colonist;
         }
 
+        /// <summary>Turn a role enum value into a name.</summary>
         public static string ToName(this Role role)
         {
             string returnVal;

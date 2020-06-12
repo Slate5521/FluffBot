@@ -19,15 +19,19 @@ namespace FluffyEars.Commands
 {
     class ReminderCommands : BaseCommandModule
     {
+        /// <summary>The date recognition Regex.</summary>
+        // It groups every number/time unit pairing "(number)+(time unit)" into a group. 
         static Regex DateRegex
             = new Regex(@"(\d+)\s?(months?|days?|weeks?|wks?|hours?|hrs?|minutes?|mins?)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
 
         public ReminderCommands() { }
 
+        /// <summary>Add a reminder to the system.</summary>
         [Command("+reminder")]
         public async Task AddReminder(CommandContext ctx, params string[] paramsList)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -168,7 +172,8 @@ namespace FluffyEars.Commands
                         );
                 }
                 else
-                {
+                {   // Everything is good in the world... except that the world is burning, but that's not something we're worried about here, for
+                    // now...
                     embed = ChatObjects.FormatEmbedResponse
                         (
                             title: @"Add Reminder",
@@ -189,6 +194,7 @@ namespace FluffyEars.Commands
                     ReminderSystem.AddReminder(reminder);
                     ReminderSystem.Save();
 
+                    // Generate a new Discord Embed Builder
                     var deb = new DiscordEmbedBuilder(embed);
 
                     var stringBuilder = new StringBuilder();
@@ -210,9 +216,11 @@ namespace FluffyEars.Commands
             } // end else
         } // end method
 
+        /// <summary>Remove a reminder from the system.</summary>
         [Command("-reminder")]
         public async Task RemoveReminder(CommandContext ctx, string reminderId)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -227,9 +235,8 @@ namespace FluffyEars.Commands
             {
                 await ctx.TriggerTypingAsync();
 
-                // Cancels:
                 if (!ReminderSystem.IsReminder(reminderId))
-                {
+                {   // This is not a reminder already.
                     await ctx.Channel.SendMessageAsync(
                         embed:
                         
@@ -242,7 +249,7 @@ namespace FluffyEars.Commands
                         ));
                 }
                 else
-                {
+                {   // This is an existing reminder.
                     Reminder reminderToRemove = ReminderSystem.GetReminderFromId(reminderId);
 
                     var discordEmbedBuilder = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
@@ -256,6 +263,8 @@ namespace FluffyEars.Commands
                     DateTimeOffset dto = DateTimeOffset.FromUnixTimeMilliseconds(reminderToRemove.Time); // The reminder's DTO.
                     TimeSpan remainingTime = dto.Subtract(DateTimeOffset.UtcNow); // The remaining time left for the reminder.
                     string originalAuthorMention = ChatObjects.GetMention(reminderToRemove.User);
+
+                    // Piece together the DEB.
 
                     discordEmbedBuilder.AddField(@"User", originalAuthorMention, true);
                     discordEmbedBuilder.AddField(@"Time", dto.ToString(), true);
@@ -272,9 +281,11 @@ namespace FluffyEars.Commands
             } // end else
         } // end method
 
+        /// <summary>Lists all the active reminders.</summary>
         [Command("reminderlist")]
         public async Task ListReminders(CommandContext ctx)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -289,7 +300,7 @@ namespace FluffyEars.Commands
             {
                 // Check if there are any notifications. If there are none, let the user know.
                 if (ReminderSystem.HasNotificationsPending())
-                {
+                {   // There are reminders.
                     var interactivity = ctx.Client.GetInteractivity();
                     List<Page> pages = new List<Page>();
 
@@ -300,6 +311,7 @@ namespace FluffyEars.Commands
                     int count = 0;
                     int curPage = 1;
 
+                    // Paginate all the results.
                     const int REMINDERS_PER_PAGE = 5;
                     for (int i = 0; i < reminderList.Length; i++)
                     {
@@ -320,13 +332,40 @@ namespace FluffyEars.Commands
                         }
                         valueStringBuilder.Append($"**Id:** {reminder.GetIdentifier()}");
 
+                        #region a bunny
+
+                        //                      .".
+                        //                     /  |
+                        //                    /  /
+                        //                   / ,"
+                        //       .-------.--- /
+                        //      "._ __.-/ o. o\
+                        //         "   (    Y  )
+                        //              )     /
+                        //             /     (
+                        //            /       Y
+                        //        .-"         |
+                        //       /  _     \    \
+                        //      /    `. ". ) /' )
+                        //     Y       )( / /(,/
+                        //    ,|      /     )
+                        //   ( |     /     /
+                        //    " \_  (__   (__        [nabis]
+                        //        "-._,)--._,)
+                        //  o < bunny poopy l0l
+                        // ------------------------------------------------
+                        // This ASCII pic can be found at
+                        // https://asciiart.website/index.php?art=animals/rabbits
+
+                        #endregion a bunny
+
                         string name = dto.ToString("ddMMMyyyy HH:mm");
 
                         deb.AddField(name, valueStringBuilder.ToString());
                         count++;
 
                         if (count == REMINDERS_PER_PAGE || i == reminderList.Length - 1)
-                        {
+                        {   // Create a new page.
                             deb.WithDescription(ChatObjects.GetNeutralMessage($"Hello {ctx.Member.Mention}, please note you are the only one who can react to this message.\n\n**Showing {count} reminders out of a total of {reminderList.Length}.**"));
                             deb.WithTitle($"Reminders Page {curPage}/{Math.Ceiling((float)reminderList.Length / (float)REMINDERS_PER_PAGE)}");
                             deb.WithColor(ChatObjects.NeutralColor);
@@ -352,7 +391,7 @@ namespace FluffyEars.Commands
                     await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, emojis: emojis);
                 }
                 else
-                {
+                {   // There are no reminders.
                     await ctx.Channel.SendMessageAsync(
                         embed:
                     
@@ -367,6 +406,10 @@ namespace FluffyEars.Commands
             } // end if
         } // end method
 
+        /// <summary>Interpret time value and increment a DateTimeOffset based on the values.</summary>
+        /// <param name="measureString">The measure or numeric value.</param>
+        /// <param name="unit">The time unit.</param>
+        /// <param name="dto">The DateTimeOffset to increment.</param>
         private static void InterpretTime(string measureString, string unit, ref DateTimeOffset dto)
         {
             // Only continue if these two have a valid value.
@@ -406,6 +449,7 @@ namespace FluffyEars.Commands
             }
         }
 
+        /// <summary>Checks if a character is a white space.</summary>
         private static bool IsWhitespace(char c)
         {
             return c.Equals(' ') ||

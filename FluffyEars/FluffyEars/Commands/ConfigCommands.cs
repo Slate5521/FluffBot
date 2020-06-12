@@ -108,7 +108,7 @@ namespace FluffyEars.Commands
                 await ctx.Channel.TriggerTypingAsync();
 
                 if(!BotSettings.IsChannelExcluded(chan))
-                { 
+                {   // This channel is excluded already.
                     embedResponse = ChatObjects.FormatEmbedResponse
                         (
                             title: @"Channel not un-excluded",
@@ -175,7 +175,7 @@ namespace FluffyEars.Commands
                 await ctx.Channel.TriggerTypingAsync();
 
                 if (BotSettings.IsChannelExcluded(chan))
-                {
+                {   // This channel is exlcuded alraedy.
                     embedResponse = ChatObjects.FormatEmbedResponse
                         (
                             title: @"Channel not excluded",
@@ -223,6 +223,7 @@ namespace FluffyEars.Commands
         [Command("chanexcludes")]
         public async Task ListExcludes(CommandContext ctx)
         {
+            // Check if the user can use config commands.
             if (!ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -239,10 +240,8 @@ namespace FluffyEars.Commands
 
                 DiscordEmbed embedResponse;
 
-                // Cancels:
-
                 if (BotSettings.GetExcludedChannelsCount == 0)
-                {
+                {   // There are no excludes.
                     embedResponse = ChatObjects.FormatEmbedResponse
                         (
                             title: @"Excluded channels",
@@ -253,7 +252,7 @@ namespace FluffyEars.Commands
                     await ctx.Channel.SendMessageAsync(embed: embedResponse);
                 } 
                 else
-                {
+                {  
                     StringBuilder sb = new StringBuilder();
 
                     // Write out every channel being excluded into a cute little list.
@@ -275,6 +274,7 @@ namespace FluffyEars.Commands
         [Command("startmessageenabled")]
         public async Task StartMessageEnabled(CommandContext ctx, bool enabled)
         {
+            // Check if the user can use config commands.
             if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
                 await Bot.NotifyInvalidPermissions

@@ -21,8 +21,9 @@ namespace FluffyEars
     {
         /// <summary>The bot client.</summary>
         public static DiscordClient BotClient;
-        /// <summary>CommandNextModule</summary>
+        /// <summary>CommandNext extension.</summary>
         public CommandsNextExtension Commands;
+        /// <summary>Interactivity extension.</summary>
         public InteractivityExtension Interactivity { get; set; }
 
         public Bot() { }
@@ -85,6 +86,10 @@ namespace FluffyEars
             await Task.Delay(-1);
         }
 
+        /// <summary>Send a message to the filter channel.</summary>
+        /// <param name="embed">The embed to send</param>
+        /// <param name="text">The text to send</param>
+        /// <returns></returns>
         public static async Task NotifyFilterChannel(DiscordEmbed embed, string text = @"")
         {
             var auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
@@ -96,6 +101,7 @@ namespace FluffyEars
                 ).ConfigureAwait(false);
         }
 
+        /// <summary>Notify someone they do not have permissions to use a command.</summary>
         public static async Task NotifyInvalidPermissions(Role requiredRole, string command, DiscordChannel channel, DiscordMember caller)
         {
             var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
@@ -115,6 +121,7 @@ namespace FluffyEars
         // ################################
         #region Private Methods
 
+        /// <summary>Load config files.</summary>
         private string LoadConfig()
         {
             var authKey = String.Empty;
@@ -202,6 +209,7 @@ namespace FluffyEars
         // ################################
         #region Event Listeners
 
+        /// <summary>Bot is loaded.</summary>
         private async Task BotClient_Ready(ReadyEventArgs e)
         {
             if (BotSettings.StartMessageEnabled)
@@ -227,7 +235,7 @@ namespace FluffyEars
                 ).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-
+        /// <summary>Someone fucked up with a command.</summary>
         private Task Commands_CommandErrored(CommandErrorEventArgs e)
         {
             if (!(e.Exception is CommandNotFoundException) &&
@@ -240,6 +248,7 @@ namespace FluffyEars
             return Task.CompletedTask;
         }
 
+        /// <summary>A command was executed.</summary>
         private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
             e.Context.Client.DebugLogger

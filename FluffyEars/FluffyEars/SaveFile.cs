@@ -161,9 +161,77 @@ namespace FluffyEars
                 throw new SaveFileException("Save files could not load: Not found.");
             }
 
+            #region ... bunny?!?!
+
+            /*
+                  `sdmdhs/`                                   `:oyhhs/`                             
+                 `smmmmmmmds-                              :ohdmmmmmmms                             
+                 -mmhhdmmmmmdh/                         .+hmmmmmmy+/dmh                             
+                 -dm-`.:odmmmdyy-                     `shdmmmmdy:`  /dh                             
+                 .dh     .ydy+/oyh+`                 /ds//sdms.     `do                             
+                 .dy      `-sho///sho.            `:yh+//ohy:`      .d+                             
+                 `hd`       `-hy////ohs-.------..ohs+///sdo`        .do                             
+                  om/         :hhyhhhddhhysssssyyyhhyhhydo.         :d/                             
+                  -d/     `-+yhhyo+///////////////////+oyhdy:      `yh`                             
+                   yh  `-+hhyo////////////////////////////+ydy-    +m/                              
+     `-/+o++:`     +d//ydso//////////////////////////////////yd+. `hh`    ./syyyo:                  
+    :hdddyyyyho-   `hddh+///////////////////////://///////////ohd//m/  ./ydddhddmd+                 
+   `dmy:.....-+hy- `hds//+oo++//////+ss//////////+s+//////+++o+/sddy`:shyo:-.../hmd:                
+   -my.`........+hosd+//+ysssyyyyyyyys+///:///////oyyyyyyyysssso/ymsydo-.......`:dmo                
+   -ds`.-:::::-..-ymy/////////////////////////////////////////////hds-..-::::::.`omo                
+    yh.-::::::::-..odho//////////////////////////////////////////yd+..-:::::::::.om:                
+    -m+.::::::::::..-ydy+oo++oooooooss/////////:/+yssooooooooooohh/..-:::::::::-.yd.                
+     sd:-::::::::::-`.+hd+/++////:::---://///////-.-:::///////ydy-..:::::::::::.omo                 
+     .hh::::::::::::-..-yh-     `..`   ://///////`   ``      +ds...:::::::::::.:ds`                 
+      .yh--::::::::::-.`.yd:   +hddh:`://////////:.-yhhs`   od+..-:::::::::::./d+`                  
+       .sh:-:::::::::::.`.sh:..dmmmmdyy//////////shhmmmm/  +d+..-::::::::::-./h+                    
+        `oh+.:::::::::::.`.sdhshhhyso/////////////+osyhdysyd+.`-::::::::::-.+h/                     
+          :ys--:::::::::-``.sd+//////////+++++///////////odo.`.:::::::::-.:yy-                      
+           `+h+-:::::::::-.`.yh///:///+hdddddddhs///////+ds.`.:::::::::--oh+`                       
+             -yy/-::::::::-.`-ds-:////smmmmmmmmmd+///:--hy.`.::::::::-:oho.                         
+              `/hs:-:::::::.``+d:`.-::/ymmmmmmmdy/:-.``sd:``-:::::::-oho-                           
+                .oho--:::::-`..hy`  ```.:shmdhs/.``   :d+``.:::::-./yy-                             
+                  -oys:--:::..`:ho-.s/-``./dy/-``.:o-.hh.`.-:::-.:oh/`                              
+                `+- -+y+..-..``.-+yo/+ooooo::+ooooo+osy:```.-..`+ys- ./`                            
+                `/s-+ossoso+ooo++oydyso+/:--:::/+ossdhsoooooooooyso/.s+`                            
+               :s/.s: `.....-hmmmmmd+.-:/++o+///:--odmmmmms......```+:/o/                           
+                -/.ys`       :yddhy/d:```````````.hs:yhdhs.        +d::.`                           
+               .+y:.sy-`      `...``:-```````````./` `...      `.:sy:/o-                            
+              -hh:```/sso+/::---:+s/````````````````.o+//://++osso:.`.od/                           
+              yd:``````.--://+++/:.`````.oo+++o:`````.-:://::-..``````.hd-                          
+              dy```````````````````      .-hs-.`       ````````````````ym/                          
+              od/````````````````     ..```yh..-:.`/+`  ``````````````/dy`                          
+              `sd+.``````````````    /sooos+/os+/ssd:    ```````````-ohs`                           
+               `/sys+:-...```.```    `   ``       .y/   ``````..-:+syo-                             
+                  `-/hdhyyssyysoo:.`               .../+sssssyyydh/-`                               
+                     oms///+++++mhyss++++////+oooosyyyymy+++++++do                                  
+                     :ddyyo/////ds-:sdooyddshdso+sdy:.:ms:///oyyds`                                 
+                    .do:-+dy////sd-..+yyy/-.-+syyy/...od+/:/ds-`.hs                                 
+                    `ho:.:dd/////do....-.......--....-dy////hy:`-h+                                 
+                     /mhydy+///+ohd-.................sm+/////sdyhd-                                 
+                     yh:/dh/+shdmmmhs+:..........-/oydmhy+///hh//d/                                 
+                    .do--odddmmmmmmmmmds.......-sdmmmmmmmmhshh/--hho:`                              
+                    +mo::-/ydmmmmmmmmmmd-......ommmmmmmmmmmmy:---ydoyho:-`                          
+                    sdhhysosdmmmmmmdyys/../yy:.-+sshmmmmmmmd++++ohd//+syyyo.                        
+                   .ds-://++odmmmmmy-...-+dyhh:----+mmmmmmhyysso+ydo//////sd+:.`                    
+                   +d:------:ddhddhhyyyyydy//yhhyyhhhdddhms------+mh///////+oydyso/::..````         
+                   od:------+mo/+////////+osoo+//////++//hy------+mh////////:///+oshdddddhho:`      
+                   /m+------/do////////ohho::+yy+////////hs------+mh/////////////////ymmmmmmmds.    
+                   `hh/-----:dy///////sd/`     /do//////+do------yms////////////////:smmmmmmmmmd/   
+                    -dd+-----hd//////od/        sh//////sd/-----/dy///////://////////+mmmmmmmmmmd/  
+                     -hd/----/ds/////hd`        /m+/////ds-----+dd+//////////////////smmmmmmmmmmmh` 
+                     `/ddysosoddo////hs         :m+////ydsooossdosyhy+//////////////ymmmmmmmmmmmd/` 
+                   .sdmmmmmmmmmmdhhhhdh:        +dyysyhmmmmmmmmmmhs//yhysoo+///////+dmmmmmmmmmdy.   
+          ``..----/dmmmmmmmmmmdo::::::om//////:od+//:::+ymmmmmmmmmmmy//oossddhhysyydmmmmmmmmmdh     
+         `ydhhdddddddddddddddddddddddddddddddddmdddddddddddmdmdmmmmmmdmmddddddddddyyyyyyyso+:-`     
+                      `..........................-----..........-----.--....``                      
+                                                                                                   
+             */
+
+            #endregion ....andfox?!?!?!
 
             // If both files exists, we need to see which is the oldest and newest.
-            if(bfAExists && bfBExists)
+            if (bfAExists && bfBExists)
             {
                 // If bfA creation time is greater (more recent) than bfB, it means bfA is the newest file. 
                 bool bfANewest = File.GetLastWriteTime(BaseFileA).Ticks > File.GetLastWriteTime(BaseFileB).Ticks;

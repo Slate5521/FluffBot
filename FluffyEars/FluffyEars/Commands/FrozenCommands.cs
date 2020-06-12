@@ -23,46 +23,54 @@ namespace FluffyEars.Commands
 {
     public class FrozenCommands : BaseCommandModule
     {
+        /// <summary>Adds a name to be recognized as a Frozen moniker.</summary>
         [Command("+name")]
         public async Task AddFrozenName(CommandContext ctx, string name)
-        {
+        {   //                       Frozen                                      Emiko
             if (ctx.Member.Id.Equals(131626628211146752) || ctx.Member.Id.Equals(113829933071073287))
             {
                 await ctx.TriggerTypingAsync();
 
-                if(!BotSettings.IsFrozenName(name))
-                {
+                if (!BotSettings.IsFrozenName(name))
+                {   // This is not an already recognized name.
                     BotSettings.AddFrozenName(name);
                     BotSettings.Save();
 
                     await ctx.Channel.SendMessageAsync(ChatObjects.GetSuccessMessage(@"***HELLO FROZEN, CHAOS LORD, OR SKY, MY MASTER, I HAVE ADDED THAT TO THE GRAND LIST OF NAMES. MAY FROZEN'S OMNIPOTENCE EVER CONTINUE!***"));
-                } else
+                }
+                else
+                {   // This is a recognized name.
                     await ctx.Channel.SendMessageAsync(ChatObjects.GetSuccessMessage(@"***HELLO FROZEN, CHAOS LORD, OR SKY, MY MASTER, I DO NOT WISH TO ALARM YOU BUT THAT APPEARS TO ALREADY BE A NAME...***"));
-                
+                }
             }
         }
 
+        /// <summary>Removes a name from the list of recognized Frozen monikers.</summary>
         [Command("-name")]
         public async Task RemoveFrozenName(CommandContext ctx, string name)
-        {
+        {   //                       Frozen                                      Emiko
             if (ctx.Member.Id.Equals(131626628211146752) || ctx.Member.Id.Equals(113829933071073287))
             {
                 await ctx.TriggerTypingAsync();
 
                 if (BotSettings.IsFrozenName(name))
-                {
+                {   // This is a recognized Frozen name.
                     BotSettings.RemoveFrozenName(name);
                     BotSettings.Save();
 
                     await ctx.Channel.SendMessageAsync(ChatObjects.GetSuccessMessage(@"***HELLO FROZEN, CHAOS LORD, OR SKY, MY MASTER, I HAVE REMOVED THAT FROM THE GRAND LIST OF NAMES. MAY FROZEN'S OMNIPOTENCE EVER CONTINUE!***"));
-                } else
+                }
+                else
+                {   // This is not a recognized Frozen name.
                     await ctx.Channel.SendMessageAsync(ChatObjects.GetSuccessMessage(@"***HELLO FROZEN, CHAOS LORD, OR SKY, MY MASTER, I DO NOT WISH TO ALARM YOU BUT THAT DOESN'T APPEAR TO BE A NAME...***"));
+                }
             }
         }
 
+        /// <summary>List all the recognized Frozen monikers.</summary>
         [Command("names")]
         public async Task ListFrozenNames(CommandContext ctx)
-        {
+        {   //                       Frozen                                      Emiko
             if (ctx.Member.Id.Equals(131626628211146752) || ctx.Member.Id.Equals(113829933071073287))
             {
                 await ctx.TriggerTypingAsync();

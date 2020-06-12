@@ -16,7 +16,12 @@ namespace FluffyEars.Reminders
     /// <summary>A static class containing just about everything needed to run the Reminder system on RimWorld.</summary>
     public static class ReminderSystem
     {
+        /// <summary>The file to save Exclude information to.</summary>
+        public const string BaseFile = @"reminders";
+        /// <summary>The SaveFile object for this class.</summary>
+        /// <see cref="SaveFile"/>
         private static SaveFile saveFile = new SaveFile(BaseFile);
+        /// <summary>The lock object for this class' I/O operations.</summary>
         private static readonly object lockObj = (object)
             @"
         .--,_
@@ -35,9 +40,8 @@ namespace FluffyEars.Reminders
       .'_.'   .'   '  __.,`.
      ''      ''''---'`    ''";
 
-        private static List<Reminder> reminders_ = new List<Reminder>();    // All the reminders loaded into memory.
-
-        public const string BaseFile = @"reminders";
+        /// <summary>List of reminders.</summary>
+        private static List<Reminder> reminders_ = new List<Reminder>();
 
         /// <summary>Sorted list of reminders by chronological order.</summary>
         private static Reminder[] remindersSorted
@@ -60,18 +64,21 @@ namespace FluffyEars.Reminders
 
         #region Save/Load Methods
 
-        /// <summary>Call this to set the Reminder list to default.</summary>
+        /// <summary>Instantiate default values for this class.</summary>
         public static void Default()
         {
             reminders_ = new List<Reminder>();
         }
 
+        /// <summary>Save the class to its save file.</summary>
         public static void Save() 
-            => saveFile.Save<List<Reminder>>(reminders_, lockObj);       
+            => saveFile.Save<List<Reminder>>(reminders_, lockObj);
 
+        /// <summary>Checks if the expected save file for this class can be loaded from.</summary>
         public static bool CanLoad() 
             => saveFile.IsExistingSaveFile();
 
+        /// <summary>Loads the save file or instantiates default values if unable to load.</summary>
         public static void Load()
         {
             if (CanLoad())

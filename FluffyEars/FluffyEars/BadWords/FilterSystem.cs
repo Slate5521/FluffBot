@@ -18,22 +18,29 @@ namespace FluffyEars.BadWords
         public static event FilterTriggeredEventHandler FilterTriggered;
         public delegate void FilterTriggeredEventHandler(FilterEventArgs e);
 
+        /// <summary>Regex options for all instantiated Regexes in this class.</summary>
+        private static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
+        /// <summary>A list of masks to use for Regexes.</summary>
+        private static List<string> maskList;
+        /// <summary>A list of Regex instances that uses masks from maskList.</summary>
+        private static Regex[] regexList;
+
+        /// <summary>The file to save Exclude information to.</summary>
+        private const string BaseFile = "filter";
+        /// <summary>The SaveFile object for this class.</summary>
+        /// <see cref="SaveFile"/>
+        private static SaveFile saveFile = new SaveFile(BaseFile);
+        /// <summary>The lock object for this class' I/O operations.</summary>
         private static readonly object lockObj = (object)@"
          \\
           \\_
            (_)
           / )
    jgs  o( )_\_";
-        private static SaveFile saveFile = new SaveFile(BaseFile);
-        private static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
-
-        private static List<string> maskList;
-        private static Regex[] regexList;
-
-        private const string BaseFile = "filter";
 
         #region Save/Load Methods
 
+        /// <summary>Instantiate default values for this class.</summary>
         public static void Default()
         {
             maskList  = new List<string>();
@@ -42,6 +49,7 @@ namespace FluffyEars.BadWords
             Save();
         }
 
+        /// <summary>Save the class to its save file.</summary>
         public static void Save()
         {
             saveFile.Save(maskList, lockObj);
@@ -49,9 +57,11 @@ namespace FluffyEars.BadWords
             UpdateRegexList();
         }
 
+        /// <summary>Checks if the expected save file for this class can be loaded from.</summary>
         public static bool CanLoad() 
             => saveFile.IsExistingSaveFile();
 
+        /// <summary>Loads the save file or instantiates default values if unable to load.</summary>
         public static void Load()
         {
             if (CanLoad())
@@ -69,7 +79,8 @@ namespace FluffyEars.BadWords
         #endregion Save/Load Methods
         // ################################
         #region Event Listeners
-
+        
+        // Called whenever a message is created.
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
             // Skip if (1) this channel is excluded or (2) this is sent by the bot.
@@ -77,6 +88,7 @@ namespace FluffyEars.BadWords
                 CheckMessage(e.Message);
         }
 
+        // Called whenever a message is updated.
         internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
         {
             // Skip if (1) this channel is excluded or (2) this is sent by the bot.
@@ -88,18 +100,23 @@ namespace FluffyEars.BadWords
         // ################################
         #region Public Methods
 
+        /// <summary>Checks if the specified string is a mask.</summary>
         public static bool IsMask(string mask) 
             => maskList.Contains(mask) || maskList.Contains(mask.Replace(@" ", @"\s"));
         
+        /// <summary>Returns the mask list.</summary>
         public static List<string> GetMasks() 
             => maskList;
 
+        /// <summary>Adds a mask to the filter system.</summary>
         public static void AddMask(string mask)
         {
             maskList.Add(mask);
 
             UpdateRegexList();
         }
+
+        /// <summary>Removes a mask from the filter system.</summary>
         public static void RemoveMask(string mask)
         {
             maskList.Remove(mask);
@@ -107,17 +124,19 @@ namespace FluffyEars.BadWords
             UpdateRegexList();
         }
 
+        /// <summary>Invoked when the filter is triggered upon finding a bad word.</summary>
         public static async Task HandleFilterTriggered(FilterEventArgs e)
         {
             var stringBuilder = new StringBuilder();
 
+            // Append all the found bad words to the string builder.
             foreach (string str in e.BadWords)
             {
                 stringBuilder.Append(str);
                 stringBuilder.Append(' ');
             }
 
-            // DEB!
+            // Create the Discord Embed
             var deb = new DiscordEmbedBuilder();
 
             deb.WithTitle("Filter: Word Detected");
@@ -126,10 +145,8 @@ namespace FluffyEars.BadWords
             deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```{1}```",
                 stringBuilder.ToString(), e.NotatedMessage));
 
-            //deb.WithDescription(String.Format("{0} has triggered the filter system in {1}.", e.User.Mention, e.Channel.Mention));
-
             deb.AddField(@"Author ID", e.User.Id.ToString(), inline: true);
-            deb.AddField(@"Author Username", e.User.Username + '#' + e.User.Discriminator, inline: true);
+            deb.AddField(@"Author Username", $"{e.User.Username}#{e.User.Discriminator}", inline: true);
             deb.AddField(@"Author Mention", e.User.Mention, inline: true);
             deb.AddField(@"Channel", e.Channel.Mention, inline: true);
             deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(), inline: true);
@@ -137,21 +154,25 @@ namespace FluffyEars.BadWords
 
             deb.WithThumbnail(ChatObjects.URL_FILTER_BUBBLE);
 
+            // Notify the filter channel.
             await Bot.NotifyFilterChannel(deb.Build());
         }
 
+        /// <summary>Get all the bad words in a message.</summary>
+        /// <param name="message">The message to search.</param>
+        /// <param name="notatedMessage">A string to notate, emphasizing where the bad words are.</param>
         public static List<string> GetBadWords(string message, out string notatedMessage)
         {
             var returnVal = new List<string>(); // Our sentinel value for no bad word is an empty List<string>.
-            var stringBuilder = new StringBuilder(message);
+            var stringBuilder = new StringBuilder(message); // Notated message string builder
 
             if (maskList.Count > 0)
             {
-                int annoteSymbolsAdded = 0;
+                int annoteSymbolsAdded = 0; // The number of annotation symbols added.
 
                 foreach (Regex regexPattern in regexList)
                 {
-                    MatchCollection mc = regexPattern.Matches(message);
+                    MatchCollection mc = regexPattern.Matches(message); 
 
                     if (mc.Count > 0)
                     {
@@ -176,6 +197,8 @@ namespace FluffyEars.BadWords
 
             notatedMessage = stringBuilder.ToString();
 
+            // If the notated message is over 1500 characters, let's cut it down a little bit. I don't want to wait until 2,000 characters
+            // specifically because imo that's risking it.
             if (stringBuilder.Length > 1500)
             {
                 notatedMessage = $"{notatedMessage.Substring(0, 1500)}...\n**message too long to preview.**";
@@ -190,13 +213,14 @@ namespace FluffyEars.BadWords
         /// <summary>This updates the RegEx megastring, containing all the filter words but in a word1|word2 format.</summary>
         private static void UpdateRegexList()
         {
-            var maskListDesc = maskList;
+            // The maskList but in reverse alphabetical order.
+            List<string> maskListDesc = maskList;
 
             maskListDesc.Sort();
             maskListDesc.Reverse();
 
+            // Initiate a regex value for every mask.
             regexList = new Regex[maskListDesc.Count];
-
             for (int i = 0; i < maskListDesc.Count; i++)
             {
                 regexList[i] = new Regex(maskListDesc[i], regexOptions);
@@ -232,15 +256,12 @@ namespace FluffyEars.BadWords
         #endregion Private Methods
         // ################################
         // Event Handler
+        
+        // When the filter is triggered.
         static void OnFilterTriggered(FilterEventArgs e)
         {
             FilterTriggeredEventHandler handler = FilterTriggered;
             handler?.Invoke(e);
-        }
-
-        internal static Task HandleFilterTriggered()
-        {
-            throw new NotImplementedException();
         }
     }
 }

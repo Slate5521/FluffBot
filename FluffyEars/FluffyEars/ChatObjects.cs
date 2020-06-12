@@ -21,6 +21,37 @@ namespace FluffyEars
         public const string URL_REMINDER_EXCLAIM = @"https://i.imgur.com/NUCrbSl.png";
         public const string URL_REMINDER_DELETED = @"https://i.imgur.com/OnTaJdd.png";
 
+        #region bunny
+
+        // -=[bunnies and more bunnies and more bunnies]=-  12/96
+        //
+        //         \\      \\      \\      \\      \\      \\
+        //        __()    __()    __()    __()    __()    __()
+        // jgs  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_
+        //
+        //           \\      \\      \\      \\      \\      \\
+        //          __()    __()    __()    __()    __()    __()
+        //   jgs  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_
+        //
+        //         \\      \\      \\      \\      \\      \\
+        //        __()    __()    __()    __()    __()    __()
+        // jgs  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_
+        //
+        //            \\      \\      \\      \\      \\      \\
+        //           __()    __()    __()    __()    __()    __()
+        //    jgs  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_
+        //
+        //         \\      \\      \\      \\      \\      \\
+        //        __()    __()    __()    __()    __()    __()
+        // jgs  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_  o(_-\_
+        // 
+        // zomggg!!!! bunni overloard!!
+        // ------------------------------------------------
+        // This ASCII pic can be found at
+        // https://asciiart.website/index.php?art=animals/rabbits
+
+        #endregion bunnies!???
+
         public static DiscordColor SuccessColor = DiscordColor.Green;
         public static DiscordColor ErrColor = DiscordColor.Red;
         public static DiscordColor NeutralColor = DiscordColor.MidnightBlue;

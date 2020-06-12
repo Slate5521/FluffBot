@@ -11,6 +11,7 @@ namespace FluffyEars
 {
     public static class SelfAudit
     {
+        // The audit channel in the FDS server.
         const ulong AUDIT_CHAN = 680252154631684110;
 
         public static async Task LogSomething(DiscordUser who, string messageUrl, string description, string command, string arguments, DiscordColor color)

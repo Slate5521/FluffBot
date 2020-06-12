@@ -1,4 +1,9 @@
-﻿using DSharpPlus.CommandsNext;
+﻿// RequestedCommands.cs
+// Here are some commands requested by users.
+//
+// * userinfo which displays information about account creation date and server join date.
+
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;
@@ -9,9 +14,11 @@ namespace FluffyEars.Commands
 {
     class RequestedCommands : BaseCommandModule
     {
+        /// <summary>Gets information about a user's account creation date and server join date.</summary>
         [Command("userinfo")]
         public async Task GetUserInfo(CommandContext ctx, DiscordMember member)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsCSOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -27,7 +34,7 @@ namespace FluffyEars.Commands
                 await ctx.Channel.TriggerTypingAsync();
 
                 if (ctx.Guild.Members.ContainsKey(member.Id))
-                {
+                {   // This member exists in the guild.
                     // DEB!
                     var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
                         (
@@ -43,7 +50,7 @@ namespace FluffyEars.Commands
                     await ctx.Channel.SendMessageAsync(embed: deb);
                 }
                 else
-                {
+                {   // This member does not exist in the guild.
                     await ctx.Channel.SendMessageAsync(
                         embed:
                         
@@ -54,13 +61,13 @@ namespace FluffyEars.Commands
                             color: ChatObjects.ErrColor,
                             thumbnail: member.AvatarUrl
                         ));
-                }
-            }
+                } // end else
+            } // end else
+        } // end method
 
-        }
-
+        /// <summary>Get a date string based on a DateTimeOffset.</summary>
         private static string GetDateString(DateTimeOffset dto)
-        {
+        {   // Yeah, I'm not documenting this. Have fun.
             const string commaSpace = @", ";
 
             var timeSpan = DateTimeOffset.Now.Subtract(dto);
@@ -141,6 +148,8 @@ namespace FluffyEars.Commands
             return stringBuilder.ToString();
         }
 
+        /// <summary>Retrieves the user's Discord join date by their snowflake.</summary>
+        /// <param name="id">Snowflake</param>
         private static DateTimeOffset GetJoinedDiscordTime(ulong id)
         {
             return DateTimeOffset.FromUnixTimeMilliseconds((long)(id >> 22) + 1420070400000);

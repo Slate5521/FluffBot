@@ -20,7 +20,7 @@ namespace FluffyEars.Commands
         [Command("+filter")]
         public async Task FilterAddMask(CommandContext ctx, params string[] args)
         {
-            // Check if the user can use commands.
+            // Check if the user can use this command.
             if (!ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -33,16 +33,17 @@ namespace FluffyEars.Commands
             }
             else
             {
-                if (args.Length > 0)
+                if (ctx.RawArgumentString.Length > 0)
                 {
                     await ctx.TriggerTypingAsync();
 
                     DiscordEmbedBuilder deb;
 
+                    // Retrieve the mask by converting the args to a mask string.
                     string mask = ParamsToString(args);
 
                     if (!FilterSystem.IsMask(mask) && !Excludes.IsExcluded(mask))
-                    {
+                    {   // This is neither a mask nor an excluded phrase.
                         FilterSystem.AddMask(mask);
                         FilterSystem.Save();
 
@@ -55,7 +56,7 @@ namespace FluffyEars.Commands
                         ));
                     }
                     else
-                    {
+                    {   // This is a mask or an excluded phrase.
                         deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
                         (
                             title: @"Unable to Add Mask",
@@ -98,7 +99,7 @@ namespace FluffyEars.Commands
                     DiscordEmbedBuilder deb;
 
                     if (FilterSystem.IsMask(mask))
-                    {
+                    {   // This is a mask already.
                         FilterSystem.RemoveMask(mask);
                         FilterSystem.Save();
 
@@ -111,7 +112,7 @@ namespace FluffyEars.Commands
                         ));
                     }
                     else
-                    {
+                    {   // This is not a mask already.
                         deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
                         (
                             title: @"Unable to Add Mask",
@@ -132,6 +133,7 @@ namespace FluffyEars.Commands
         [Command("filterlist")]
         public async Task ListFilterMasks(CommandContext ctx)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -162,9 +164,11 @@ namespace FluffyEars.Commands
             }
         }
 
+        /// <summary>Excludes a phrase from the word filter system, preventing it from triggering the filter.</summary>
         [Command("+filterexclude")]
         public async Task FilterExclude(CommandContext ctx, params string[] args)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -182,9 +186,8 @@ namespace FluffyEars.Commands
                 string phrase = ParamsToString(args);
                 DiscordEmbedBuilder deb;
 
-                // Cancels:
                 if (FilterSystem.IsMask(phrase) || Excludes.IsExcluded(phrase))
-                {
+                {   // This is a mask or an excluded phrase
                     deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
                     (
                         title: @"Unable to Add Exclude",
@@ -194,7 +197,7 @@ namespace FluffyEars.Commands
                     ));
                 }
                 else
-                {
+                {   // This is neither a mask nor an excluded phrase.
                     Excludes.AddPhrase(phrase);
                     Excludes.Save();
 
@@ -213,9 +216,11 @@ namespace FluffyEars.Commands
             }
         }
 
+        /// <summary>Un-excludes a phrase from the word filter system, allowing it to trigger the filter.</summary>
         [Command("-filterexclude")]
         public async Task FilterRemoveExclude(CommandContext ctx, params string[] args)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsSeniorModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -228,15 +233,16 @@ namespace FluffyEars.Commands
             }
             else 
             {
-                if (args.Length > 0)
+                if (ctx.RawArgumentString.Length > 0)
                 {
                     await ctx.TriggerTypingAsync();
 
+                    // Combine the param args together to get the phrase.
                     string phrase = ParamsToString(args);
                     DiscordEmbedBuilder deb;
 
                     if (!Excludes.IsExcluded(phrase))
-                    {
+                    {   // The phrase is not excluded.
                         deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
                         (
                             title: @"Unable to Remove Exclude",
@@ -246,7 +252,7 @@ namespace FluffyEars.Commands
                         ));
                     }
                     else
-                    {
+                    {   // The phrase is excluded.
                         Excludes.RemovePhrase(phrase);
                         Excludes.Save();
 
@@ -266,9 +272,11 @@ namespace FluffyEars.Commands
             }
         }
 
+        /// <summary>Lists all the excluded phrases.</summary>
         [Command("filterexcludes")]
         public async Task ListFilterExcludes(CommandContext ctx)
         {
+            // Check if the user can use commands.
             if (!ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
@@ -301,6 +309,7 @@ namespace FluffyEars.Commands
 
         #endregion Word Filter
 
+        /// <summary>Combine elements of a params array into a string.</summary>
         private static string ParamsToString(string[] paramsStr)
         {
             var stringBuilder = new StringBuilder();
