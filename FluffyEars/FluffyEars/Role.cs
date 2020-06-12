@@ -80,17 +80,27 @@ namespace FluffyEars
             var roles = user.Roles.Select(a => a.Id).ToList();
 
             //                 RIMWORLD ROLES      ||                DEV SERVER ROLES
-            if (roles.Contains(214524811433607168) || roles.Contains(673765748514095115)) // Admin
-                return Role.Admin;                                                     //||                Rimworld Dev Mode
-            if (roles.Contains(503752769757511690) || roles.Contains(673765760656605194) || roles.Contains(653357224520974355)) // Bot Boi
+            // Admin
+            if (roles.Contains(214524811433607168) || roles.Contains(673765748514095115))
+                return Role.Admin;         
+            
+            // Bot Boi                                                                 //||                Rimworld Dev Mode
+            if (roles.Contains(503752769757511690) || roles.Contains(673765760656605194) || roles.Contains(653357224520974355))
                 return Role.BotManager;
-            if (roles.Contains(521006886451937310) || roles.Contains(673765727605358614)) // Senior Mod
-                return Role.SeniorModerator;
-            if (roles.Contains(214527027112312834) || roles.Contains(673765713600708672)) // Mod
+
+            // Senior Mod
+            if (roles.Contains(521006886451937310) || roles.Contains(673765727605358614))
+                return Role.SeniorModerator;               
+            
+            // Moderator                                                               //||                Rimworld Ex-Mod (.)
+            if (roles.Contains(214527027112312834) || roles.Contains(673765713600708672) || roles.Contains(690206811961294934))
                 return Role.Moderator;
-            if (roles.Contains(326891962697383936) || roles.Contains(673765694982193173)) // Community Helper
+
+            // Community Support
+            if (roles.Contains(326891962697383936) || roles.Contains(673765694982193173))
                 return Role.CS;
 
+            // Colonist
             return Role.Colonist;
         }
 
