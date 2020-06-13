@@ -1,5 +1,11 @@
 ﻿// WarnCommands.cs
-// Contains commands for formatting warns and searching user warns.
+// Contains commands for formatting warns and searching user warns. 
+//
+// I want to warn you, this is a bit of a mess. By no means does this follow any programming convention as entire bodies of methods seem to be copies
+// of one another. The truth is that there was no real better way to do this in the 24 hours of time that I set out to complete it. Hopefully in a 
+// future version I'll optimize this better, but in the mean time... sorry. Whoever you are, be it future me, or my predecessor, just know that if
+// you want to change the body of one method, you will also have to likewise change the body of other methods. So, you'll want to die, but just bear
+// through it.
 
 using System;
 using System.Collections.Generic;
@@ -79,7 +85,7 @@ namespace FluffyEars.Commands
                 actionTaken = await GetAction(TimeSpan.FromMinutes(TIMEOUT), interactivity, ctx.Member);
                 reason = await GetReason(TimeSpan.FromMinutes(TIMEOUT), interactivity, ctx.Member);
                 proof = await GetProof(TimeSpan.FromMinutes(TIMEOUT), interactivity, ctx.Member);
-
+                
                 var stringBuilder = new StringBuilder();
 
                 // ----------------
@@ -167,6 +173,13 @@ namespace FluffyEars.Commands
             }
         }
 
+        [Command("searchactions")]
+        public async Task BeginTemplate(CommandContext ctx, DiscordMember member)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>Get the IDs of the action.</summary>
         private static async Task<List<ulong>> GetIDs(TimeSpan timeout, InteractivityExtension interactivity, DiscordMember originalSender)
         {
             // The list of IDs...
@@ -177,7 +190,7 @@ namespace FluffyEars.Commands
             bool accepted = false;
             // Result of the original query
             InteractivityResult<DiscordMessage> result;
-
+            // Cleanup function.
 
             do
             {   // User-acceptance checking loop
@@ -244,26 +257,39 @@ namespace FluffyEars.Commands
 
                     await interactivity.WaitForMessageAsync(timeoutoverride: timeout, predicate: o =>
                     {
-                        accepted = o.Content.ToLower().Equals("y");
+                        string contentLwr = o.Content.ToLower(); // Lowercase version of the response.
+                        bool validResponse = false; // If the response is valid (y/n)
 
-                        return o.Channel.IsPrivate && !o.Author.IsCurrent;
+                        if (o.Author.Equals(originalSender) && o.Channel.IsPrivate && !o.Author.IsBot)
+                        {
+                            if (contentLwr.Equals(@"y") || contentLwr.Equals(@"n"))
+                            {   // We only want to enter this scope if the content is equal to y/n
+                                validResponse = true;
+
+                                accepted = contentLwr.Equals(@"y");
+                            }
+                        }
+
+                        return validResponse;
                     });
 
-                    if(!accepted)
-                    {
+                    if(!accepted && !result.TimedOut)
+                    {   // Only enter if not accepted and not timed out.
+
                         // Clear attempts.
                         moreThanOnce = false;
                         // Clear response to default.
                         ids.Clear();
 
                         await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage("`Retrying...`"));
-                    } //e nd if
+                    } //end if
                 } // end if
             } while (!accepted); // Continue this loop so long as OP hasn't accepted the value.
 
             return ids;
         }
 
+        /// <summary>Get the action's type.</summary>
         private static async Task<ActionType> GetAction(TimeSpan timeout, InteractivityExtension interactivity, DiscordMember originalSender)
         {
             // The action taken.
@@ -274,6 +300,8 @@ namespace FluffyEars.Commands
             bool accepted = false;
             // Result of the original query
             InteractivityResult<DiscordMessage> result;
+            // Cleanup function.
+            List<DiscordMessage> cleanup = new List<DiscordMessage>();
 
             do
             {   // User-acceptance checking loop
@@ -281,11 +309,11 @@ namespace FluffyEars.Commands
                 {   // Validity-checking loop
                     if (!moreThanOnce)
                     {
-                        await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage($"**Please enter the # of the action taken:**```\n{GetActionString()}```"));
+                        cleanup.Add(await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage($"**Please enter the # of the action taken:**```\n{GetActionString()}```")));
                     }
                     else
                     {
-                        await originalSender.SendMessageAsync(ChatObjects.GetErrMessage($"**Invalid entry. Please enter the # of the action taken:**```\n{GetActionString()}```"));
+                        cleanup.Add(await originalSender.SendMessageAsync(ChatObjects.GetErrMessage($"**Invalid entry. Please enter the # of the action taken:**```\n{GetActionString()}```")));
                     }
 
                     result = await interactivity.WaitForMessageAsync(timeoutoverride: timeout, predicate: o =>
@@ -320,13 +348,24 @@ namespace FluffyEars.Commands
                 // Let's see if the user agrees with this input.
                 if (!actionType.Equals(ActionType.Invalid) && !result.TimedOut)
                 {
-                    await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage($"**Action selected:** {ActionVerb(actionType)} **Is this correct? (y/n)**"));
+                    cleanup.Add(await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage($"**Action selected:** {ActionVerb(actionType)} **Is this correct? (y/n)**")));
 
                     await interactivity.WaitForMessageAsync(timeoutoverride: timeout, predicate: o =>
                     {
-                        accepted = o.Content.ToLower().Equals("y");
+                        string contentLwr = o.Content.ToLower(); // Lowercase version of the response.
+                        bool validResponse = false; // If the response is valid (y/n)
 
-                        return o.Channel.IsPrivate && !o.Author.IsCurrent;
+                        if (o.Author.Equals(originalSender) && o.Channel.IsPrivate && !o.Author.IsBot)
+                        {
+                            if (contentLwr.Equals(@"y") || contentLwr.Equals(@"n"))
+                            {   // We only want to enter this scope if the content is equal to y/n
+                                validResponse = true;
+
+                                accepted = contentLwr.Equals(@"y");
+                            }
+                        }
+
+                        return validResponse;
                     });
 
                     if (!accepted)
@@ -336,7 +375,7 @@ namespace FluffyEars.Commands
                         // Clear response to default.
                         actionType = ActionType.Invalid;
 
-                        await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage("`Retrying...`"));
+                        cleanup.Add(await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage("`Retrying...`")));
 
                     } // end if
                 } // end if
@@ -345,47 +384,7 @@ namespace FluffyEars.Commands
             return actionType;
         }
 
-        /// <summary>Get all the available types of actions.</summary>
-        private static string GetActionString()
-        {
-            return "1-Warn\n2-Mute\n3-Kick\n4-Ban";
-        }
-        
-        /// <summary>Take the user-response (a number) and assign an action type to it.</summary>
-        private static ActionType GetActionTaken(char index)
-        {
-            ActionType actionType;
-
-            switch(index)
-            {
-                case '1': actionType = ActionType.Warn; break;
-                case '2': actionType = ActionType.Mute; break;
-                case '3': actionType = ActionType.Kick; break;
-                case '4': actionType = ActionType.Ban;  break;
-                default: actionType = ActionType.Invalid; break;
-            }
-
-            return actionType;
-        }
-
-        /// <summary>Turn an ActionType enum into its verb.</summary>
-        private static string ActionVerb(ActionType type)
-        {
-            string returnVal;
-
-            switch(type)
-            {
-                case ActionType.Warn: returnVal = @"warned"; break;
-                case ActionType.Mute: returnVal = @"muted"; break;
-                case ActionType.Kick: returnVal = @"kicked"; break;
-                case ActionType.Ban:  returnVal = @"banned"; break;
-                default:
-                case ActionType.Invalid: returnVal = @"<invalid>"; break;
-            }
-
-            return returnVal;
-        }
-
+        /// <summary>Get the action's reason.</summary>
         private static async Task<string> GetReason(TimeSpan timeout, InteractivityExtension interactivity, DiscordMember originalSender)
         {
             // The reason the action was taken.
@@ -445,9 +444,21 @@ namespace FluffyEars.Commands
 
                     await interactivity.WaitForMessageAsync(timeoutoverride: timeout, predicate: o =>
                     {
-                        accepted = o.Content.ToLower().Equals("y");
+                        string contentLwr = o.Content.ToLower(); // Lowercase version of the response.
+                        bool validResponse = false; // If the response is valid (y/n)
 
-                        return o.Channel.IsPrivate && !o.Author.IsCurrent;
+
+                        if (o.Author.Equals(originalSender) && o.Channel.IsPrivate && !o.Author.IsBot)
+                        {
+                            if (contentLwr.Equals(@"y") || contentLwr.Equals(@"n"))
+                            {   // We only want to enter this scope if the content is equal to y/n
+                                validResponse = true;
+
+                                accepted = contentLwr.Equals(@"y");
+                            }
+                        }
+
+                        return validResponse;
                     });
 
                     if (!accepted)
@@ -461,9 +472,11 @@ namespace FluffyEars.Commands
                     } // end if
                 } // end if
             } while (!accepted); // Continue this loop so long as OP hasn't accepted the value.
+            
             return actionReason;
         }
 
+        /// <summary>Get the action's proof.</summary>
         private static async Task<List<string>> GetProof(TimeSpan timeout, InteractivityExtension interactivity, DiscordMember originalSender)
         {
             const int MAX_LINKS = 10;
@@ -477,64 +490,64 @@ namespace FluffyEars.Commands
             // Result of the original query
             InteractivityResult<DiscordMessage> result;
 
-            await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage($"**Please send proof in images or links. Max 10. Send 'end' to continue.**"));
-
             do
             {   // User-acceptance checking loop
+
+                await originalSender.SendMessageAsync(ChatObjects.GetNeutralMessage($"**Please send proof in images or links. Max 10.** Send '__end__' to continue or if you don't want to provide proof."));
+                
                 do
                 {   // Validity-checking loop
                     result = await interactivity.WaitForMessageAsync(timeoutoverride: timeout, predicate: o =>
                     {
-                    bool returnVal = true;
+                        bool returnVal = true;
 
-                    if (o.Author.Equals(originalSender) && o.Channel.IsPrivate)
-                    {   // We only want to pay this message attention if it is sent from the original sender and is in a PM.
+                        if (o.Author.Equals(originalSender) && o.Channel.IsPrivate)
+                        {   // We only want to pay this message attention if it is sent from the original sender and is in a PM.
 
-                        if (o.Content.Equals(@"end"))
-                        {   // If it's equal to our halt word, we need to stop.
-                            haltSignal = true;
-                        }
-                        else
-                        {   // No halt word found.
+                            if (o.Content.Equals(@"end"))
+                            {   // If it's equal to our halt word, we need to stop.
+                                haltSignal = true;
+                            }
+                            else
+                            {   // No halt word found.
 
-                            // Check for attachments first...
+                                // Check for attachments first...
 
-                            if (o.Attachments.Count > 0)
-                            {
-                                foreach (var attachment in o.Attachments)
+                                if (o.Attachments.Count > 0)
                                 {
-                                    if (links.Count < MAX_LINKS && !links.Contains(attachment.Url))
-                                    {   // Only continue if we're under the link limit and the links doesn't already contain this.
-                                        links.Add(attachment.Url);
-                                    } // end if
-                                } // end foreach
-                            } // end if
+                                    foreach (var attachment in o.Attachments)
+                                    {
+                                        if (links.Count < MAX_LINKS && !links.Contains(attachment.Url))
+                                        {   // Only continue if we're under the link limit and the links doesn't already contain this.
+                                            links.Add(attachment.Url);
+                                        } // end if
+                                    } // end foreach
+                                } // end if
 
-                            // Next, check for links in the message.
+                                // Next, check for links in the message.
 
-                            MatchCollection mc = LinkRegex.Matches(o.Content);
+                                MatchCollection mc = LinkRegex.Matches(o.Content);
 
-                            if (mc.Count > 0)
-                            {
-                                foreach (Match match in mc)
+                                if (mc.Count > 0)
                                 {
-                                    if (links.Count < MAX_LINKS && !links.Contains(match.Value))
-                                    {   // Only continue if we're under the link limit and the links doesn't already contain this.
-                                        links.Add(match.Value);
-                                    } // end if
-                                } // end foreach
+                                    foreach (Match match in mc)
+                                    {
+                                        if (links.Count < MAX_LINKS && !links.Contains(match.Value))
+                                        {   // Only continue if we're under the link limit and the links doesn't already contain this.
+                                            links.Add(match.Value);
+                                        } // end if
+                                    } // end foreach
+                                } // end if
                             } // end if
                         } // end if
-                    } // end if
-                    else
-                    {   // We only want this to return as false in this case so we can ignore messages not sent in PM and not sent by the original
-                        // caller.
-                        returnVal = false;
-                    }
+                        else
+                        {   // We only want this to return as false in this case so we can ignore messages not sent in PM and not sent by the original
+                            // caller.
+                            returnVal = false;
+                        }
 
-                    return returnVal;
-                });
-
+                        return returnVal;
+                    });
                 } while (!haltSignal && links.Count < MAX_LINKS && !result.TimedOut);
                 // ^ Continue this loop until we receive a halt signal, we've reached 10 links, or until we've timed out.
 
@@ -549,9 +562,20 @@ namespace FluffyEars.Commands
 
                     await interactivity.WaitForMessageAsync(timeoutoverride: timeout, predicate: o =>
                     {
-                        accepted = o.Content.ToLower().Equals("y");
+                        string contentLwr = o.Content.ToLower(); // Lowercase version of the response.
+                        bool validResponse = false; // If the response is valid (y/n)
 
-                        return o.Channel.IsPrivate && !o.Author.IsCurrent;
+                        if (o.Author.Equals(originalSender) && o.Channel.IsPrivate && !o.Author.IsBot)
+                        {
+                            if (contentLwr.Equals(@"y") || contentLwr.Equals(@"n"))
+                            {   // We only want to enter this scope if the content is equal to y/n
+                                validResponse = true;
+
+                                accepted = contentLwr.Equals(@"y");
+                            }
+                        }
+
+                        return validResponse;
                     });
 
                     if (!accepted)
@@ -564,14 +588,49 @@ namespace FluffyEars.Commands
                     } // end if
                 } // end if
             } while (!accepted); // Continue this loop so long as OP hasn't accepted the value.
-
+            
             return links;
         }
 
-        [Command("searchactions")]
-        public async Task BeginTemplate(CommandContext ctx, DiscordMember member)
+        /// <summary>Get all the available types of actions.</summary>
+        private static string GetActionString()
         {
-            throw new NotImplementedException();
+            return "1-Warn\n2-Mute\n3-Kick\n4-Ban";
+        }
+
+        /// <summary>Take the user-response (a number) and assign an action type to it.</summary>
+        private static ActionType GetActionTaken(char index)
+        {
+            ActionType actionType;
+
+            switch (index)
+            {
+                case '1': actionType = ActionType.Warn; break;
+                case '2': actionType = ActionType.Mute; break;
+                case '3': actionType = ActionType.Kick; break;
+                case '4': actionType = ActionType.Ban; break;
+                default: actionType = ActionType.Invalid; break;
+            }
+
+            return actionType;
+        }
+
+        /// <summary>Turn an ActionType enum into its verb.</summary>
+        private static string ActionVerb(ActionType type)
+        {
+            string returnVal;
+
+            switch (type)
+            {
+                case ActionType.Warn: returnVal = @"warned"; break;
+                case ActionType.Mute: returnVal = @"muted"; break;
+                case ActionType.Kick: returnVal = @"kicked"; break;
+                case ActionType.Ban: returnVal = @"banned"; break;
+                default:
+                case ActionType.Invalid: returnVal = @"<invalid>"; break;
+            }
+
+            return returnVal;
         }
     }
 }
