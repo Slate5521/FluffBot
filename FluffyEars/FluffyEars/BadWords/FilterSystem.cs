@@ -83,16 +83,16 @@ namespace FluffyEars.BadWords
         // Called whenever a message is created.
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
-            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
-            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
+            // Skip if (1) this channel is excluded, (2) this is sent by the bot, or (3) this is sent in PMs.
+            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot && !e.Channel.IsPrivate)
                 CheckMessage(e.Message);
         }
 
         // Called whenever a message is updated.
         internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
         {
-            // Skip if (1) this channel is excluded or (2) this is sent by the bot.
-            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot)
+            // Skip if (1) this channel is excluded, (2) this is sent by the bot, or (3) this is sent in PMs.
+            if (!BotSettings.IsChannelExcluded(e.Channel) && !e.Author.IsBot && !e.Channel.IsPrivate)
                 CheckMessage(e.Message);
         }
         
