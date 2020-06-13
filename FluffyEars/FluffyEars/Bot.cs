@@ -68,6 +68,7 @@ namespace FluffyEars
             Commands.RegisterCommands<ReminderCommands>();
             Commands.RegisterCommands<RequestedCommands>();
             Commands.RegisterCommands<FrozenCommands>();
+            Commands.RegisterCommands<WarnCommands>();
 
             Commands.CommandExecuted += Commands_CommandExecuted;
             Commands.CommandErrored += Commands_CommandErrored;
