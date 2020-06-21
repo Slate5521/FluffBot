@@ -169,7 +169,10 @@ namespace FluffyEars.Commands
 
                 // Wait for the user to react...
 
-                await ctx.Member.SendMessageAsync(stringBuilder.ToString());
+                string str = stringBuilder.ToString();
+
+                await ctx.Member.SendMessageAsync(str);
+                await Bot.NotifyActionChannel(str) ;
             }
         }
 

@@ -43,8 +43,10 @@ namespace FluffyEars
         /// <summary>A JSON serializable struct that contains the actual settings.</summary>
         private struct botSettings_
         {
-            /// <summary>Audit log channel.</summary>
+            /// <summary>Filter log channel.</summary>
             public ulong FilterChannelId;
+            /// <summary>ActionLog channel.</summary>
+            public ulong ActionChannelId;
             /// <summary>A list of channels that will not be checked.</summary>
             public List<ulong> ExcludedChannels;
             /// <summary>Whether or not the bot should announce it has started.</summary>
@@ -56,7 +58,8 @@ namespace FluffyEars
         /// <summary>Default bot settings.</summary>
         private static botSettings_ DefaultBotSettings = new botSettings_
         {
-            FilterChannelId = 674884683166646283, // #filter-logs
+            FilterChannelId = 724187658158342204, // FDS #donteverdelete
+            ActionChannelId = 724187658158342204, // FDS #donteverdelete
             ExcludedChannels = new List<ulong>(),
             StartMessageEnabled = false,
             FrozenNames = new List<string>() 
@@ -78,6 +81,12 @@ namespace FluffyEars
         {
             get => botSettings.FilterChannelId;
             set => botSettings.FilterChannelId = value;
+        }
+
+        public static ulong ActionChannelId
+        {
+            get => botSettings.ActionChannelId;
+            set => botSettings.ActionChannelId = value;
         }
 
         /// <summary>If start message should be enabled.</summary>

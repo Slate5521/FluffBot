@@ -95,11 +95,35 @@ namespace FluffyEars
         {
             var auditChannel = await BotClient.GetChannelAsync(BotSettings.FilterChannelId);
 
-            await auditChannel.SendMessageAsync
-                (
-                    content: text == String.Empty ? null : text,
-                    embed: embed
-                ).ConfigureAwait(false);
+            try
+            {
+                await auditChannel.SendMessageAsync
+                    (
+                        content: text == String.Empty ? null : text,
+                        embed: embed
+                    ).ConfigureAwait(false);
+            } catch 
+            {
+                Console.WriteLine("Audit channel not found.");
+            }
+        }
+
+        /// <summary>Sends a message to the action logs channel.</summary>
+        public static async Task NotifyActionChannel(string text)
+        {
+            var actionChannel = await BotClient.GetChannelAsync(BotSettings.ActionChannelId);
+
+            if (text.Length > 0 && actionChannel.Id > 0)
+            {
+                try
+                {
+                    await actionChannel.SendMessageAsync(text).ConfigureAwait(false);
+                }
+                catch
+                {
+                    Console.WriteLine("Action channel not found.");
+                }
+            }
         }
 
         /// <summary>Notify someone they do not have permissions to use a command.</summary>
