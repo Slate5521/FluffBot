@@ -67,6 +67,70 @@ namespace FluffyEars.Commands
             }
         }
 
+        private const string WARN_SEEK_COMMAND = "mentions";
+        [Command(WARN_SEEK_COMMAND)]
+        public async Task SeekWarns(CommandContext ctx, params DiscordMember[] members)
+        {
+            DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
+
+            Dictionary<DiscordMember, List<DiscordMessage>> warnDict =
+                await QueryMemberMentions(members.Distinct().ToList(), actionLogChannel, BotSettings.WarnThreshold, ctx.Message);
+
+            // Let's start paginating.
+            var pages = new Page[warnDict.Keys.Count];
+            int page = 0;
+
+            foreach(var member in warnDict.Keys)
+            {   // Want to generate a page for each member.
+
+                // We want a boolean to check first because if there's no key, we'll get an exception trying to get the count.
+                bool warnsFound = warnDict.ContainsKey(member) && warnDict[member].Count > 0;
+
+                var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
+                    (
+                        title: "Discord Mentions",
+                        description: ChatObjects.GetNeutralMessage(warnsFound ?
+                                                                   $"I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                                                   $"I did not find any warnings for {member.Mention}. Good for them..."),
+                        color: warnsFound ? DiscordColor.Green : DiscordColor.Red
+                    ));
+
+                if (warnsFound)
+                {   // Only continue here if there are actually warns, otherwise just slap a footer on.
+                    foreach (var message in warnDict[member])
+                    {   // Generate a field for each detected message.
+
+                        if (deb.Fields.Count < 25)
+                        {   // Only continue if we have less than 25 fields.
+                            deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}",
+                                $"{ChatObjects.PreviewString(message.Content, 1000)}\n{Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message)))}");
+                        }
+                        else
+                        {   // Stop the loop if we have 25 fields.
+                            break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+                        }
+                    }
+                }
+
+                deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
+
+                pages[page++] = new Page(embed: deb);
+            }
+
+            // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
+            await ctx.Message.DeleteAsync();
+
+            var interactivity = Bot.BotClient.GetInteractivity();
+
+            await interactivity.SendPaginatedMessageAsync
+                (
+                    c: ctx.Channel,
+                    u: ctx.User,
+                    pages: pages,
+                    emojis: ChatObjects.DefaultPaginationEmojis
+                );
+        }
+
         [Command("setactionthreshold")]
         public async Task SetWarnThreshold(CommandContext ctx, int months)
         {
@@ -115,8 +179,12 @@ namespace FluffyEars.Commands
 
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
-            if(e.Channel.Id == BotSettings.ActionChannelId)
-            {   // Only continue if this is the action channel.
+            if (e.Channel.Id == BotSettings.ActionChannelId
+                && !e.Message.Content
+                    .Substring(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser), WARN_SEEK_COMMAND.Length)
+                    .Trim()
+                    .Equals(WARN_SEEK_COMMAND))
+            {   // Only continue if this is the action channel, and it doesn't look like a command.
 
                 // ----
                 // Get the DiscordMember of each user.
@@ -144,7 +212,8 @@ namespace FluffyEars.Commands
                     var actionChannel = e.Channel;
 
                     // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
-                    Dictionary<DiscordMember, List<DiscordMessage>> warnDict = await QueryMemberMentions(mentionedColonists, actionChannel, BotSettings.WarnThreshold);
+                    Dictionary<DiscordMember, List<DiscordMessage>> warnDict = 
+                        await QueryMemberMentions(mentionedColonists, actionChannel, BotSettings.WarnThreshold, e.Message);
 
                     // ----
                     // So at this point, we know there's at least one person who has been warned (0,inf) times.
@@ -192,17 +261,24 @@ namespace FluffyEars.Commands
             } // end if
         } // end method
 
+        /// <summary>Query for all mentions of specific members.</summary>
+        /// <param name="members">The members to query for.</param>
+        /// <param name="actionChannel">#action-logs</param>
+        /// <param name="warnThreshold">How long ago to query in months.</param>
+        /// <param name="originalMessage">The original message.</param>
+        /// <returns></returns>
         private static async Task<Dictionary<DiscordMember, List<DiscordMessage>>> 
             QueryMemberMentions(List<DiscordMember> members,  
                                 DiscordChannel actionChannel, 
-                                int warnThreshold)
+                                int warnThreshold,
+                                DiscordMessage originalMessage)
         {
             const int MESSAGE_COUNT = 2000;
             // Remember to use DTO in the current timezone and not in UTC! API is running on OUR time.
             DateTime startTime = DateTime.Now.AddMonths(warnThreshold * -1);
 
-            // We want to set the initial messages. This will get the most recent 100 messages.
-            var messages = await actionChannel.GetMessagesAsync(MESSAGE_COUNT);
+            // We want to set the initial messages. This will get the most recent 100 messages, excluding the message that triggered this.
+            var messages = await actionChannel.GetMessagesBeforeAsync(originalMessage.Id, MESSAGE_COUNT);
 
             // We want a "stop" value, so to speak. If this is true, it means we've gone before startTime.
             bool exceededStartTime = false;
@@ -218,7 +294,7 @@ namespace FluffyEars.Commands
                     {   // For each message, we want to check its mentioned users.
 
                         if(startTime.Millisecond <= message.CreationTimestamp.Ticks)
-                        {   // We only want to continue if this is after our startValue
+                        {   // We only want to continue if this is after our startValue.
 
                             foreach (var member in members)
                             {

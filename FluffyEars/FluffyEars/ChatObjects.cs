@@ -81,6 +81,24 @@ namespace FluffyEars
             SkipRight = null
         };
 
+        public static string DateFormat = @"yyyy MMMM dd HH:mm";
+
+        public static string PreviewString(string str, int maxLength)
+        {   const string TOO_LONG = "**Too long to preview...**";
+            string returnVal;
+
+            if(str.Length > maxLength)
+            {
+                returnVal = $"{str.Substring(0, maxLength - TOO_LONG.Length - 1)}{TOO_LONG}"; 
+            } 
+            else
+            {   // Not too long. Just return the val.
+                returnVal = str;
+            }
+
+            return returnVal;
+        }
+
         public static DiscordEmbed FormatEmbedResponse(string title, string description, DiscordColor color, string thumbnail = @"", params DiscordEmbedField[] fields)
         {
             var deb = new DiscordEmbedBuilder();
