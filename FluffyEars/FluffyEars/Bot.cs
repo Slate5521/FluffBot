@@ -75,6 +75,8 @@ namespace FluffyEars
 
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FrozenCommands.BotClient_MessageCreated;
+            BotClient.MessageCreated += WarnCommands.BotClient_MessageCreated;
+
             BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;

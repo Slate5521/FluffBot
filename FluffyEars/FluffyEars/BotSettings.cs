@@ -47,6 +47,8 @@ namespace FluffyEars
             public ulong FilterChannelId;
             /// <summary>ActionLog channel.</summary>
             public ulong ActionChannelId;
+            /// <summary>How long to search for warnings, in months.</summary>
+            public int WarnThresholdMonths;
             /// <summary>A list of channels that will not be checked.</summary>
             public List<ulong> ExcludedChannels;
             /// <summary>Whether or not the bot should announce it has started.</summary>
@@ -60,6 +62,7 @@ namespace FluffyEars
         {
             FilterChannelId = 724187658158342204, // FDS #donteverdelete
             ActionChannelId = 724187658158342204, // FDS #donteverdelete
+            WarnThresholdMonths = 6, // 6 months
             ExcludedChannels = new List<ulong>(),
             StartMessageEnabled = false,
             FrozenNames = new List<string>() 
@@ -87,6 +90,11 @@ namespace FluffyEars
         {
             get => botSettings.ActionChannelId;
             set => botSettings.ActionChannelId = value;
+        }
+        public static int WarnThreshold
+        {
+            get => botSettings.WarnThresholdMonths;
+            set => botSettings.WarnThresholdMonths = value;
         }
 
         /// <summary>If start message should be enabled.</summary>
