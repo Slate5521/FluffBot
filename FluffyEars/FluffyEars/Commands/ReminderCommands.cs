@@ -379,16 +379,8 @@ namespace FluffyEars.Commands
                         } // end if
                     } // end for
 
-                    var emojis = new PaginationEmojis
-                    {
-                        Left = DiscordEmoji.FromName(Bot.BotClient, @":arrow_backward:"),
-                        Right = DiscordEmoji.FromName(Bot.BotClient, @":arrow_forward:"),
-                        Stop = DiscordEmoji.FromName(Bot.BotClient, @":stop_button:"),
-                        SkipLeft = null,
-                        SkipRight = null
-                    };
-
-                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, emojis: emojis);
+                    
+                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, emojis: ChatObjects.DefaultPaginationEmojis);
                 }
                 else
                 {   // There are no reminders.

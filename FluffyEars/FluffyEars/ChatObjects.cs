@@ -2,6 +2,7 @@
 // Various objects to be sent to chat.
 
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 
 namespace FluffyEars
 {
@@ -70,6 +71,15 @@ namespace FluffyEars
 
         public static string GetMention(ulong userId)
             => $"<@{userId}>";
+
+        public static PaginationEmojis DefaultPaginationEmojis = new PaginationEmojis
+        {
+            Left = DiscordEmoji.FromName(Bot.BotClient, @":arrow_backward:"),
+            Right = DiscordEmoji.FromName(Bot.BotClient, @":arrow_forward:"),
+            Stop = DiscordEmoji.FromName(Bot.BotClient, @":stop_button:"),
+            SkipLeft = null,
+            SkipRight = null
+        };
 
         public static DiscordEmbed FormatEmbedResponse(string title, string description, DiscordColor color, string thumbnail = @"", params DiscordEmbedField[] fields)
         {
