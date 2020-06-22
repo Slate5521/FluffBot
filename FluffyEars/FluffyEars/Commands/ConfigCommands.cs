@@ -408,6 +408,60 @@ namespace FluffyEars.Commands
         }
 
         #endregion Rimboard
+
+        [Command("toggle")]
+        public async Task Toggle(CommandContext ctx, string method, bool toggleState)
+        {
+            // Check if the user can use config commands.
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
+            {
+                bool success = false;
+
+                switch(method)
+                {
+                    case "auto-warn-snoop":
+                        BotSettings.AutoWarnSnoopEnabled = toggleState;
+                        success = true;
+                        break;
+                    case "rimboard":
+                        BotSettings.RimboardEnabled = toggleState; 
+                         success = true;
+                        break;
+                }
+
+                if (success)
+                {
+                    BotSettings.Save();
+
+                    await ctx.Channel.SendMessageAsync(embed: ChatObjects.FormatEmbedResponse
+                        (
+                            title: @"Toggle Set",
+                            description: ChatObjects.GetSuccessMessage($"Method group {method} toggled to {toggleState}!"),
+                            color: ChatObjects.SuccessColor
+                        ));
+                }
+                else
+                {
+                    await ctx.Channel.SendMessageAsync(embed: ChatObjects.FormatEmbedResponse
+                        (
+                            title: @"Toggle Not Set",
+                            description: ChatObjects.GetErrMessage($"Method group {method} not found..."),
+                            color: ChatObjects.ErrColor
+                        ));
+                } // end else
+            } // end else
+        } // end method
+
     }
 }
 

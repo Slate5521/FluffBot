@@ -55,12 +55,17 @@ namespace FluffyEars
             public List<ulong> ExcludedChannels;
             /// <summary>Whether or not the bot should announce it has started.</summary>
             public bool StartMessageEnabled;
+            /// <summary>Whether or not the bot should start snooping when it sees a warn.</summary>
+            public bool AutoWarnSnoopEnabled;
+            /// <summary>Whether or not Rimboard should be enabled.</summary>
+            public bool RimboardEnabled;
             /// <summary>A list of recognized Frozen names.</summary>
             public List<string> FrozenNames;
             /// <summary>The Rimboard emoji.</summary>
             public string RimboardEmoji;
             /// <summary>The number of reacts to pin a message.</summary>
             public int RimboardThreshold;
+
         }
 
         /// <summary>Default bot settings.</summary>
@@ -72,6 +77,8 @@ namespace FluffyEars
             WarnThresholdMonths = 6, // 6 months
             ExcludedChannels = new List<ulong>(),
             StartMessageEnabled = false,
+            RimboardEnabled = false,
+            AutoWarnSnoopEnabled = false,
             FrozenNames = new List<string>()
             {
                 "frozen",
@@ -116,6 +123,20 @@ namespace FluffyEars
         {
             get => botSettings.StartMessageEnabled;
             set => botSettings.StartMessageEnabled = value;
+        }
+
+        /// <summary>Whether or not the bot should start snooping when it sees a warn.</summary>
+        public static bool AutoWarnSnoopEnabled
+        {
+            get => botSettings.AutoWarnSnoopEnabled;
+            set => botSettings.AutoWarnSnoopEnabled = value;
+        }
+
+        /// <summary>Whether or not Rimboard should be enabled.</summary>
+        public static bool RimboardEnabled
+        {
+            get => botSettings.RimboardEnabled;
+            set => botSettings.RimboardEnabled = value;
         }
 
         public static string RimboardEmoji

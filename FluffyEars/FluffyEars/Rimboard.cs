@@ -16,7 +16,7 @@ namespace FluffyEars
     {
         internal static async Task BotClient_MessageReactionAdded(MessageReactionAddEventArgs e)
         {
-            if (!e.User.IsCurrent)
+            if (BotSettings.RimboardEnabled && !e.User.IsCurrent)
             {
                 var botPinnedEmoji = DiscordEmoji.FromName(Bot.BotClient, @":star:");
 

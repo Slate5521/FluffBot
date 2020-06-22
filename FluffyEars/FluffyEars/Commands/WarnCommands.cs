@@ -208,7 +208,8 @@ namespace FluffyEars.Commands
 
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
-            if (e.Channel.Id == BotSettings.ActionChannelId &&
+            if (BotSettings.AutoWarnSnoopEnabled &&
+                e.Channel.Id == BotSettings.ActionChannelId &&
                 !(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser) != -1 && e.Message.Content.Contains(WARN_SEEK_COMMAND)))
             {   // Only continue if this is the action channel, and it doesn't look like a command.
 
