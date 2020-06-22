@@ -207,7 +207,7 @@ namespace FluffyEars.Commands
                     if (stringBuilder.Length > 0)
                         deb.AddField(@"Users to notify:", stringBuilder.ToString(), false);
 
-                    deb.AddField(@"Message", messageString.Length.Equals(0) ? @"n/a" : messageString.Length.ToString(), false);
+                    deb.AddField(@"Message", messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(), false);
 
                     embed = deb.Build();
                 } // end else
