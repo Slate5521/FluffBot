@@ -26,9 +26,9 @@ namespace FluffyEars
         private string baseFileName;
 
         /// <summary>Get a string describing BaseFile.A</summary>
-        private string BaseFileA => Path.Combine(Directory.GetCurrentDirectory(), $"{baseFileName}.A");
+        private string BaseFileA => $"{baseFileName}.A");
         /// <summary>Get a string describing BaseFile.B</summary>
-        private string BaseFileB => Path.Combine(Directory.GetCurrentDirectory(), $"{baseFileName}.B");
+        private string BaseFileB => $"{baseFileName}.B");
 
         public SaveFile() { }
         public SaveFile(string baseFile)
