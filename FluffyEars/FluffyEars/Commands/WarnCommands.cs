@@ -193,8 +193,8 @@ namespace FluffyEars.Commands
 
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
-            if (e.Channel.Id == BotSettings.ActionChannelId
-                && !(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser) > 0))
+            if (e.Channel.Id == BotSettings.ActionChannelId &&
+                !(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser) > 0 && e.Message.Content.Contains(WARN_SEEK_COMMAND)))
             {   // Only continue if this is the action channel, and it doesn't look like a command.
 
                 // ----
@@ -249,17 +249,7 @@ namespace FluffyEars.Commands
                                 messages.Select(a =>    // Generate a bunch of masked urls
                                     Formatter.MaskedUrl($"#{++count}", new Uri(ChatObjects.GetMessageUrl(a)))));
 
-                            const string TOO_MANY_RESULTS = "...Too many to list...";
-                            string finalStr;
-
-                            if (stringBuilder.Length >= 2048)
-                            {
-                                finalStr = stringBuilder.ToString().Substring(0, 2048 - TOO_MANY_RESULTS.Length - 1) + TOO_MANY_RESULTS;
-                            }
-                            else
-                            {
-                                finalStr = stringBuilder.ToString();
-                            }
+                            string finalStr = ChatObjects.PreviewString(stringBuilder.ToString(), 2048);
 
                             embedBase.WithDescription(finalStr);
                             embedBase.WithTitle(@"Previous actions found");
