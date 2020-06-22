@@ -93,55 +93,70 @@ namespace FluffyEars.Commands
                 var pages = new Page[warnDict.Keys.Count];
                 int page = 0;
 
-                foreach (var member in warnDict.Keys)
-                {   // Want to generate a page for each member.
+                if (warnDict.Keys.Count > 0)
+                {
+                    foreach (var member in warnDict.Keys)
+                    {   // Want to generate a page for each member.
 
-                    // We want a boolean to check first because if there's no key, we'll get an exception trying to get the count.
-                    bool warnsFound = warnDict.ContainsKey(member) && warnDict[member].Count > 0;
+                        // We want a boolean to check first because if there's no key, we'll get an exception trying to get the count.
+                        bool warnsFound = warnDict.ContainsKey(member) && warnDict[member].Count > 0;
 
-                    var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
-                        (
-                            title: "Discord Mentions",
-                            description: ChatObjects.GetNeutralMessage(warnsFound ?
-                                                                       $"{ctx.Member.Mention}, I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
-                                                                       $"{ctx.Member.Mention}, I did not find any warnings for {member.Mention}. Good for them..."),
-                            color: warnsFound ? DiscordColor.Green : DiscordColor.Red
-                        ));
+                        var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
+                            (
+                                title: "Discord Mentions",
+                                description: ChatObjects.GetNeutralMessage(warnsFound ?
+                                                                           $"{ctx.Member.Mention}, I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                                                           $"{ctx.Member.Mention}, I did not find any warnings for {member.Mention}. Good for them..."),
+                                color: warnsFound ? DiscordColor.Red : DiscordColor.Green
+                            ));
 
-                    if (warnsFound)
-                    {   // Only continue here if there are actually warns, otherwise just slap a footer on.
-                        foreach (var message in warnDict[member])
-                        {   // Generate a field for each detected message.
+                        if (warnsFound)
+                        {   // Only continue here if there are actually warns, otherwise just slap a footer on.
+                            foreach (var message in warnDict[member])
+                            {   // Generate a field for each detected message.
 
-                            if (deb.Fields.Count < 25)
-                            {   // Only continue if we have less than 25 fields.
-                                deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}",
-                                    $"{ChatObjects.PreviewString(message.Content, 1000)}\n{Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message)))}");
-                            }
-                            else
-                            {   // Stop the loop if we have 25 fields.
-                                break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-                            } // end else
-                        } // end foreach
-                    } // end if
+                                if (deb.Fields.Count < 25)
+                                {   // Only continue if we have less than 25 fields.
+                                    deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}",
+                                        $"{ChatObjects.PreviewString(message.Content, 1000)}\n{Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message)))}");
+                                }
+                                else
+                                {   // Stop the loop if we have 25 fields.
+                                    break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+                                } // end else
+                            } // end foreach
+                        } // end if
 
-                    deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
+                        deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
 
-                    pages[page++] = new Page(embed: deb);
-                } // end foreach
+                        pages[page++] = new Page(embed: deb);
+                    } // end foreach
+                } // end if
 
                 // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
                 await ctx.Message.DeleteAsync();
 
-                var interactivity = Bot.BotClient.GetInteractivity();
+                if (pages.Length > 1)
+                {   // More than 1 page.
+                    var interactivity = Bot.BotClient.GetInteractivity();
 
-                await interactivity.SendPaginatedMessageAsync
-                    (
-                        c: ctx.Channel,
-                        u: ctx.User,
-                        pages: pages,
-                        emojis: ChatObjects.DefaultPaginationEmojis
-                    );
+                    await interactivity.SendPaginatedMessageAsync
+                        (
+                            c: ctx.Channel,
+                            u: ctx.User,
+                            pages: pages,
+                            emojis: ChatObjects.DefaultPaginationEmojis
+                        );
+                }
+                else
+                {   // Only one page, we want to send it as a regular embed instead.
+                    var anotherDeb = new DiscordEmbedBuilder(pages[0].Embed);
+
+                    // Clear the footer. We don't want the page count.
+                    anotherDeb.WithFooter(null, null);
+
+                    await ctx.Channel.SendMessageAsync(embed: anotherDeb);
+                }
             }
         }
 
@@ -204,13 +219,17 @@ namespace FluffyEars.Commands
 
                 foreach(var user in e.MentionedUsers)
                 {
-                    var member = await e.Guild.GetMemberAsync(user.Id);
-                    
-                    if(member.GetHighestRole().Equals(Role.Colonist) && !member.IsBot)
-                    {   // Only add this person if they're a colonist and not a bot.
+                    try
+                    {
+                        var member = await e.Guild.GetMemberAsync(user.Id);
 
-                        mentionedColonists.Add(member);
-                    } // end if
+                        if (member.GetHighestRole().Equals(Role.Colonist) && !member.IsBot)
+                        {   // Only add this person if they're a colonist and not a bot.
+
+                            mentionedColonists.Add(member);
+                        } // end if
+                    }
+                    catch(AggregateException) { }
                 } // end foreach
 
                 // ----
@@ -278,14 +297,27 @@ namespace FluffyEars.Commands
             // Remember to use DTO in the current timezone and not in UTC! API is running on OUR time.
             DateTime startTime = DateTime.Now.AddMonths(warnThreshold * -1);
 
-            // We want to set the initial messages. This will get the most recent 100 messages, excluding the message that triggered this.
-            var messages = await actionChannel.GetMessagesBeforeAsync(originalMessage.Id, MESSAGE_COUNT);
+            // We want to set the initial messages.
+
+            IReadOnlyList<DiscordMessage> messages;
+
+            if (originalMessage.ChannelId != BotSettings.ActionChannelId)
+            {   // If the original message is anywhere besides the action channel, we want to start at the most recent message.
+                messages = await actionChannel.GetMessagesAsync(MESSAGE_COUNT);
+            }
+            else
+            {   // If the original message is in the action channel, we want to exclude the message that triggered this response, as to not count it.
+                messages = await actionChannel.GetMessagesBeforeAsync(originalMessage.Id, MESSAGE_COUNT);
+            }
 
             // We want a "stop" value, so to speak. If this is true, it means we've gone before startTime.
             bool exceededStartTime = false;
 
             // Every instance where this user has been mentioned.
             var warnInstances = new Dictionary<DiscordMember, List<DiscordMessage>>();
+
+            // Populate the dictionary.
+            members.ForEach(a => warnInstances.Add(a, new List<DiscordMessage>()));
 
             do
             {
@@ -301,11 +333,6 @@ namespace FluffyEars.Commands
                             {
                                 if (MentionedUsersContains(message, member))
                                 {   // Only continue if there are actually mentioned users, and if the mentioned users has the member we want.
-
-                                    if (!warnInstances.ContainsKey(member))
-                                    {
-                                        warnInstances.Add(member, new List<DiscordMessage>());
-                                    }
 
                                     warnInstances[member].Add(message);
 

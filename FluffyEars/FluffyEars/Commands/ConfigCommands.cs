@@ -400,7 +400,7 @@ namespace FluffyEars.Commands
 
                 await ctx.Channel.SendMessageAsync(embed: ChatObjects.FormatEmbedResponse
                     (
-                        title: @"Rimboard Count",
+                        title: @"Rimboard Pin Count",
                         description: ChatObjects.GetSuccessMessage($"I set the number of reacts required to {count}"),
                         color: ChatObjects.SuccessColor
                     ));

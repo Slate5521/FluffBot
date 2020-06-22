@@ -66,7 +66,7 @@ namespace FluffyEars.Commands
                         ));
                     }
 
-                    deb.AddField(@"Mask", $"`{mask}`");
+                    deb.AddField(@"Mask", mask);
 
                     await ctx.Channel.SendMessageAsync(embed: deb.Build());
                 } // end if
