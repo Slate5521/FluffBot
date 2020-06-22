@@ -184,7 +184,7 @@ namespace FluffyEars.Commands
 
                     reminder = new Reminder
                     {
-                        Text = messageString.Length.Equals(0) ? @"n/a" : messageString.Length.ToString(),
+                        Text = messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
                         Time = dto.ToUnixTimeMilliseconds(),
                         User = ctx.Member.Id,
                         Channel = ctx.Channel.Id,
