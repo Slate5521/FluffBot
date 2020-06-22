@@ -5,7 +5,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -27,10 +26,9 @@ namespace FluffyEars
         private string baseFileName;
 
         /// <summary>Get a string describing BaseFile.A</summary>
-        private string BaseFileA => Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), $"{baseFileName}.A");
-        
+        private string BaseFileA => Path.Combine(Directory.GetCurrentDirectory(), $"{baseFileName}.A");
         /// <summary>Get a string describing BaseFile.B</summary>
-        private string BaseFileB => Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), $"{baseFileName}.B");
+        private string BaseFileB => Path.Combine(Directory.GetCurrentDirectory(), $"{baseFileName}.B");
 
         public SaveFile() { }
         public SaveFile(string baseFile)
