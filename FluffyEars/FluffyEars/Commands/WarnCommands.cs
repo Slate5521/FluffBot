@@ -71,6 +71,18 @@ namespace FluffyEars.Commands
         [Command(WARN_SEEK_COMMAND)]
         public async Task SeekWarns(CommandContext ctx, params DiscordMember[] members)
         {
+            // Check if the user can use these sorts of commands.
+            if (!ctx.Member.GetHighestRole().IsCSOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.CS,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else { 
             DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
 
             Dictionary<DiscordMember, List<DiscordMessage>> warnDict =
@@ -80,42 +92,43 @@ namespace FluffyEars.Commands
             var pages = new Page[warnDict.Keys.Count];
             int page = 0;
 
-            foreach(var member in warnDict.Keys)
-            {   // Want to generate a page for each member.
+                foreach (var member in warnDict.Keys)
+                {   // Want to generate a page for each member.
 
-                // We want a boolean to check first because if there's no key, we'll get an exception trying to get the count.
-                bool warnsFound = warnDict.ContainsKey(member) && warnDict[member].Count > 0;
+                    // We want a boolean to check first because if there's no key, we'll get an exception trying to get the count.
+                    bool warnsFound = warnDict.ContainsKey(member) && warnDict[member].Count > 0;
 
-                var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
-                    (
-                        title: "Discord Mentions",
-                        description: ChatObjects.GetNeutralMessage(warnsFound ?
-                                                                   $"I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
-                                                                   $"I did not find any warnings for {member.Mention}. Good for them..."),
-                        color: warnsFound ? DiscordColor.Green : DiscordColor.Red
-                    ));
+                    var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
+                        (
+                            title: "Discord Mentions",
+                            description: ChatObjects.GetNeutralMessage(warnsFound ?
+                                                                       $"I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                                                       $"I did not find any warnings for {member.Mention}. Good for them..."),
+                            color: warnsFound ? DiscordColor.Green : DiscordColor.Red
+                        ));
 
-                if (warnsFound)
-                {   // Only continue here if there are actually warns, otherwise just slap a footer on.
-                    foreach (var message in warnDict[member])
-                    {   // Generate a field for each detected message.
+                    if (warnsFound)
+                    {   // Only continue here if there are actually warns, otherwise just slap a footer on.
+                        foreach (var message in warnDict[member])
+                        {   // Generate a field for each detected message.
 
-                        if (deb.Fields.Count < 25)
-                        {   // Only continue if we have less than 25 fields.
-                            deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}",
-                                $"{ChatObjects.PreviewString(message.Content, 1000)}\n{Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message)))}");
-                        }
-                        else
-                        {   // Stop the loop if we have 25 fields.
-                            break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-                        }
-                    }
-                }
+                            if (deb.Fields.Count < 25)
+                            {   // Only continue if we have less than 25 fields.
+                                deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}",
+                                    $"{ChatObjects.PreviewString(message.Content, 1000)}\n{Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message)))}");
+                            }
+                            else
+                            {   // Stop the loop if we have 25 fields.
+                                break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+                            } // end else
+                        } // end foreach
+                    } // end if
 
-                deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
+                    deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
 
-                pages[page++] = new Page(embed: deb);
-            }
+                    pages[page++] = new Page(embed: deb);
+                } // end else
+            } // end method
 
             // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
             await ctx.Message.DeleteAsync();
@@ -339,6 +352,7 @@ namespace FluffyEars.Commands
             return warnInstances;
         }
 
+        /// <summary>Checks if a message contains the specified user.</summary>
         private static bool MentionedUsersContains(DiscordMessage message, DiscordMember member)
         {
             bool returnVal = false;
