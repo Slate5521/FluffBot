@@ -52,7 +52,7 @@ namespace FluffyEars.Commands
 
                     BotSettings.ActionChannelId = chan.Id;
                     BotSettings.Save();
-                } 
+                }
                 else
                 {   // Not the same guild
                     embedResponse = ChatObjects.FormatEmbedResponse
@@ -82,15 +82,16 @@ namespace FluffyEars.Commands
                         caller: ctx.Member
                     );
             }
-            else { 
-            DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
+            else
+            {
+                DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
 
-            Dictionary<DiscordMember, List<DiscordMessage>> warnDict =
-                await QueryMemberMentions(members.Distinct().ToList(), actionLogChannel, BotSettings.WarnThreshold, ctx.Message);
+                Dictionary<DiscordMember, List<DiscordMessage>> warnDict =
+                    await QueryMemberMentions(members.Distinct().ToList(), actionLogChannel, BotSettings.WarnThreshold, ctx.Message);
 
-            // Let's start paginating.
-            var pages = new Page[warnDict.Keys.Count];
-            int page = 0;
+                // Let's start paginating.
+                var pages = new Page[warnDict.Keys.Count];
+                int page = 0;
 
                 foreach (var member in warnDict.Keys)
                 {   // Want to generate a page for each member.
@@ -127,21 +128,21 @@ namespace FluffyEars.Commands
                     deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
 
                     pages[page++] = new Page(embed: deb);
-                } // end else
-            } // end method
+                } // end foreach
 
-            // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
-            await ctx.Message.DeleteAsync();
+                // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
+                await ctx.Message.DeleteAsync();
 
-            var interactivity = Bot.BotClient.GetInteractivity();
+                var interactivity = Bot.BotClient.GetInteractivity();
 
-            await interactivity.SendPaginatedMessageAsync
-                (
-                    c: ctx.Channel,
-                    u: ctx.User,
-                    pages: pages,
-                    emojis: ChatObjects.DefaultPaginationEmojis
-                );
+                await interactivity.SendPaginatedMessageAsync
+                    (
+                        c: ctx.Channel,
+                        u: ctx.User,
+                        pages: pages,
+                        emojis: ChatObjects.DefaultPaginationEmojis
+                    );
+            }
         }
 
         [Command("setactionthreshold")]

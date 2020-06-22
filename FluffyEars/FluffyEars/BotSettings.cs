@@ -47,6 +47,8 @@ namespace FluffyEars
             public ulong FilterChannelId;
             /// <summary>ActionLog channel.</summary>
             public ulong ActionChannelId;
+            /// <summary>Rimboard channel.</summary>
+            public ulong RimboardChannelId;
             /// <summary>How long to search for warnings, in months.</summary>
             public int WarnThresholdMonths;
             /// <summary>A list of channels that will not be checked.</summary>
@@ -55,6 +57,10 @@ namespace FluffyEars
             public bool StartMessageEnabled;
             /// <summary>A list of recognized Frozen names.</summary>
             public List<string> FrozenNames;
+            /// <summary>The Rimboard emoji.</summary>
+            public string RimboardEmoji;
+            /// <summary>The number of reacts to pin a message.</summary>
+            public int RimboardThreshold;
         }
 
         /// <summary>Default bot settings.</summary>
@@ -62,16 +68,19 @@ namespace FluffyEars
         {
             FilterChannelId = 724187658158342204, // FDS #donteverdelete
             ActionChannelId = 724187658158342204, // FDS #donteverdelete
+            RimboardChannelId = 724187658158342204, // FDS #donteverdelete
             WarnThresholdMonths = 6, // 6 months
             ExcludedChannels = new List<ulong>(),
             StartMessageEnabled = false,
-            FrozenNames = new List<string>() 
-            { 
+            FrozenNames = new List<string>()
+            {
                 "frozen",
                 "frozo",
                 "forza",
                 "freezy"
-            }
+            },
+            RimboardEmoji = ":rimworld:",
+            RimboardThreshold = 5
         };
 
         /// <summary>Bot settings!</summary>
@@ -91,6 +100,11 @@ namespace FluffyEars
             get => botSettings.ActionChannelId;
             set => botSettings.ActionChannelId = value;
         }
+        public static ulong RimboardChannelId
+        {
+            get => botSettings.RimboardChannelId;
+            set => botSettings.RimboardChannelId = value;
+        }
         public static int WarnThreshold
         {
             get => botSettings.WarnThresholdMonths;
@@ -102,6 +116,18 @@ namespace FluffyEars
         {
             get => botSettings.StartMessageEnabled;
             set => botSettings.StartMessageEnabled = value;
+        }
+
+        public static string RimboardEmoji
+        {
+            get => botSettings.RimboardEmoji;
+            set => botSettings.RimboardEmoji = value;
+        }
+
+        public static int RimboardThreshold
+        {
+            get => botSettings.RimboardThreshold;
+            set => botSettings.RimboardThreshold = value;
         }
 
         #endregion Public Fields

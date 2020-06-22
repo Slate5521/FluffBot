@@ -17,6 +17,8 @@ namespace FluffyEars.Commands
     {
         public ConfigCommands() { }
 
+        #region Filter Config Commands
+
         [Command("setfilterchan")]
         public async Task SetFilterChannel(CommandContext ctx, DiscordChannel chan)
         {
@@ -51,7 +53,7 @@ namespace FluffyEars.Commands
                     success = false;
 
                     await ctx.Channel.SendMessageAsync(embed: embedResponse);
-                } 
+                }
 
                 if (!ctx.Guild.Channels.ContainsKey(chan.Id))
                 {   // Channel does not exist.
@@ -100,14 +102,14 @@ namespace FluffyEars.Commands
                         caller: ctx.Member
                     );
             }
-            else 
-            { 
+            else
+            {
                 DiscordEmbed embedResponse;
                 bool success = true;
 
                 await ctx.Channel.TriggerTypingAsync();
 
-                if(!BotSettings.IsChannelExcluded(chan))
+                if (!BotSettings.IsChannelExcluded(chan))
                 {   // This channel is excluded already.
                     embedResponse = ChatObjects.FormatEmbedResponse
                         (
@@ -121,7 +123,7 @@ namespace FluffyEars.Commands
                     await ctx.Channel.SendMessageAsync(embed: embedResponse);
                 }
 
-                if(!ctx.Guild.Channels.ContainsKey(chan.Id))
+                if (!ctx.Guild.Channels.ContainsKey(chan.Id))
                 {   // This channel is not in the guild.
 
                     embedResponse = ChatObjects.FormatEmbedResponse
@@ -167,8 +169,8 @@ namespace FluffyEars.Commands
                         caller: ctx.Member
                     );
             }
-            else 
-            { 
+            else
+            {
                 DiscordEmbed embedResponse;
                 bool success = true;
 
@@ -235,7 +237,7 @@ namespace FluffyEars.Commands
                     );
             }
             else
-            { 
+            {
                 await ctx.Channel.TriggerTypingAsync();
 
                 DiscordEmbed embedResponse;
@@ -250,9 +252,9 @@ namespace FluffyEars.Commands
                         );
 
                     await ctx.Channel.SendMessageAsync(embed: embedResponse);
-                } 
+                }
                 else
-                {  
+                {
                     StringBuilder sb = new StringBuilder();
 
                     // Write out every channel being excluded into a cute little list.
@@ -271,6 +273,8 @@ namespace FluffyEars.Commands
             }
         }
 
+        #endregion Filter Config Commands
+
         [Command("startmessageenabled")]
         public async Task StartMessageEnabled(CommandContext ctx, bool enabled)
         {
@@ -286,7 +290,7 @@ namespace FluffyEars.Commands
                     );
             }
             else
-            { 
+            {
                 await ctx.TriggerTypingAsync();
 
                 DiscordEmbed embedResponse;
@@ -296,11 +300,11 @@ namespace FluffyEars.Commands
 
                 var stringBuilder = new StringBuilder();
                 stringBuilder.Append(@"I have ");
-                
-                if(enabled)
+
+                if (enabled)
                 {
                     stringBuilder.Append(@"enabled start messaging! :D");
-                } 
+                }
                 else
                 {
                     stringBuilder.Append(@"disabled start messaging... ;-;");
@@ -316,5 +320,94 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(embed: embedResponse);
             }
         }
+
+        #region Rimboard
+
+        [Command("rimboardemoji")]
+        public async Task SetRimboardEmoji(CommandContext ctx, DiscordEmoji emoji)
+        {
+            // Check if the user can use config commands.
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
+            {
+                BotSettings.RimboardEmoji = emoji.GetDiscordName();
+                BotSettings.Save();
+
+                await ctx.Channel.SendMessageAsync(embed: ChatObjects.FormatEmbedResponse
+                    (
+                        title: @"Rimboard Emoji",
+                        description: ChatObjects.GetSuccessMessage($"I set the Rimboard emoji to {Formatter.Emoji(emoji)}"),
+                        color: ChatObjects.SuccessColor
+                    ));
+            }
+        }
+
+        [Command("rimboardchan")]
+        public async Task SetRimboardChannel(CommandContext ctx, DiscordChannel channel)
+        {
+            // Check if the user can use config commands.
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
+            {
+                BotSettings.RimboardChannelId = channel.Id;
+                BotSettings.Save();
+
+                await ctx.Channel.SendMessageAsync(embed: ChatObjects.FormatEmbedResponse
+                    (
+                        title: @"Rimboard",
+                        description: ChatObjects.GetSuccessMessage($"I set the Rimboard channel to {channel.Mention}"),
+                        color: ChatObjects.SuccessColor
+                    ));
+            }
+        }
+
+        [Command("pincount")]
+        public async Task SetPinCount(CommandContext ctx, uint count)
+        {
+            // Check if the user can use config commands.
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.BotManager,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
+            {
+                BotSettings.RimboardThreshold = (int)count;
+                BotSettings.Save();
+
+                await ctx.Channel.SendMessageAsync(embed: ChatObjects.FormatEmbedResponse
+                    (
+                        title: @"Rimboard Count",
+                        description: ChatObjects.GetSuccessMessage($"I set the number of reacts required to {count}"),
+                        color: ChatObjects.SuccessColor
+                    ));
+            }
+        }
+
+        #endregion Rimboard
     }
 }
+

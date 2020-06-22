@@ -76,6 +76,8 @@ namespace FluffyEars
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FrozenCommands.BotClient_MessageCreated;
 
+            BotClient.MessageReactionAdded += Rimboard.BotClient_MessageReactionAdded;
+
             BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
@@ -294,8 +296,12 @@ namespace FluffyEars
         }
 
         private async void BotClient_FilterTriggered(FilterEventArgs e)
-            => await FilterSystem.HandleFilterTriggered(e);
-
+        {
+            try
+            {
+                await FilterSystem.HandleFilterTriggered(e);
+            } catch { }
+        }
         /// <summary>Some shit broke.</summary>
         private Task BotClient_ClientErrored(ClientErrorEventArgs e)
         {
