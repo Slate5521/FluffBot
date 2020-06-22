@@ -103,8 +103,8 @@ namespace FluffyEars.Commands
                         (
                             title: "Discord Mentions",
                             description: ChatObjects.GetNeutralMessage(warnsFound ?
-                                                                       $"I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
-                                                                       $"I did not find any warnings for {member.Mention}. Good for them..."),
+                                                                       $"{ctx.Member.Mention}, I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                                                       $"{ctx.Member.Mention}, I did not find any warnings for {member.Mention}. Good for them..."),
                             color: warnsFound ? DiscordColor.Green : DiscordColor.Red
                         ));
 
@@ -194,10 +194,7 @@ namespace FluffyEars.Commands
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
             if (e.Channel.Id == BotSettings.ActionChannelId
-                && !e.Message.Content
-                    .Substring(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser), WARN_SEEK_COMMAND.Length)
-                    .Trim()
-                    .Equals(WARN_SEEK_COMMAND))
+                && !(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser) > 0))
             {   // Only continue if this is the action channel, and it doesn't look like a command.
 
                 // ----
