@@ -43,8 +43,9 @@ namespace FluffyEars
                         if (pinnedMessages.Count == 50)
                         {
                             await pinnedMessages.Last().UnpinAsync();
-                            await e.Message.PinAsync();
                         }
+
+                        await e.Message.PinAsync();
                     }
                     else
                     {   // Otherwise let's just add it.
