@@ -183,10 +183,10 @@ namespace FluffyEars.BadWords
                             string badWord = match.Value;
                             int badWordIndex = match.Index;
                             
-                            returnVal.Add(badWord);
-
                             if (!Excludes.IsExcluded(message, badWord, badWordIndex))
                             {
+                                returnVal.Add(badWord);
+
                                 stringBuilder.Insert(badWordIndex + annoteSymbolsAdded++, '%');
                                 stringBuilder.Insert(badWordIndex + badWord.Length + annoteSymbolsAdded++, '%');
                             } // end if
