@@ -107,10 +107,10 @@ namespace Stellarch
                                         options: SerializerOptions
                                     );
                             }   
-                        } catch // No specific catch type because I have no idea what kind of exception this throws.
+                        } catch(JsonException e) 
                         {   // We want to catch the exception and throw our own so we have more information.
                             throw new FileLoadException("Save file version mismatch. Attempting to load a file from a version different than the " +
-                                $"current one. File attempted to load: {fileName}.");
+                                $"current one. File attempted to load: {fileName}.", e);
                         } // end catch
                     } // end if
 
@@ -130,7 +130,7 @@ namespace Stellarch
             return returnVal_object;
         }
 
-        public async Task Save()
+        public async Task<bool> Save()
         {
             throw new NotImplementedException();
         }
