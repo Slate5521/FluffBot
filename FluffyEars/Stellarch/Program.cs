@@ -13,7 +13,7 @@ namespace Stellarch
 
         public static string BotDirectory
         {
-            get 
+            get
             {
                 throw new NotImplementedException();
             }
@@ -34,7 +34,7 @@ namespace Stellarch
                     stringBuilder.AppendJoin(' ', args.Skip(1));
 
                     GenerateMD5AndQuit(stringBuilder.ToString());
-
+                    
                     return; // ---------------------------------------------------------------------------------------------------- Quit the program.
                 }
                 else
