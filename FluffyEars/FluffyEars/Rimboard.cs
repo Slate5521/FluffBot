@@ -20,17 +20,23 @@ namespace FluffyEars
             {
                 var botPinnedEmoji = DiscordEmoji.FromName(Bot.BotClient, @":star:");
 
+
+                // We don't want the cached version of this message because if it was sent during downtime, the bot won't be able to do
+                // anything with it.
+                var message_no_cache = await e.Channel.GetMessageAsync(e.Message.Id);
+
                 // This contains a list of the reactions that have rimboardEmoji. It's only ever really going to be be 1 long.
-                var pinReactions = e.Message.Reactions.Where(a => a.Emoji.GetDiscordName().Equals(BotSettings.RimboardEmoji));
+                var pinReactions = message_no_cache.Reactions.Where(a => a.Emoji.GetDiscordName().Equals(BotSettings.RimboardEmoji));
                 // Same thing as above, but it's looking for the botPinnedEmoji
-                var botPinnedReaction = e.Message.Reactions.Where(a => a.Emoji.Equals(botPinnedEmoji));
+                var botPinnedReaction = message_no_cache.Reactions.Where(a => a.Emoji.Equals(botPinnedEmoji));
 
                 if (!(botPinnedReaction.Count() > 0 && botPinnedReaction.Any(a => a.IsMe)) &&
                     pinReactions.Count() > 0 && pinReactions.Any(a => a.Count >= BotSettings.RimboardThreshold))
                 {   // Only continue if this hasn't been reacted to by the bot and it has more than a specified amount of emojis.
+                    \
 
-                    await e.Message.DeleteAllReactionsAsync();
-                    await e.Message.CreateReactionAsync(botPinnedEmoji);
+                    await message_no_cache.DeleteAllReactionsAsync();
+                    await message_no_cache.CreateReactionAsync(botPinnedEmoji);
 
                     var rimboardChannel = await Bot.BotClient.GetChannelAsync(BotSettings.RimboardChannelId);
 
@@ -45,7 +51,7 @@ namespace FluffyEars
                             await pinnedMessages.Last().UnpinAsync();
                         }
 
-                        await e.Message.PinAsync();
+                        await message_no_cache.PinAsync();
                     }
                     else
                     {   // Otherwise let's just add it.
@@ -53,11 +59,7 @@ namespace FluffyEars
                         // DEB!
                         var deb = new DiscordEmbedBuilder();
 
-                        // We don't want the cached version of this message because if it was sent during downtime, the bot won't be able to do
-                        // anything with it.
 
-                        var message_no_cache = await e.Channel.GetMessageAsync(e.Message.Id);
-                        
                         deb.WithColor(DiscordColor.Gold);
                         deb.WithDescription(message_no_cache.Content);
                         deb.WithThumbnail(message_no_cache.Author.AvatarUrl);
