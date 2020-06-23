@@ -243,23 +243,23 @@ namespace FluffyEars
         /// <summary>Get excluded channels.</summary>
         public static async Task<DiscordChannel[]> GetExcludedChannels()
         {
-            DiscordChannel[] channels;
+            List<DiscordChannel> channels = new List<DiscordChannel>();
 
             if (botSettings.ExcludedChannels.Count > 0)
             {   // There is at least one excluded channel.
-                channels = new DiscordChannel[botSettings.ExcludedChannels.Count];
-
                 for (int i = 0; i < botSettings.ExcludedChannels.Count; i++)
                 {
-                    channels[i] = await Bot.BotClient.GetChannelAsync(botSettings.ExcludedChannels[i]);
+                    try
+                    {
+                        channels.Add(await Bot.BotClient.GetChannelAsync(botSettings.ExcludedChannels[i]));
+                    } catch { }
                 }
             }
             else
             {   // There are no excluded channels.
-                channels = Array.Empty<DiscordChannel>();
             }
 
-            return channels;
+            return channels.ToArray();
         }
         /// <summary>Check if the channel is excluded.</summary>
         /// <returns>True if the channel is excluded.</returns>
