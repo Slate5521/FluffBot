@@ -37,6 +37,9 @@
     <None Update="authkey">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="webhook">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

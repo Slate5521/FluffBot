@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using DSharpPlus;
+using DSharpPlus.Net;
 
 namespace FluffyEars
 {
@@ -40,7 +41,6 @@ namespace FluffyEars
 
                     var rimboardChannel = await Bot.BotClient.GetChannelAsync(BotSettings.RimboardChannelId);
 
-
                     if (e.Channel.Id.Equals(BotSettings.RimboardChannelId))
                     {   // If this is in our rimboard channel, let's pin it.
 
@@ -59,10 +59,13 @@ namespace FluffyEars
                         // DEB!
                         var deb = new DiscordEmbedBuilder();
 
-
                         deb.WithColor(DiscordColor.Gold);
                         deb.WithDescription(message_no_cache.Content);
-                        deb.WithThumbnail(message_no_cache.Author.AvatarUrl);
+
+                        UriBuilder avatarUri = new UriBuilder(message_no_cache.Author.AvatarUrl);
+                        avatarUri.Query = "?size=64";
+
+                        deb.WithThumbnail(avatarUri.ToString());
 
                         deb.AddField(@"Colonist", message_no_cache.Author.Mention, true);
                         deb.AddField(@"Link", Formatter.MaskedUrl($"#{message_no_cache.Channel.Name}", new Uri(ChatObjects.GetMessageUrl(message_no_cache))), true);
@@ -72,17 +75,37 @@ namespace FluffyEars
                             deb.WithImageUrl(message_no_cache.Attachments[0].Url);
                         }
 
-                        await rimboardChannel.SendMessageAsync(embed: deb);
+                        List<DiscordEmbed> embeds = new List<DiscordEmbed>();
+                        embeds.Add(deb.Build());
+
+                        //await rimboardChannel.SendMessageAsync(embed: deb);
 
                         if(message_no_cache.Embeds.Count > 0)
                         {
-                            await rimboardChannel.SendMessageAsync(embed: message_no_cache.Embeds[0]);
-                        }
-                        
-                    }
-                }
-            }
-        }
+                            // We want to try and get as many of the embeds as we can, but we don't want to go over 10 embeds total. We already have
+                            // an embed.
+                            for (int i = 0; i < message_no_cache.Embeds.Count && i < 9; i++)
+                            {
+                                DiscordEmbed embed = message_no_cache.Embeds[i];
 
+                                try
+                                {
+                                    var newDeb = new DiscordEmbedBuilder();
+                                    newDeb.WithColor(DiscordColor.Black);
+                                    newDeb.WithImageUrl(embed.Thumbnail.Url.ToUri());
+                                    newDeb.WithDescription(embed.Description);
+                                    newDeb.WithUrl(embed.Url);
+
+                                    embeds.Add(newDeb.Build());
+                                } catch { }
+                            } // end for
+                        } // end if
+
+                        // Let's send this shit already.
+                        await Bot.SendWebhookMessage(embeds: embeds.ToArray());
+                    } // end else
+                } // end if
+            } // end if
+        } // end method
     }
 }
