@@ -135,8 +135,8 @@ namespace FluffyEars
         static string YesResponse;
         static string NoResponse;
 
-        static Regex FloppyRegexYes = new Regex(@"^(?:yes|yea|yeah|ya)[.!?]+$", options);
-        static Regex FloppyRegexNo = new Regex(@"^(?:no|nah)[.!?]+$", options);
+        static Regex FloppyRegexYes = new Regex(@"^(?:yes|yea|yeah|ya)[.!?]?$", options);
+        static Regex FloppyRegexNo = new Regex(@"^(?:no|nah)[.!?]?$", options);
 
 
         // --------------------------------
@@ -235,7 +235,10 @@ namespace FluffyEars
         {
             if (!(OriginalResponseMessage is null))
             {
-                await OriginalResponseMessage.DeleteAsync();
+                try
+                {
+                    await OriginalResponseMessage.DeleteAsync();
+                } catch { }
             }
 
             if (deleteOld)

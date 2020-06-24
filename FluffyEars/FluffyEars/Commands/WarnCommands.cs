@@ -104,9 +104,9 @@ namespace FluffyEars.Commands
                         var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
                             (
                                 title: "Discord Mentions",
-                                description: ChatObjects.GetNeutralMessage(warnsFound ?
-                                                                           $"{ctx.Member.Mention}, I found {warnDict[member].Count} mentions for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
-                                                                           $"{ctx.Member.Mention}, I did not find any warnings for {member.Mention}. Good for them..."),
+                                description: ChatObjects.GetNeutralMessage(warnsFound ? // Warning, really fucking long string ahead:
+                                                                           $"{ctx.Member.Mention}, I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                                                           $"{ctx.Member.Mention}, I did not find any mentions for {member.Mention}. Good for them..."),
                                 color: warnsFound ? DiscordColor.Red : DiscordColor.Green
                             ));
 
@@ -117,8 +117,57 @@ namespace FluffyEars.Commands
 
                                 if (deb.Fields.Count < 25)
                                 {   // Only continue if we have less than 25 fields.
-                                    deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}",
-                                        $"{ChatObjects.PreviewString(message.Content, 1000)}\n{Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message)))}");
+
+                                    // This SB is for all the content.
+                                    var stringBuilder = new StringBuilder();
+                                    // This SB is for all the misc information.
+                                    var stringBuilderFooter = new StringBuilder();
+
+                                    stringBuilder.Append($"{ChatObjects.GetMention(message.Author.Id)}: ");
+
+                                    stringBuilder.Append(message.Content);
+
+                                    stringBuilderFooter.Append("\n\n");
+                                    stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link to Original Mention", new Uri(ChatObjects.GetMessageUrl(message))));
+
+                                    if (message.Attachments.Count > 0)
+                                    {
+                                        stringBuilderFooter.Append($"\n\n{Formatter.Bold(@"There is an image attached:")} ");
+
+                                        stringBuilderFooter.Append(Formatter.MaskedUrl(@"Image", new Uri(message.Attachments[0].Url)));
+                                    } // end if
+
+                                    // We want to prefer the footer's information over the content. So let's figure out how much of the content we
+                                    // need to trim out.
+
+                                    var finalStringBuilder = new StringBuilder();
+
+                                    if(stringBuilder.Length + stringBuilderFooter.Length > 1000)
+                                    {   // We need to do some trimming.
+
+                                        if(stringBuilder.Length > 0)
+                                        {   // Let's get the content in there.
+                                            finalStringBuilder.Append(ChatObjects
+                                                .PreviewString(stringBuilder.ToString(), 1000 - stringBuilderFooter.Length));
+                                        }
+                                        if(stringBuilderFooter.Length > 0)
+                                        {   // Let's get the footer in there.
+                                            finalStringBuilder.Append(stringBuilderFooter);
+                                        }
+                                    }
+                                    else
+                                    {   // We don't need to do any trimming.
+                                        if (stringBuilder.Length > 0)
+                                        {   // Let's get the content in there.
+                                            finalStringBuilder.Append(stringBuilder);
+                                        }
+                                        if (stringBuilderFooter.Length > 0)
+                                        {   // Let's get the footer in there.
+                                            finalStringBuilder.Append(stringBuilderFooter);
+                                        }
+                                    }
+
+                                    deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}", finalStringBuilder.ToString());
                                 }
                                 else
                                 {   // Stop the loop if we have 25 fields.
@@ -262,7 +311,7 @@ namespace FluffyEars.Commands
                             var stringBuilder = new StringBuilder();
 
     
-                            stringBuilder.Append($"__**{key.Mention} has {messages.Count} mentions in {e.Channel.Mention}:**__\n");
+                            stringBuilder.Append($"__**{key.Mention} has {messages.Count} mention{(messages.Count == 1 ? String.Empty : @"s")} in {e.Channel.Mention}:**__\n");
 
                             int count = 0;
                             stringBuilder.AppendJoin(' ',
@@ -272,7 +321,7 @@ namespace FluffyEars.Commands
                             string finalStr = ChatObjects.PreviewString(stringBuilder.ToString(), 2048);
 
                             embedBase.WithDescription(finalStr);
-                            embedBase.WithTitle(@"Previous mentions found");
+                            embedBase.WithTitle($"Previous mention{(messages.Count == 1 ? String.Empty : @"s")}  found");
                             embedBase.WithColor(DiscordColor.Red);
 
                             await e.Channel.SendMessageAsync(embed: embedBase);

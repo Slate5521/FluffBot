@@ -34,7 +34,6 @@ namespace FluffyEars
                 if (!(botPinnedReaction.Count() > 0 && botPinnedReaction.Any(a => a.IsMe)) &&
                     pinReactions.Count() > 0 && pinReactions.Any(a => a.Count >= BotSettings.RimboardThreshold))
                 {   // Only continue if this hasn't been reacted to by the bot and it has more than a specified amount of emojis.
-                    
 
                     await message_no_cache.DeleteAllReactionsAsync();
                     await message_no_cache.CreateReactionAsync(botPinnedEmoji);
