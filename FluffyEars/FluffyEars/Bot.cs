@@ -36,6 +36,7 @@ namespace FluffyEars
             // Load shit.
             string authKey = LoadConfig();
 
+
             DiscordConfiguration botConfig = new DiscordConfiguration
             {
                 Token = authKey,
@@ -76,12 +77,15 @@ namespace FluffyEars
             BotClient.MessageCreated += FilterSystem.BotClient_MessageCreated;
             BotClient.MessageCreated += FrozenCommands.BotClient_MessageCreated;
             BotClient.MessageCreated += WarnCommands.BotClient_MessageCreated;
+            BotClient.MessageCreated += FunStuff.BotClient_MessageCreated;
 
             BotClient.MessageReactionAdded += Rimboard.BotClient_MessageReactionAdded;
 
             BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
             BotClient.ClientErrored += BotClient_ClientErrored;
+
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;
+            BotClient.Heartbeated += FunStuff.BotClient_Heartbeated;
 
             BotClient.Ready += BotClient_Ready;
 

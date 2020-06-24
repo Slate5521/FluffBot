@@ -59,13 +59,14 @@ namespace FluffyEars
             public bool AutoWarnSnoopEnabled;
             /// <summary>Whether or not Rimboard should be enabled.</summary>
             public bool RimboardEnabled;
+            /// <summary>Whether or not FunStuff should be enabled.</summary>
+            public bool FunEnabled;
             /// <summary>A list of recognized Frozen names.</summary>
             public List<string> FrozenNames;
             /// <summary>The Rimboard emoji.</summary>
             public string RimboardEmoji;
             /// <summary>The number of reacts to pin a message.</summary>
             public int RimboardThreshold;
-
         }
 
         /// <summary>Default bot settings.</summary>
@@ -79,6 +80,7 @@ namespace FluffyEars
             StartMessageEnabled = false,
             RimboardEnabled = false,
             AutoWarnSnoopEnabled = false,
+            FunEnabled = false,
             FrozenNames = new List<string>()
             {
                 "frozen",
@@ -137,6 +139,14 @@ namespace FluffyEars
         {
             get => botSettings.RimboardEnabled;
             set => botSettings.RimboardEnabled = value;
+        }
+
+
+        /// <summary>Whether or not fun should be allowed.</summary>
+        public static bool FunEnabled
+        {
+            get => botSettings.FunEnabled;
+            set => botSettings.FunEnabled = value;
         }
 
         public static string RimboardEmoji

@@ -408,7 +408,7 @@ namespace FluffyEars.Commands
         }
 
         #endregion Rimboard
-
+        
         [Command("toggle")]
         public async Task Toggle(CommandContext ctx, string method, bool toggleState)
         {
@@ -435,7 +435,11 @@ namespace FluffyEars.Commands
                         break;
                     case "rimboard":
                         BotSettings.RimboardEnabled = toggleState; 
-                         success = true;
+                        success = true;
+                        break;
+                    case "fun-allowed":
+                        BotSettings.FunEnabled = toggleState;
+                        success = true;
                         break;
                 }
 
