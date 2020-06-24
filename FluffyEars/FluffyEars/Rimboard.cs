@@ -85,7 +85,7 @@ namespace FluffyEars
 
                         // DEB!
                         var deb = new DiscordEmbedBuilder();
-
+                        
                         deb.WithColor(DiscordColor.Gold);
 
                         UriBuilder avatarUri = new UriBuilder(message_no_cache.Author.AvatarUrl);
@@ -104,6 +104,14 @@ namespace FluffyEars
                         // Let's send this shit already.
                         //await Bot.SendWebhookMessage(message_no_cache.Content, new DiscordEmbed[] { deb.Build() });
 
+                        List<DiscordEmbed> embeds = new List<DiscordEmbed>();
+                        embeds.Add(deb.Build());
+
+                        if (message_no_cache.Embeds.Count > 0)
+                        {   // We only want to have up to 10 embeds. Keep in mind we alread have an embed, so we can only take up to 9.
+                            embeds.AddRange(message_no_cache.Embeds
+                                .Take(message_no_cache.Embeds.Count >= 9 ? 9 : message_no_cache.Embeds.Count));
+                        }
 
                         if (file)
                         {   // Send a message with a file.
@@ -117,7 +125,9 @@ namespace FluffyEars
                                 using (FileStream fs = new FileStream(fileName, FileMode.Open))
                                 {
                                     // Send the file paired with the embed!
-                                    await rimboardChannel.SendFileAsync(fs, embed: deb);
+                                    // await rimboardChannel.SendFileAsync(fs, embed: deb);
+
+                                    await Bot.SendWebhookMessage(embeds: embeds.ToArray(), fileStream: fs, fileName: fileName);
                                 }
 
                                 if(File.Exists(fileName))
@@ -128,8 +138,10 @@ namespace FluffyEars
                         }
                         else
                         {   // Send a message with no file.
-                            await rimboardChannel
-                                .SendMessageAsync(embed: deb);
+                            //await rimboardChannel
+                            //.SendMessageAsync(embed: pls);
+
+                            await Bot.SendWebhookMessage(embeds: embeds.ToArray());
                         }
 
                     } // end else
