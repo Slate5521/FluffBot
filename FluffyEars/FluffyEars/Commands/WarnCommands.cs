@@ -66,8 +66,8 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(embed: embedResponse);
             }
         }
-
         private const string WARN_SEEK_COMMAND = "mentions";
+
         [Command(WARN_SEEK_COMMAND)]
         public async Task SeekWarns(CommandContext ctx, params DiscordMember[] members)
         {
@@ -84,128 +84,153 @@ namespace FluffyEars.Commands
             }
             else
             {
-                DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
+                await SeekWarns_Unwrapper(ctx, members.Select(a => a.Id).ToArray());
+            }
+        }
 
-                Dictionary<DiscordMember, List<DiscordMessage>> warnDict =
-                    await QueryMemberMentions(members.Distinct().ToList(), actionLogChannel, BotSettings.WarnThreshold, ctx.Message);
+        [Command(WARN_SEEK_COMMAND)]
+        public async Task SeekWarns(CommandContext ctx, params ulong[] members)
+        {   
+            // Check if the user can use these sorts of commands.
+            if (!ctx.Member.GetHighestRole().IsCSOrHigher())
+            {
+                await Bot.NotifyInvalidPermissions
+                    (
+                        requiredRole: Role.CS,
+                        command: ctx.Command.Name,
+                        channel: ctx.Channel,
+                        caller: ctx.Member
+                    );
+            }
+            else
+            {
+                await SeekWarns_Unwrapper(ctx, members);
+            }
+        }
 
-                // Let's start paginating.
-                var pages = new Page[warnDict.Keys.Count];
-                int page = 0;
+        private async Task SeekWarns_Unwrapper(CommandContext ctx, ulong[] memberIds)
+        {
+            DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
 
-                if (warnDict.Keys.Count > 0)
-                {
-                    foreach (var member in warnDict.Keys)
-                    {   // Want to generate a page for each member.
+            Dictionary<ulong, List<DiscordMessage>> warnDict =
+                await QueryMemberMentions(memberIds.Distinct().ToList(), actionLogChannel, BotSettings.WarnThreshold, ctx.Message);
 
-                        // We want a boolean to check first because if there's no key, we'll get an exception trying to get the count.
-                        bool warnsFound = warnDict.ContainsKey(member) && warnDict[member].Count > 0;
+            // Let's start paginating.
+            var pages = new Page[warnDict.Keys.Count];
+            int page = 0;
 
-                        var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
-                            (
-                                title: "Discord Mentions",
-                                description: ChatObjects.GetNeutralMessage(warnsFound ? // Warning, really fucking long string ahead:
-                                                                           $"{ctx.Member.Mention}, I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for {member.Mention} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
-                                                                           $"{ctx.Member.Mention}, I did not find any mentions for {member.Mention}. Good for them..."),
-                                color: warnsFound ? DiscordColor.Red : DiscordColor.Green
-                            ));
+            if (warnDict.Keys.Count > 0)
+            {
+                foreach (var member in warnDict.Keys)
+                {   // Want to generate a page for each member.
 
-                        if (warnsFound)
-                        {   // Only continue here if there are actually warns, otherwise just slap a footer on.
-                            foreach (var message in warnDict[member])
-                            {   // Generate a field for each detected message.
+                    // We want a boolean to check first because if there's no key, we'll get an exception trying to get the count.
+                    bool warnsFound = warnDict.ContainsKey(member) && warnDict[member].Count > 0;
 
-                                if (deb.Fields.Count < 25)
-                                {   // Only continue if we have less than 25 fields.
+                    var deb = new DiscordEmbedBuilder(ChatObjects.FormatEmbedResponse
+                        (
+                            title: "Discord Mentions",
+                            description: ChatObjects.GetNeutralMessage(warnsFound ? // Warning, really fucking long string ahead:
+                                                                       $"{ctx.Member.Mention}, I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for {ChatObjects.GetMention(member)} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                                                       $"{ctx.Member.Mention}, I did not find any mentions for {ChatObjects.GetMention(member)}. Good for them..."),
+                            color: warnsFound ? DiscordColor.Red : DiscordColor.Green
+                        ));
 
-                                    // This SB is for all the content.
-                                    var stringBuilder = new StringBuilder();
-                                    // This SB is for all the misc information.
-                                    var stringBuilderFooter = new StringBuilder();
+                    if (warnsFound)
+                    {   // Only continue here if there are actually warns, otherwise just slap a footer on.
+                        foreach (var message in warnDict[member])
+                        {   // Generate a field for each detected message.
 
-                                    stringBuilder.Append($"{ChatObjects.GetMention(message.Author.Id)}: ");
+                            if (deb.Fields.Count < 25)
+                            {   // Only continue if we have less than 25 fields.
 
-                                    stringBuilder.Append(message.Content);
+                                // This SB is for all the content.
+                                var stringBuilder = new StringBuilder();
+                                // This SB is for all the misc information.
+                                var stringBuilderFooter = new StringBuilder();
 
-                                    stringBuilderFooter.Append("\n\n");
-                                    stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link to Original Mention", new Uri(ChatObjects.GetMessageUrl(message))));
+                                stringBuilder.Append($"{ChatObjects.GetMention(message.Author.Id)}: ");
 
-                                    if (message.Attachments.Count > 0)
-                                    {
-                                        stringBuilderFooter.Append($"\n\n{Formatter.Bold(@"There is an image attached:")} ");
+                                stringBuilder.Append(message.Content);
 
-                                        stringBuilderFooter.Append(Formatter.MaskedUrl(@"Image", new Uri(message.Attachments[0].Url)));
-                                    } // end if
+                                stringBuilderFooter.Append("\n\n");
+                                stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link to Original Mention", new Uri(ChatObjects.GetMessageUrl(message))));
 
-                                    // We want to prefer the footer's information over the content. So let's figure out how much of the content we
-                                    // need to trim out.
+                                if (message.Attachments.Count > 0)
+                                {
+                                    stringBuilderFooter.Append($"\n\n{Formatter.Bold(@"There is an image attached:")} ");
 
-                                    var finalStringBuilder = new StringBuilder();
+                                    stringBuilderFooter.Append(Formatter.MaskedUrl(@"Image", new Uri(message.Attachments[0].Url)));
+                                } // end if
 
-                                    if(stringBuilder.Length + stringBuilderFooter.Length > 1000)
-                                    {   // We need to do some trimming.
+                                // We want to prefer the footer's information over the content. So let's figure out how much of the content we
+                                // need to trim out.
 
-                                        if(stringBuilder.Length > 0)
-                                        {   // Let's get the content in there.
-                                            finalStringBuilder.Append(ChatObjects
-                                                .PreviewString(stringBuilder.ToString(), 1000 - stringBuilderFooter.Length));
-                                        }
-                                        if(stringBuilderFooter.Length > 0)
-                                        {   // Let's get the footer in there.
-                                            finalStringBuilder.Append(stringBuilderFooter);
-                                        }
+                                var finalStringBuilder = new StringBuilder();
+
+                                if (stringBuilder.Length + stringBuilderFooter.Length > 1000)
+                                {   // We need to do some trimming.
+
+                                    if (stringBuilder.Length > 0)
+                                    {   // Let's get the content in there.
+                                        finalStringBuilder.Append(ChatObjects
+                                            .PreviewString(stringBuilder.ToString(), 1000 - stringBuilderFooter.Length));
                                     }
-                                    else
-                                    {   // We don't need to do any trimming.
-                                        if (stringBuilder.Length > 0)
-                                        {   // Let's get the content in there.
-                                            finalStringBuilder.Append(stringBuilder);
-                                        }
-                                        if (stringBuilderFooter.Length > 0)
-                                        {   // Let's get the footer in there.
-                                            finalStringBuilder.Append(stringBuilderFooter);
-                                        }
+                                    if (stringBuilderFooter.Length > 0)
+                                    {   // Let's get the footer in there.
+                                        finalStringBuilder.Append(stringBuilderFooter);
                                     }
-
-                                    deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}", finalStringBuilder.ToString());
                                 }
                                 else
-                                {   // Stop the loop if we have 25 fields.
-                                    break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
-                                } // end else
-                            } // end foreach
-                        } // end if
+                                {   // We don't need to do any trimming.
+                                    if (stringBuilder.Length > 0)
+                                    {   // Let's get the content in there.
+                                        finalStringBuilder.Append(stringBuilder);
+                                    }
+                                    if (stringBuilderFooter.Length > 0)
+                                    {   // Let's get the footer in there.
+                                        finalStringBuilder.Append(stringBuilderFooter);
+                                    }
+                                }
 
-                        deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
+                                deb.AddField($"Action on {message.Timestamp.ToString(ChatObjects.DateFormat)}", finalStringBuilder.ToString());
+                            }
+                            else
+                            {   // Stop the loop if we have 25 fields.
+                                break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+                            } // end else
+                        } // end foreach
+                    } // end if
 
-                        pages[page++] = new Page(embed: deb);
-                    } // end foreach
-                } // end if
+                    deb.WithFooter($"Page {page + 1}/{warnDict.Keys.Count}");
 
-                // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
-                await ctx.Message.DeleteAsync();
+                    pages[page++] = new Page(embed: deb);
+                } // end foreach
+            } // end if
 
-                if (pages.Length > 1)
-                {   // More than 1 page.
-                    var interactivity = Bot.BotClient.GetInteractivity();
+            // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
+            await ctx.Message.DeleteAsync();
 
-                    await interactivity.SendPaginatedMessageAsync
-                        (
-                            c: ctx.Channel,
-                            u: ctx.User,
-                            pages: pages,
-                            emojis: ChatObjects.DefaultPaginationEmojis
-                        );
-                }
-                else
-                {   // Only one page, we want to send it as a regular embed instead.
-                    var anotherDeb = new DiscordEmbedBuilder(pages[0].Embed);
+            if (pages.Length > 1)
+            {   // More than 1 page.
+                var interactivity = Bot.BotClient.GetInteractivity();
 
-                    // Clear the footer. We don't want the page count.
-                    anotherDeb.WithFooter(null, null);
+                await interactivity.SendPaginatedMessageAsync
+                    (
+                        c: ctx.Channel,
+                        u: ctx.User,
+                        pages: pages,
+                        emojis: ChatObjects.DefaultPaginationEmojis
+                    );
+            }
+            else
+            {   // Only one page, we want to send it as a regular embed instead.
+                var anotherDeb = new DiscordEmbedBuilder(pages[0].Embed);
 
-                    await ctx.Channel.SendMessageAsync(embed: anotherDeb);
-                }
+                // Clear the footer. We don't want the page count.
+                anotherDeb.WithFooter(null, null);
+
+                await ctx.Channel.SendMessageAsync(embed: anotherDeb);
             }
         }
 
@@ -265,7 +290,7 @@ namespace FluffyEars.Commands
                 // ----
                 // Get the DiscordMember of each user.
 
-                var mentionedColonists = new List<DiscordMember>();
+                var mentionedColonistIds = new List<ulong>();
 
                 foreach(var user in e.MentionedUsers)
                 {
@@ -276,33 +301,36 @@ namespace FluffyEars.Commands
                         if (member.GetHighestRole().Equals(Role.Colonist) && !member.IsBot)
                         {   // Only add this person if they're a colonist and not a bot.
 
-                            mentionedColonists.Add(member);
+                            mentionedColonistIds.Add(member.Id);
                         } // end if
+                    } 
+                    catch
+                    {   // Most likely they're not in the guild if an exception is thrown, so let's just add their id to the list anyway.
+                        mentionedColonistIds.Add(user.Id);
                     }
-                    catch(AggregateException) { }
                 } // end foreach
 
                 // ----
                 // Great, now we have all our mentioned colonists. Let's just make sure there's no duplicates.
-                mentionedColonists = mentionedColonists.Distinct().ToList();
+                mentionedColonistIds = mentionedColonistIds.Distinct().ToList();
 
-                if(mentionedColonists.Count > 0)
+                if(mentionedColonistIds.Count > 0)
                 {   // Only continue if there's actually mentioned colonists.
 
                     var actionChannel = e.Channel;
 
                     // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
-                    Dictionary<DiscordMember, List<DiscordMessage>> warnDict = 
-                        await QueryMemberMentions(mentionedColonists, actionChannel, BotSettings.WarnThreshold, e.Message);
+                    Dictionary<ulong, List<DiscordMessage>> warnDict = 
+                        await QueryMemberMentions(mentionedColonistIds, actionChannel, BotSettings.WarnThreshold, e.Message);
 
                     // ----
                     // So at this point, we know there's at least one person who has been warned (0,inf) times.
                     // Now we want to act on each warn, constructing them into a DiscordEmbed.
 
                     // For each member...
-                    foreach (DiscordMember key in warnDict.Keys)
+                    foreach (ulong memberId in warnDict.Keys)
                     {
-                        List<DiscordMessage> messages = warnDict[key];
+                        List<DiscordMessage> messages = warnDict[memberId];
 
                         if (messages.Count > 0)
                         {   // We found warns for this user! How unfortunate...
@@ -311,7 +339,7 @@ namespace FluffyEars.Commands
                             var stringBuilder = new StringBuilder();
 
     
-                            stringBuilder.Append($"__**{key.Mention} has {messages.Count} mention{(messages.Count == 1 ? String.Empty : @"s")} in {e.Channel.Mention}:**__\n");
+                            stringBuilder.Append($"__**{ChatObjects.GetMention(memberId)} has {messages.Count} mention{(messages.Count == 1 ? String.Empty : @"s")} in {e.Channel.Mention}:**__\n");
 
                             int count = 0;
                             stringBuilder.AppendJoin(' ',
@@ -337,8 +365,8 @@ namespace FluffyEars.Commands
         /// <param name="warnThreshold">How long ago to query in months.</param>
         /// <param name="originalMessage">The original message.</param>
         /// <returns></returns>
-        private static async Task<Dictionary<DiscordMember, List<DiscordMessage>>> 
-            QueryMemberMentions(List<DiscordMember> members,  
+        private static async Task<Dictionary<ulong, List<DiscordMessage>>> 
+            QueryMemberMentions(List<ulong> memberIds,  
                                 DiscordChannel actionChannel, 
                                 int warnThreshold,
                                 DiscordMessage originalMessage)
@@ -364,10 +392,10 @@ namespace FluffyEars.Commands
             bool exceededStartTime = false;
 
             // Every instance where this user has been mentioned.
-            var warnInstances = new Dictionary<DiscordMember, List<DiscordMessage>>();
+            var warnInstances = new Dictionary<ulong, List<DiscordMessage>>();
 
             // Populate the dictionary.
-            members.ForEach(a => warnInstances.Add(a, new List<DiscordMessage>()));
+            memberIds.ForEach(a => warnInstances.Add(a, new List<DiscordMessage>()));
 
             do
             {
@@ -379,12 +407,12 @@ namespace FluffyEars.Commands
                         if(startTime.Millisecond <= message.CreationTimestamp.Ticks)
                         {   // We only want to continue if this is after our startValue.
 
-                            foreach (var member in members)
+                            foreach (ulong memberId in memberIds)
                             {
-                                if (MentionedUsersContains(message, member))
+                                if (MentionedUsersContains(message, memberId))
                                 {   // Only continue if there are actually mentioned users, and if the mentioned users has the member we want.
 
-                                    warnInstances[member].Add(message);
+                                    warnInstances[memberId].Add(message);
 
                                 } // end if
                             } // end foreach
@@ -418,11 +446,11 @@ namespace FluffyEars.Commands
         }
 
         /// <summary>Checks if a message contains the specified user.</summary>
-        private static bool MentionedUsersContains(DiscordMessage message, DiscordMember member)
+        private static bool MentionedUsersContains(DiscordMessage message, ulong memberId)
         {
             bool returnVal = false;
 
-            if (message.MentionedUsers.Count > 0)
+            if (message.MentionedUsers.Count() > 0)
             {
                 foreach(var user in message.MentionedUsers)
                 {
@@ -431,15 +459,17 @@ namespace FluffyEars.Commands
                         break;// NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! 
                     }
 
-                    try
-                    {   // For some reason, this can throw an exception. I can't figure out why, and honestly, I don't quite care to figure it out.
-                        if (user.Id == member.Id)
-                        {
-                            returnVal = true;
-                            break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! 
-                        }
+                    if(user is null)
+                    {   // Most likely they've left, so let's try to search the string with a regex.
+
+                        Regex searchRegex = new Regex($"<@!{memberId}>", RegexOptions.IgnoreCase);
+
+                        returnVal = searchRegex.IsMatch(message.Content);
+                    } 
+                    else
+                    {   // They haven't left, we can access their ID.
+                        returnVal = user.Id == memberId;
                     }
-                    catch { }
                 }
             }
 
