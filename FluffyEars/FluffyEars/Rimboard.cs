@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using DSharpPlus;
 using DSharpPlus.Net;
+using System.IO;
+using System.Net;
 
 namespace FluffyEars
 {
@@ -43,6 +45,30 @@ namespace FluffyEars
                     if (e.Channel.Id.Equals(BotSettings.RimboardChannelId))
                     {   // If this is in our rimboard channel, let's pin it.
 
+                        // Let's check if it's an informational embed first.
+                        if(message_no_cache.Content.Length == 0)
+                        {   // It is an informational embed, most likely.
+                            
+                            var infoEmbed = message_no_cache.Embeds[0];
+
+                            if(infoEmbed.Footer.Text.Length > 0)
+                            {   // Let's check its footer for the real message.
+
+                                if(ulong.TryParse(infoEmbed.Footer.Text, out ulong snowflake))
+                                {
+                                    DiscordMessage backup = message_no_cache;
+
+                                    try
+                                    {
+                                        message_no_cache = await message_no_cache.Channel.GetMessageAsync(snowflake);
+                                    } catch
+                                    {
+                                        message_no_cache = backup;
+                                    }
+                                }
+                            }
+                        }
+
                         var pinnedMessages = await rimboardChannel.GetPinnedMessagesAsync();
 
                         if (pinnedMessages.Count == 50)
@@ -55,11 +81,12 @@ namespace FluffyEars
                     else
                     {   // Otherwise let's just add it.
 
+                        bool file = false;
+
                         // DEB!
                         var deb = new DiscordEmbedBuilder();
 
                         deb.WithColor(DiscordColor.Gold);
-                        deb.WithDescription(message_no_cache.Content);
 
                         UriBuilder avatarUri = new UriBuilder(message_no_cache.Author.AvatarUrl);
                         avatarUri.Query = "?size=64";
@@ -71,40 +98,60 @@ namespace FluffyEars
 
                         if (message_no_cache.Attachments.Count > 0)
                         {
-                            deb.WithImageUrl(message_no_cache.Attachments[0].Url);
+                            file = true;
                         }
 
-                        List<DiscordEmbed> embeds = new List<DiscordEmbed>();
-                        embeds.Add(deb.Build());
-
-                        //await rimboardChannel.SendMessageAsync(embed: deb);
-
-                        if(message_no_cache.Embeds.Count > 0)
-                        {
-                            // We want to try and get as many of the embeds as we can, but we don't want to go over 10 embeds total. We already have
-                            // an embed.
-                            for (int i = 0; i < message_no_cache.Embeds.Count && i < 9; i++)
-                            {
-                                DiscordEmbed embed = message_no_cache.Embeds[i];
-
-                                try
-                                {
-                                    var newDeb = new DiscordEmbedBuilder();
-                                    newDeb.WithColor(DiscordColor.Black);
-                                    newDeb.WithImageUrl(embed.Thumbnail.Url.ToUri());
-                                    newDeb.WithDescription(embed.Description);
-                                    newDeb.WithUrl(embed.Url);
-
-                                    embeds.Add(newDeb.Build());
-                                } catch { }
-                            } // end for
-                        } // end if
-
                         // Let's send this shit already.
-                        await Bot.SendWebhookMessage(embeds: embeds.ToArray());
+                        //await Bot.SendWebhookMessage(message_no_cache.Content, new DiscordEmbed[] { deb.Build() });
+
+                        var embedMessage = await rimboardChannel.SendMessageAsync(embed: deb);
+                        DiscordMessage sentMessage;
+
+                        if (file)
+                        {   // Send a message with a file.
+                            using(WebClient webclient = new WebClient())
+                            {
+                                string fileName = Path.ChangeExtension(Guid.NewGuid().ToString(), 
+                                    Path.GetExtension(message_no_cache.Attachments[0].FileName));
+
+                                await webclient.DownloadFileTaskAsync(new Uri(message_no_cache.Attachments[0].Url), fileName);
+
+                                using (FileStream fs = new FileStream(fileName, FileMode.Open))
+                                {
+                                    // Send the file!
+                                    sentMessage = await rimboardChannel.SendFileAsync(fs,
+                                        message_no_cache.Content.Length > 0 ? message_no_cache.Content : null);
+                                }
+
+                                if(File.Exists(fileName))
+                                {   // Delete it now that we're done with it.
+                                    File.Delete(fileName);
+                                } // end if
+                            } // end using
+                        }
+                        else 
+                        {   // Send a message with no file.
+                            sentMessage = await rimboardChannel
+                                .SendMessageAsync(message_no_cache.Content.Length > 0 ? message_no_cache.Content : String.Empty);
+                        }
+
+                        var newDeb = new DiscordEmbedBuilder(embedMessage.Embeds[0]);
+
+                        newDeb.WithFooter(sentMessage.Id.ToString());
+                        
+                        await embedMessage.ModifyAsync(embed: newDeb.Build());
                     } // end else
                 } // end if
             } // end if
         } // end method
+
+        private static void Client_DownloadDataCompleted(object sender, DownloadDataCompletedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+        private static void FinishPinning()
+        {
+
+        }
     }
 }

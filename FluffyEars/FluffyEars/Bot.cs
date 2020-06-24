@@ -32,7 +32,6 @@ namespace FluffyEars
         public CommandsNextExtension Commands;
         /// <summary>Interactivity extension.</summary>
         public InteractivityExtension Interactivity { get; set; }
-        public static DiscordWebhook Webhook;
 
         public Bot() { }
 
@@ -43,7 +42,7 @@ namespace FluffyEars
         {
             // Load shit.
 
-            string authKey = LoadConfig(out WebhookInfo webhookInfo);
+            string authKey = LoadConfig();
 
             DiscordConfiguration botConfig = new DiscordConfiguration
             {
@@ -69,9 +68,7 @@ namespace FluffyEars
                 PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore,
                 Timeout = TimeSpan.FromMinutes(2)
             });
-
-            Webhook = await BotClient.GetWebhookWithTokenAsync(webhookInfo.ID, webhookInfo.Token);
-
+            
             Commands = BotClient.UseCommandsNext(commandConfig);
 
             Commands.RegisterCommands<ConfigCommands>();
@@ -103,33 +100,6 @@ namespace FluffyEars
 
             await BotClient.ConnectAsync();
             await Task.Delay(-1);
-        }
-
-        public static async Task SendWebhookMessage(string content = null, DiscordEmbed[] embeds = null)
-        {
-            var dwb = new DiscordWebhookBuilder();
-
-            if (!(embeds is null))
-            {
-                if(embeds.Length > 10)
-                {
-                    throw new ArgumentException("More than 10 embeds provided.");
-                }
-
-                dwb.AddEmbeds(embeds);
-            }
-
-            if(!(content is null))
-            {
-                dwb.WithContent(content);
-            }
-
-            if(embeds is null && content is null)
-            {
-                throw new ArgumentException("Cannot send an empty message.");
-            }
-
-            await Webhook.ExecuteAsync(dwb);
         }
 
         /// <summary>Send a message to the filter channel.</summary>
@@ -192,7 +162,7 @@ namespace FluffyEars
         #region Private Methods
 
         /// <summary>Load config files.</summary>
-        private string LoadConfig(out WebhookInfo info)
+        private string LoadConfig()
         {
             var authKey = String.Empty;
 
@@ -213,24 +183,7 @@ namespace FluffyEars
             {
                 Console.WriteLine(@"... Loaded.");
             }
-
-
-            Console.Write("\tWebhook");
-            using (var fs = File.OpenRead(@"webhook"))
-            {
-                using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                {
-                    string contents = sr.ReadToEnd();
-
-                    info = JsonConvert.DeserializeObject<WebhookInfo>(contents);
-                }
-            }
-
-            if(!info.Equals(default(WebhookInfo)))
-            {
-                Console.WriteLine(@"... Loaded.");
-            }
-
+            
             // =================
             // Bot settings
 
