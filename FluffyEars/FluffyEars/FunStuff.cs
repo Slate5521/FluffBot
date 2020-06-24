@@ -132,8 +132,8 @@ namespace FluffyEars
 
         static DiscordMessage OriginalResponseMessage;
         static DiscordUser YesNoLastUser;
-        static DiscordEmbed YesResponse;
-        static DiscordEmbed NoResponse;
+        static string YesResponse;
+        static string NoResponse;
 
         static Regex FloppyRegexYes = new Regex(@"^(?:yes|yea|yeah|ya)[.!?]+$", options);
         static Regex FloppyRegexNo = new Regex(@"^(?:no|nah)[.!?]+$", options);
@@ -152,15 +152,15 @@ namespace FluffyEars
             if(!(YesNoLastUser is null) && message.Author.Id == YesNoLastUser.Id)
             {   // If there's a last user and the last user is equal to the sender...
 
-                DiscordEmbed embed;
+                string response;
 
                 if(isYes)
                 {   // "Yes"
-                    embed = YesResponse;
+                    response = YesResponse;
                 }
                 else
                 {   // "No"
-                    embed = NoResponse;
+                    response = NoResponse;
                 }
 
                 // Reset values before we respond.
@@ -171,7 +171,7 @@ namespace FluffyEars
                     await OriginalResponseMessage.DeleteAsync();
                 OriginalResponseMessage = null;
 
-                await message.Channel.SendMessageAsync(embed: embed);
+                await message.Channel.SendMessageAsync(response);
             }
         }
 
@@ -180,28 +180,28 @@ namespace FluffyEars
 
         static Regex ImBunnyRegex = new Regex(@"^(?:I'm|I am) a bunny[.!?]?$", options);
         private static async Task ImBunny(DiscordMessage message)
-            => await message.RespondAsync(embed: GenericResponse(@"Me too!", @"https://i.imgur.com/nqzLxFZ.png"));
+            => await message.RespondAsync(GenericResponse(@"Me too!"));
 
         // --------------------------------
         // "Floppy, you're cute."
 
         static Regex CuteFloppyRegex = new Regex(@"^Floppy,? (?:you're|you are) (?:cute|adorable|pretty|beautiful)[.!?]?$", options);
         private static async Task CuteFloppy(DiscordMessage message)
-            => await message.RespondAsync(embed: GenericResponse(@"Um.......................yeathanks", @"https://i.imgur.com/xe0tXL8.png"));
+            => await message.RespondAsync(GenericResponse(@"Um.......................yeathanks", @"https://i.imgur.com/xe0tXL8.png"));
 
         // --------------------------------
         // Floppy, I love your ears.
 
         static Regex FloppyEarsRegex = new Regex(@"^Floppy,? (?:I love your ears|your ears are so long)[.!?]?$", options);
         private static async Task FloppyEars(DiscordMessage message)
-            => await message.RespondAsync(embed: GenericResponse(@"...whyareyoulookingatmyears?????...", @"https://i.imgur.com/5SK3Pwf.png"));
+            => await message.RespondAsync(GenericResponse(@"...whyareyoulookingatmyears?????...", @"https://i.imgur.com/5SK3Pwf.png"));
 
         // --------------------------------
         // :raid:
 
         static Regex FloppyRaidRegex = new Regex(@"^Floppy,? (?:we're|we are) being raided[.!?]?$", options);
         private static async Task FloppyRaid(DiscordMessage message)
-            => await message.RespondAsync(embed: GenericResponse(@"Target practice!", @"https://i.imgur.com/1EK1Oux.png"));
+            => await message.RespondAsync(GenericResponse(@"Target practice!", @"https://i.imgur.com/1EK1Oux.png"));
 
         // --------------------------------
         // Floppy carrot shit.
@@ -212,7 +212,7 @@ namespace FluffyEars
             YesResponse = GenericResponse(@"Thanks!", @"https://i.imgur.com/iNyFJn5.png");
             NoResponse = GenericResponse(@"Whatever...");
 
-            var reply = await message.Channel.SendMessageAsync(embed: GenericResponse(@"...Can I have that carrot...?", @"https://i.imgur.com/uVm0FWs.png"));
+            var reply = await message.Channel.SendMessageAsync(GenericResponse(@"...Can I have that carrot...?", @"https://i.imgur.com/uVm0FWs.png"));
             await SetOriginalResponseMessage(reply, false);
         }
 
@@ -226,7 +226,7 @@ namespace FluffyEars
             YesResponse = GenericResponse(@"**H**ôŵ    *Þ*Ö  į  ł*ØÒ*k?*?*??", @"https://i.imgur.com/mCIgVVV.png");
             NoResponse  = GenericResponse(@"Maybe for the best...");
 
-            var reply = await message.Channel.SendMessageAsync(embed: GenericResponse(@"O -oh! A-are you sure?", @"https://i.imgur.com/V9ij2nN.png"));
+            var reply = await message.Channel.SendMessageAsync(GenericResponse(@"O -oh! A-are you sure?", @"https://i.imgur.com/V9ij2nN.png"));
             await SetOriginalResponseMessage(reply);
         }
 
@@ -244,20 +244,17 @@ namespace FluffyEars
             }
         }
 
-        private static DiscordEmbed GenericResponse(string response, string url = null)
+        private static string GenericResponse(string response, string url = null)
         {
-            // DEB!
-            var deb = new DiscordEmbedBuilder();
-
-            deb.WithColor(DiscordColor.MidnightBlue);
-            deb.WithDescription(response);
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append(response);
             if (!(url is null))
             {
-                deb.WithImageUrl(url);
+                stringBuilder.Append(' ');
+                stringBuilder.Append(url);
             }
-            deb.WithThumbnail(Bot.BotClient.CurrentUser.AvatarUrl);
 
-            return deb.Build();
+            return stringBuilder.ToString();
         }
 
 
