@@ -260,9 +260,6 @@ namespace FluffyEars
             return stringBuilder.ToString();
         }
 
-
-
-
         #endregion
 
         private static bool GetTriggerInfoFromMessage(string message, out TriggerInfo returnVal_trigger)
@@ -270,22 +267,22 @@ namespace FluffyEars
             bool returnVal_success = true;
 
             if (ImBunnyRegex.IsMatch(message))
-                returnVal_trigger = GetTriggerInfo(0, new TriggerInfo(cooldownTime: TimeSpan.FromMinutes(5), method: ImBunny));
+                returnVal_trigger = GetTriggerInfo(0, new TriggerInfo(cooldownTime: TimeSpan.FromHours(1), method: ImBunny));
 
             else if (CuteFloppyRegex.IsMatch(message))
-                returnVal_trigger = GetTriggerInfo(1, new TriggerInfo(cooldownTime: TimeSpan.FromMinutes(5), method: CuteFloppy));
+                returnVal_trigger = GetTriggerInfo(1, new TriggerInfo(cooldownTime: TimeSpan.FromHours(4), method: CuteFloppy));
 
             else if (FloppyEarsRegex.IsMatch(message))
-                returnVal_trigger = GetTriggerInfo(2, new TriggerInfo(cooldownTime: TimeSpan.FromMinutes(5), method: FloppyEars));
+                returnVal_trigger = GetTriggerInfo(2, new TriggerInfo(cooldownTime: TimeSpan.FromHours(4), method: FloppyEars));
 
             else if (FloppyRaidRegex.IsMatch(message))
-                returnVal_trigger = GetTriggerInfo(3, new TriggerInfo(cooldownTime: TimeSpan.FromMinutes(5), method: FloppyRaid));
+                returnVal_trigger = GetTriggerInfo(3, new TriggerInfo(cooldownTime: TimeSpan.FromHours(4), method: FloppyRaid));
 
             else if (FloppyMaskRegex.IsMatch(message))
-                returnVal_trigger = GetTriggerInfo(4, new TriggerInfo(cooldownTime: TimeSpan.FromMinutes(5), method: FloppyMask));
+                returnVal_trigger = GetTriggerInfo(4, new TriggerInfo(cooldownTime: TimeSpan.FromHours(6), method: FloppyMask));
 
             else if (FloppyCarrotRegex.IsMatch(message))
-                returnVal_trigger = GetTriggerInfo(5, new TriggerInfo(cooldownTime: TimeSpan.FromMinutes(5), method: FloppyCarrot));
+                returnVal_trigger = GetTriggerInfo(5, new TriggerInfo(cooldownTime: TimeSpan.FromHours(6), method: FloppyCarrot));
 
             else if (FloppyRegexYes.IsMatch(message))
                 returnVal_trigger = GetTriggerInfo(6, new TriggerInfo(cooldownTime: TimeSpan.FromSeconds(1), method: Yes));
