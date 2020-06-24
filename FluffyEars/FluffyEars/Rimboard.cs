@@ -39,7 +39,7 @@ namespace FluffyEars
 
                     await message_no_cache.DeleteAllReactionsAsync();
                     await message_no_cache.CreateReactionAsync(botPinnedEmoji);
-
+                    
                     var rimboardChannel = await Bot.BotClient.GetChannelAsync(BotSettings.RimboardChannelId);
 
                     if (e.Channel.Id.Equals(BotSettings.RimboardChannelId))
@@ -139,7 +139,7 @@ namespace FluffyEars
 
                         newDeb.WithFooter(sentMessage.Id.ToString());
                         
-                        await embedMessage.ModifyAsync(embed: newDeb.Build());
+                        await embedMessage.ModifyAsync(content: "``` ```", embed: newDeb.Build());
                     } // end else
                 } // end if
             } // end if
