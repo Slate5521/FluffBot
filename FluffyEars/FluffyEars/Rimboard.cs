@@ -92,9 +92,9 @@ namespace FluffyEars
                         avatarUri.Query = "?size=64";
 
                         deb.WithThumbnail(avatarUri.ToString());
-
-                        deb.AddField(@"Colonist", message_no_cache.Author.Mention, true);
-                        deb.AddField(@"Link", Formatter.MaskedUrl($"#{message_no_cache.Channel.Name}", new Uri(ChatObjects.GetMessageUrl(message_no_cache))), true);
+                        deb.WithDescription(message_no_cache.Content);
+                        deb.AddField(@"Colonist", $"{message_no_cache.Author.Mention}", true);
+                        deb.AddField(@"Link", $"{Formatter.MaskedUrl($"#{message_no_cache.Channel.Name}", new Uri(ChatObjects.GetMessageUrl(message_no_cache)))}", true);
 
                         if (message_no_cache.Attachments.Count > 0)
                         {
@@ -104,8 +104,6 @@ namespace FluffyEars
                         // Let's send this shit already.
                         //await Bot.SendWebhookMessage(message_no_cache.Content, new DiscordEmbed[] { deb.Build() });
 
-                        var embedMessage = await rimboardChannel.SendMessageAsync(embed: deb);
-                        DiscordMessage sentMessage;
 
                         if (file)
                         {   // Send a message with a file.
@@ -118,9 +116,8 @@ namespace FluffyEars
 
                                 using (FileStream fs = new FileStream(fileName, FileMode.Open))
                                 {
-                                    // Send the file!
-                                    sentMessage = await rimboardChannel.SendFileAsync(fs,
-                                        message_no_cache.Content.Length > 0 ? message_no_cache.Content : null);
+                                    // Send the file paired with the embed!
+                                    await rimboardChannel.SendFileAsync(fs, embed: deb);
                                 }
 
                                 if(File.Exists(fileName))
@@ -129,17 +126,12 @@ namespace FluffyEars
                                 } // end if
                             } // end using
                         }
-                        else 
+                        else
                         {   // Send a message with no file.
-                            sentMessage = await rimboardChannel
-                                .SendMessageAsync(message_no_cache.Content.Length > 0 ? message_no_cache.Content : String.Empty);
+                            await rimboardChannel
+                                .SendMessageAsync(embed: deb);
                         }
 
-                        var newDeb = new DiscordEmbedBuilder(embedMessage.Embeds[0]);
-
-                        newDeb.WithFooter(sentMessage.Id.ToString());
-                        
-                        await embedMessage.ModifyAsync(content: "``` ```", embed: newDeb.Build());
                     } // end else
                 } // end if
             } // end if
@@ -148,10 +140,6 @@ namespace FluffyEars
         private static void Client_DownloadDataCompleted(object sender, DownloadDataCompletedEventArgs e)
         {
             throw new NotImplementedException();
-        }
-        private static void FinishPinning()
-        {
-
         }
     }
 }
