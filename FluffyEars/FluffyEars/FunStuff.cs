@@ -84,7 +84,7 @@ namespace FluffyEars
 
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
-            if(BotSettings.FunEnabled && !e.Channel.IsPrivate)
+            if(BotSettings.FunEnabled && !e.Channel.IsPrivate && !e.Author.IsCurrent)
             {   // Only continue if this isn't in private.
                 var message = e.Message;
 
