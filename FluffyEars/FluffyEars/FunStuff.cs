@@ -84,8 +84,11 @@ namespace FluffyEars
 
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
-            if(BotSettings.FunEnabled && !e.Channel.IsPrivate && !e.Author.IsCurrent)
-            {   // Only continue if this isn't in private.
+            if(BotSettings.FunEnabled && 
+               !e.Channel.IsPrivate && 
+               !e.Author.IsCurrent && 
+               e.Channel.Id == 214523379766525963)
+            {   // Only continue if this isn't in private, it's in #general, and it's not the bot self-triggeirng.
                 var message = e.Message;
 
                 TriggerInfo trigger;
@@ -187,21 +190,21 @@ namespace FluffyEars
 
         static Regex CuteFloppyRegex = new Regex(@"^Floppy,? (?:you're|you are) (?:cute|adorable|pretty|beautiful)[.!?]?$", options);
         private static async Task CuteFloppy(DiscordMessage message)
-            => await message.RespondAsync(GenericResponse(@"Um.......................yeathanks", @"https://i.imgur.com/xe0tXL8.png"));
+            => await message.RespondAsync(GenericResponse(@"Um.......................yeathanks", @"https://i.imgur.com/YS9bQt4.png"));
 
         // --------------------------------
         // Floppy, I love your ears.
 
         static Regex FloppyEarsRegex = new Regex(@"^Floppy,? (?:I love your ears|your ears are so long)[.!?]?$", options);
         private static async Task FloppyEars(DiscordMessage message)
-            => await message.RespondAsync(GenericResponse(@"...whyareyoulookingatmyears?????...", @"https://i.imgur.com/5SK3Pwf.png"));
+            => await message.RespondAsync(GenericResponse(@"...whyareyoulookingatmyears?????...", @"https://i.imgur.com/rCqQGPV.png"));
 
         // --------------------------------
         // :raid:
 
         static Regex FloppyRaidRegex = new Regex(@"^Floppy,? (?:we're|we are) being raided[.!?]?$", options);
         private static async Task FloppyRaid(DiscordMessage message)
-            => await message.RespondAsync(GenericResponse(@"Target practice!", @"https://i.imgur.com/1EK1Oux.png"));
+            => await message.RespondAsync(GenericResponse(@"Target practice!", @"https://i.imgur.com/lpP7E4S.png"));
 
         // --------------------------------
         // Floppy carrot shit.
@@ -209,10 +212,10 @@ namespace FluffyEars
         private static async Task FloppyCarrot(DiscordMessage message)
         {
             YesNoLastUser = message.Author;
-            YesResponse = GenericResponse(@"Thanks!", @"https://i.imgur.com/iNyFJn5.png");
+            YesResponse = GenericResponse(@"Thanks!", @"https://i.imgur.com/keHwSGI.png");
             NoResponse = GenericResponse(@"Whatever...");
 
-            var reply = await message.Channel.SendMessageAsync(GenericResponse(@"...Can I have that carrot...?", @"https://i.imgur.com/uVm0FWs.png"));
+            var reply = await message.Channel.SendMessageAsync(GenericResponse(@"...Can I have that carrot...?", @"https://i.imgur.com/GaWlz0V.png"));
             await SetOriginalResponseMessage(reply, false);
         }
 
@@ -223,11 +226,11 @@ namespace FluffyEars
         private static async Task FloppyMask(DiscordMessage message)
         {
             YesNoLastUser = message.Author;
-            YesResponse = GenericResponse(@"**H**ôŵ    *Þ*Ö  į  ł*ØÒ*k?*?*??", @"https://i.imgur.com/mCIgVVV.png");
+            YesResponse = GenericResponse(@"**H**ôŵ    *Þ*Ö  į  ł*ØÒ*k?*?*??", @"https://i.imgur.com/k7dDhvp.png");
             NoResponse  = GenericResponse(@"Maybe for the best...");
 
-            var reply = await message.Channel.SendMessageAsync(GenericResponse(@"O -oh! A-are you sure?", @"https://i.imgur.com/V9ij2nN.png"));
-            await SetOriginalResponseMessage(reply);
+            var reply = await message.Channel.SendMessageAsync(GenericResponse(@"O -oh! A-are you sure?", @"https://i.imgur.com/DGyCqfp.png"));
+            await SetOriginalResponseMessage(reply, false);
         }
 
         /// <summary>Set the original response message, deleting the previous instance if required.</summary>

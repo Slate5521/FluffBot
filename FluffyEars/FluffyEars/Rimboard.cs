@@ -124,10 +124,5 @@ namespace FluffyEars
                 } // end if
             } // end if
         } // end method
-
-        private static void Client_DownloadDataCompleted(object sender, DownloadDataCompletedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
     }
 }
