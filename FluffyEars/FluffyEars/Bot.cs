@@ -92,6 +92,8 @@ namespace FluffyEars
             BotClient.MessageReactionAdded += Rimboard.BotClient_MessageReactionAdded;
 
             BotClient.MessageUpdated += FilterSystem.BotClient_MessageUpdated;
+            BotClient.MessageUpdated += WarnCommands.BotClient_MessageUpdated;
+
             BotClient.ClientErrored += BotClient_ClientErrored;
 
             BotClient.Heartbeated += ReminderSystem.BotClient_Heartbeated;

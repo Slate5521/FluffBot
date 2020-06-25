@@ -108,6 +108,8 @@ namespace FluffyEars.Commands
             }
         }
 
+       
+
         private async Task SeekWarns_Unwrapper(CommandContext ctx, ulong[] memberIds)
         {
             DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
@@ -280,9 +282,60 @@ namespace FluffyEars.Commands
             }
         }
 
+        internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
+            {
+            if(BotSettings.AutoWarnSnoopEnabled &&
+                !e.Author.IsCurrent &&
+                e.Channel.Id == BotSettings.ActionChannelId)
+            {   // We only want to continue through here if warn snooping is enabled, the bot isn't self-triggering, and we're in #action-logs.
+
+                var oldMessage = e.MessageBefore;
+                var newMessage = e.Message;
+
+                // If either of the messages aren't cached, we should just stop right here. We can't tell if any new mentions were added, so we'll
+                // end up causing more spam therefore more harm. It's unfortunate because we should always try to find some way to interact with
+                // some kind of data, but this is a hard limitation I've ran into.
+
+                if(!(oldMessage is null && newMessage is null))
+                {
+                    var mentionUsers_old = oldMessage.MentionedUsers;
+                    var mentionUsers_new = newMessage.MentionedUsers;
+
+                    // Users that we've found by comparing the old and new lists.
+                    var newlyFoundUserIds = new List<ulong>();
+
+                    for(int i = 0; i < mentionUsers_new.Count; i++)
+                    {
+                        var user = mentionUsers_new[i];
+
+                        if(!(user is null) && !mentionUsers_old.Contains(user))
+                        {   // If this isn't null and the old list doesn't contain it, this means it's a new mention.
+
+                            newlyFoundUserIds.Add(user.Id);
+                        }
+                    }
+
+                    if (newlyFoundUserIds.Count > 0)
+                    {   // We only want to start formatting a message and sending it if there's actually users to look at.
+
+                        var actionChannel = e.Channel;
+
+                        // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
+                        Dictionary<ulong, List<DiscordMessage>> warnDict =
+                            await QueryMemberMentions(newlyFoundUserIds, actionChannel, BotSettings.WarnThreshold, e.Message);
+
+                        var embed = FormatWarns(warnDict, actionChannel);
+
+                        await e.Channel.SendMessageAsync(embed: embed);
+                    } // end if
+                } // end if
+            } // end if
+        } // end method
+
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
             if (BotSettings.AutoWarnSnoopEnabled &&
+                !e.Author.IsCurrent &&
                 e.Channel.Id == BotSettings.ActionChannelId &&
                 !(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser) != -1 && e.Message.Content.Contains(WARN_SEEK_COMMAND)))
             {   // Only continue if this is the action channel, and it doesn't look like a command.
@@ -327,37 +380,46 @@ namespace FluffyEars.Commands
                     // So at this point, we know there's at least one person who has been warned (0,inf) times.
                     // Now we want to act on each warn, constructing them into a DiscordEmbed.
 
-                    // For each member...
-                    foreach (ulong memberId in warnDict.Keys)
-                    {
-                        List<DiscordMessage> messages = warnDict[memberId];
+                    var embed = FormatWarns(warnDict, e.Channel);
 
-                        if (messages.Count > 0)
-                        {   // We found warns for this user! How unfortunate...
+                    await e.Channel.SendMessageAsync(embed: embed);
 
-                            var embedBase = new DiscordEmbedBuilder();
-                            var stringBuilder = new StringBuilder();
-
-    
-                            stringBuilder.Append($"__**{ChatObjects.GetMention(memberId)} has {messages.Count} mention{(messages.Count == 1 ? String.Empty : @"s")} in {e.Channel.Mention}:**__\n");
-
-                            int count = 0;
-                            stringBuilder.AppendJoin(' ',
-                                messages.Select(a =>    // Generate a bunch of masked urls
-                                    Formatter.MaskedUrl($"#{++count}", new Uri(ChatObjects.GetMessageUrl(a)))));
-
-                            string finalStr = ChatObjects.PreviewString(stringBuilder.ToString(), 2048);
-
-                            embedBase.WithDescription(finalStr);
-                            embedBase.WithTitle($"Previous mention{(messages.Count == 1 ? String.Empty : @"s")}  found");
-                            embedBase.WithColor(DiscordColor.Red);
-
-                            await e.Channel.SendMessageAsync(embed: embedBase);
-                        }
-                    }                    
                 } // end if
             } // end if
         } // end method
+
+        /// <summary>Format all of the warns in a warn dictionary.</summary>
+        private static DiscordEmbed FormatWarns(Dictionary<ulong, List<DiscordMessage>> warnDict, DiscordChannel chan)
+        {
+            var embedBase = new DiscordEmbedBuilder();
+
+            foreach (ulong memberId in warnDict.Keys)
+            {
+                List<DiscordMessage> messages = warnDict[memberId];
+
+                if (messages.Count > 0)
+                {   // We found warns for this user! How unfortunate...
+
+                    var stringBuilder = new StringBuilder();
+
+
+                    stringBuilder.Append($"__**{ChatObjects.GetMention(memberId)} has {messages.Count} mention{(messages.Count == 1 ? String.Empty : @"s")} in {chan.Mention}:**__\n");
+
+                    int count = 0;
+                    stringBuilder.AppendJoin(' ',
+                        messages.Select(a =>    // Generate a bunch of masked urls
+                            Formatter.MaskedUrl($"#{++count}", new Uri(ChatObjects.GetMessageUrl(a)))));
+
+                    string finalStr = ChatObjects.PreviewString(stringBuilder.ToString(), 2048);
+
+                    embedBase.WithDescription(finalStr);
+                    embedBase.WithTitle($"Previous mention{(messages.Count == 1 ? String.Empty : @"s")}  found");
+                    embedBase.WithColor(DiscordColor.Red);
+                }
+            }
+
+            return embedBase;
+        }
 
         /// <summary>Query for all mentions of specific members.</summary>
         /// <param name="members">The members to query for.</param>
