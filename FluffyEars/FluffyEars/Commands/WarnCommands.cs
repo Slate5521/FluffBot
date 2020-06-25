@@ -155,15 +155,16 @@ namespace FluffyEars.Commands
 
                                 stringBuilder.Append(message.Content);
 
-                                stringBuilderFooter.Append("\n\n");
-                                stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link to Original Mention", new Uri(ChatObjects.GetMessageUrl(message))));
-
                                 if (message.Attachments.Count > 0)
                                 {
                                     stringBuilderFooter.Append($"\n\n{Formatter.Bold(@"There is an image attached:")} ");
 
                                     stringBuilderFooter.Append(Formatter.MaskedUrl(@"Image", new Uri(message.Attachments[0].Url)));
                                 } // end if
+
+                                stringBuilderFooter.Append("\n\n");
+                                stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link to Original Mention", new Uri(ChatObjects.GetMessageUrl(message))));
+
 
                                 // We want to prefer the footer's information over the content. So let's figure out how much of the content we
                                 // need to trim out.
