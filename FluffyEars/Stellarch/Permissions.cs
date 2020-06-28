@@ -4,7 +4,13 @@ using System.Text;
 
 namespace Stellarch
 {
-    static class Permissions
+    class Permissions
     {
+        //public const ulong 
+
+        public Permissions(Dictionary<string, object> initialData)
+        {
+
+        }
     }
 }

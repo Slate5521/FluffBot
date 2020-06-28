@@ -130,9 +130,55 @@ namespace Stellarch
             return returnVal_object;
         }
 
-        public async Task<bool> Save()
+        public async Task Save()
         {
-            throw new NotImplementedException();
+            if (!Directory.Exists(Program.Files.BotSaveFileDirectory))
+            {   // If the directory doesn't exist, let's make it.
+                Directory.CreateDirectory(Program.Files.BotSaveFileDirectory);
+            }
+
+            var backupFiles = GenerateLoadOrder();
+
+            if (backupFiles.Count() > 0)
+            {   // If there are any backup files, we need to begin sorting them.
+
+                if (backupFiles.Count() == 5)
+                {   // There are more than 5, so we need to delete the oldest one.
+                    string fileToDelete = backupFiles.Last();
+                    backupFiles = backupFiles.Take(4);
+
+                    File.Delete(fileToDelete);
+                }
+
+                // Let's try to copy the file...
+
+                string newFileName =
+                    Path.Combine(
+                        Path.GetFileNameWithoutExtension(Path.GetFullPath(FileName)),
+                        GetGuid(),
+                        Path.GetExtension(FileName));
+
+                string newFileNameMd5 = AppendMD5Extension(newFileName);
+
+                // Let's save it.
+
+                if (File.Exists(newFileName))
+                {   // For the one in a million chance we get the same Guid.
+                    File.Delete(newFileName);
+                }
+
+                if (File.Exists(newFileNameMd5))
+                {
+                    File.Delete(newFileNameMd5);
+                }
+
+                File.Copy(FileName, newFileName);
+                File.Copy(AppendMD5Extension(FileName), newFileNameMd5);
+            }
+
+            // Now let's write the current data.
+
+            //using(StreamWriter sw = new StreamWriter())
         }
 
         #endregion Public Methods
@@ -167,13 +213,14 @@ namespace Stellarch
         /// <summary>Generate a list of files, including the main load file and all the detected backups.</summary>
         private IEnumerable<string> GenerateLoadOrder()
         {
-            // We want to get all the files in the directory that follow the naming convention FileName.*.ext and once we have those, we trim the 
+            // We want to get all the files in the directory that follow the naming convention FileName.GUID.ext and once we have those, we trim the 
             // list down so we only deal with the maximum amount of backups.
             return Directory.GetFiles(
                     path: FileDirectory,
-                    searchPattern: $"{Path.GetFileNameWithoutExtension(FileName)}.*.{Path.GetExtension(FileName)}",
+                    searchPattern: $"{Path.GetFileNameWithoutExtension(FileName)}.*{Path.GetExtension(FileName)}",
                     searchOption: SearchOption.TopDirectoryOnly)
-                .Take(MAX_BACKUPS);
+                .OrderBy(a => File.GetLastWriteTimeUtc(a).Ticks)    // Order by their creation date.
+                .Take(MAX_BACKUPS);                                 // We only want 5.
         }
 
         /// <summary>Calculates an MD5 checksum based on bytes.</summary>
@@ -189,6 +236,9 @@ namespace Stellarch
 
             return returnVal_checksum;
         }
+
+        private static string GetGuid()
+            => Guid.NewGuid().ToString();
 
         #endregion Private Methods
     }

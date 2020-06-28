@@ -1,23 +1,56 @@
-﻿using System;
+﻿// Program.cs
+// The main entry into the program, obviously. Here we have commands that relate to the program itself, such as the directory, CLI input processing,
+// loading the settings before initiating the bot, and setting up the auditing system so we can immediately start auditing when the bot starts up.
+
+#define DEBUG
+
+using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Stellarch
 {
-    class Program
+    public static class Program
     {
-        public static Bot Bot;
-
-        public static string BotDirectory
+        public static class Files
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            /// <summary>The bot's directory.</summary>
+            /// <remarks>Fuck how dotnet handles paths for Linux.</remarks>
+            public static string BotDirectory
+                => Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+            public static string BotSaveFileDirectory
+                = Path.Combine(BotDirectory, @"settings");
+
+            /// <summary>Authkey.json</summary>
+            public static string AuthkeyFile
+                = Path.Combine(BotSaveFileDirectory, @"authkey.txt");
+
+            /// <summary>Webhooks.json</summary>
+            public static string WebhookFile
+                = Path.Combine(BotSaveFileDirectory, @"webhooks.json");
+
+            /// <summary>Settings.json</summary>
+            public static string SettingsFile
+                = Path.Combine(BotSaveFileDirectory, @"settings.json");
+
+            /// <summary>Settings_default.json</summary>
+            public static string SettingsDefaultFile
+                = Path.Combine(BotSaveFileDirectory, @"settings_defaults.json");
+
+            /// <summary>Permissions.json</summary>
+            public static string PermissionsFile
+                = Path.Combine(BotSaveFileDirectory, @"settings.json");
+
+            /// <summary>Permissions_default.json</summary>
+            public static string PermissionsDefaultFile
+                = Path.Combine(BotSaveFileDirectory, @"permissions_default.json");
         }
+
+
+
 
         static void Main(string[] args)
         {
@@ -44,7 +77,7 @@ namespace Stellarch
                         switch(arg)
                         {
                             case "-noaudit":
-                                Settings.SuppressAudit = true;
+                                BotSettings.SuppressAudit = true;
                                 break;
                         } // end switch
                     } // end foreach
@@ -54,13 +87,13 @@ namespace Stellarch
             // --------------------------------
             // Configure bot.
 
-            bool success;
+            bool success; // Our success variable that changes whenever we attempt to do something.
 
             Console.Write("Loading authkey... ");
 
             // Load authkey
-            authkey = GetAuthkey(out success);
-            CLIAppendSuccess(success);
+            //authkey = LoadBotAuthkey(out success);
+            //CLIAppendSuccess(success);
 
             Console.WriteLine("Loading bot settings...");
 
@@ -72,29 +105,62 @@ namespace Stellarch
             LoadBotPermissions(out success);
             CLIAppendSuccess(success);
 
+            Console.WriteLine("Loading bot webhooks...");
+
+            LoadBotWebhooks(out success);
+            CLIAppendSuccess(success);
+
+            // --------------------------------
+            // Initiate auditing.
+
+            // TODO: I actually need to put auditing stuff here.
+
             // --------------------------------
             // Start bot.
 
             Console.WriteLine("Initiating bot...");
 
-            Bot = new Bot
-                (
-                    authkey: authkey
-                );
-
-            Bot.RunAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+            //Bot.RunAsync(authkey).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
+        /// <summary>Load the authkey from the disk.</summary>
+        /// <param name="success">Returns true if loading the authkey was successful.</param>
+        private static string LoadBotAuthkey(out bool success)
+        {
+            string returnVal_authkey;
+
+            using (var fs = File.OpenRead(Files.AuthkeyFile))
+            {
+                using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
+                {
+                    returnVal_authkey = sr.ReadToEnd();
+                }
+            }
+
+            success = returnVal_authkey.Length > 0;
+
+            return returnVal_authkey;
+        }
+
+        /// <summary>Load the bot settings.</summary>
+        /// <param name="success">Returns true if loading settings was successful.</param>
         private static void LoadBotSettings(out bool success)
-        {
-            throw new NotImplementedException();
-        }
+            => success = BotSettings.LoadSettings();
 
+        /// <summary>Load the bot permissions.</summary>
+        /// <param name="success">Returns true if loading permissions was successful.</param>
         private static void LoadBotPermissions(out bool success)
+            => success = BotSettings.LoadPermissions();
+
+        /// <summary>Load the bot webhooks.</summary>
+        /// <param name="success">Returns true if loading webhooks was successful.</param>
+        private static void LoadBotWebhooks(out bool success)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>Simply writes to the console based on a boolean.</summary>
+        /// <param name="success">If the action was successful.</param>
         private static void CLIAppendSuccess(bool success)
         {
             if (success)
@@ -107,26 +173,11 @@ namespace Stellarch
             }
         }
 
+        /// <summary>Just generate an md5 file and quit the program.</summary>
+        /// <param name="file">The file to generate an md5 checksum of.</param>
         private static void GenerateMD5AndQuit(string file)
         {
             throw new NotImplementedException();
-        }
-
-        private static string GetAuthkey(out bool success)
-        {
-            string returnVal_authkey;
-
-            using (var fs = File.OpenRead(Path.Combine(BotDirectory, @"authkey")))
-            {
-                using (var sr = new StreamReader(fs, new UTF8Encoding(false)))
-                {
-                    returnVal_authkey = sr.ReadToEnd();
-                }
-            }
-
-            success = returnVal_authkey.Length > 0;
-
-            return returnVal_authkey;
         }
     }
 }
