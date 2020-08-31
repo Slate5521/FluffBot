@@ -21,11 +21,11 @@ namespace FluffyEars.Commands
         public async Task FilterAddMask(CommandContext ctx, params string[] args)
         {
             // Check if the user can use this command.
-            if (!ctx.Member.GetHighestRole().IsSeniorModOrHigher())
+            if (!ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
                        (
-                           requiredRole: Role.SeniorModerator,
+                           requiredRole: Role.Moderator,
                            command: ctx.Command.Name,
                            channel: ctx.Channel,
                            caller: ctx.Member
@@ -78,11 +78,11 @@ namespace FluffyEars.Commands
         public async Task RemoveFilterMask(CommandContext ctx, params string[] args)
         {
             // Check if the user can use commands.
-            if (!ctx.Member.GetHighestRole().IsSeniorModOrHigher())
+            if (!ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
                        (
-                           requiredRole: Role.SeniorModerator,
+                           requiredRole: Role.Moderator,
                            command: ctx.Command.Name,
                            channel: ctx.Channel,
                            caller: ctx.Member
@@ -169,11 +169,11 @@ namespace FluffyEars.Commands
         public async Task FilterExclude(CommandContext ctx, params string[] args)
         {
             // Check if the user can use commands.
-            if (!ctx.Member.GetHighestRole().IsSeniorModOrHigher())
+            if (!ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
                        (
-                           requiredRole: Role.SeniorModerator,
+                           requiredRole: Role.Moderator,
                            command: ctx.Command.Name,
                            channel: ctx.Channel,
                            caller: ctx.Member
@@ -221,11 +221,11 @@ namespace FluffyEars.Commands
         public async Task FilterRemoveExclude(CommandContext ctx, params string[] args)
         {
             // Check if the user can use commands.
-            if (!ctx.Member.GetHighestRole().IsSeniorModOrHigher())
+            if (!ctx.Member.GetHighestRole().IsModOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
                        (
-                           requiredRole: Role.SeniorModerator,
+                           requiredRole: Role.Moderator,
                            command: ctx.Command.Name,
                            channel: ctx.Channel,
                            caller: ctx.Member

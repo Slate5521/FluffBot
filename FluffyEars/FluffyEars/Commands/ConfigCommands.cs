@@ -226,11 +226,11 @@ namespace FluffyEars.Commands
         public async Task ListExcludes(CommandContext ctx)
         {
             // Check if the user can use config commands.
-            if (!ctx.Member.GetHighestRole().IsCSOrHigher())
+            if (!ctx.Member.GetHighestRole().IsBotManagerOrHigher())
             {
                 await Bot.NotifyInvalidPermissions
                     (
-                        requiredRole: Role.CS,
+                        requiredRole: Role.BotManager,
                         command: ctx.Command.Name,
                         channel: ctx.Channel,
                         caller: ctx.Member
