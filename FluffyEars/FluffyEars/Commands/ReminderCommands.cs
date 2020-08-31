@@ -201,7 +201,7 @@ namespace FluffyEars.Commands
                     stringBuilder.AppendJoin(' ', mentions.ToArray().Select(a => ChatObjects.GetMention(a)));
 
                     deb.AddField(@"User", ctx.Member.Mention, true);
-                    deb.AddField(@"Time", dto.ToString(), true);
+                    deb.AddField(@"Time (UTC)", dto.ToString(ChatObjects.DateFormat), true);
                     deb.AddField(@"Notification Identifier", reminder.GetIdentifier(), false);
 
                     if (stringBuilder.Length > 0)
@@ -267,7 +267,7 @@ namespace FluffyEars.Commands
                     // Piece together the DEB.
 
                     discordEmbedBuilder.AddField(@"User", originalAuthorMention, true);
-                    discordEmbedBuilder.AddField(@"Time", dto.ToString(), true);
+                    discordEmbedBuilder.AddField(@"Time (UTC)", dto.ToString(ChatObjects.DateFormat), true);
                     discordEmbedBuilder.AddField(@"Notification Identifier", reminderId, false);
                     discordEmbedBuilder.AddField(@"Remaining time",
                         String.Format("{0}day {1}hr {2}min {3}sec", remainingTime.Days, remainingTime.Hours, remainingTime.Minutes, remainingTime.Seconds), false);
@@ -359,7 +359,7 @@ namespace FluffyEars.Commands
 
                         #endregion a bunny
 
-                        string name = dto.ToString("ddMMMyyyy HH:mm");
+                        string name = dto.ToString(ChatObjects.DateFormat);
 
                         deb.AddField(name, valueStringBuilder.ToString());
                         count++;

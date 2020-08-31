@@ -149,7 +149,7 @@ namespace FluffyEars.BadWords
             deb.AddField(@"Author Username", $"{e.User.Username}#{e.User.Discriminator}", inline: true);
             deb.AddField(@"Author Mention", e.User.Mention, inline: true);
             deb.AddField(@"Channel", e.Channel.Mention, inline: true);
-            deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(), inline: true);
+            deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(ChatObjects.DateFormat), inline: true);
             deb.AddField(@"Link", ChatObjects.GetMessageUrl(e.Message));
 
             deb.WithThumbnail(ChatObjects.URL_FILTER_BUBBLE);

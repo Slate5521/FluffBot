@@ -81,7 +81,7 @@ namespace FluffyEars
             SkipRight = null
         };
 
-        public static string DateFormat = @"yyyy MMMM dd HH:mm";
+        public static string DateFormat = @"yyyy-MMM-dd HH:mm";
 
         public static string PreviewString(string str, int maxLength)
         {   const string TOO_LONG = "**Too long to preview...**";
