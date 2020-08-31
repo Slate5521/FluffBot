@@ -197,7 +197,7 @@ namespace FluffyEars
 
         static Regex FloppyEarsRegex = new Regex(@"^Floppy,? (?:I love your ears|your ears are so long)[.!?]?$", options);
         private static async Task FloppyEars(DiscordMessage message)
-            => await message.RespondAsync(GenericResponse(@"...whyareyoulookingatmyears?????...", @"https://i.imgur.com/rCqQGPV.png"));
+            => await message.RespondAsync(GenericResponse(@"...whyareyoulookingatmyears?????...", @"https://i.imgur.com/DB9qvJM.png"));
 
         // --------------------------------
         // :raid:
