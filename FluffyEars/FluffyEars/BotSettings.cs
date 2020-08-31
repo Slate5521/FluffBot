@@ -61,8 +61,6 @@ namespace FluffyEars
             public bool RimboardEnabled;
             /// <summary>Whether or not FunStuff should be enabled.</summary>
             public bool FunEnabled;
-            /// <summary>A list of recognized Frozen names.</summary>
-            public List<string> FrozenNames;
             /// <summary>The Rimboard emoji.</summary>
             public string RimboardEmoji;
             /// <summary>The number of reacts to pin a message.</summary>
@@ -81,13 +79,6 @@ namespace FluffyEars
             RimboardEnabled = false,
             AutoWarnSnoopEnabled = false,
             FunEnabled = false,
-            FrozenNames = new List<string>()
-            {
-                "frozen",
-                "frozo",
-                "forza",
-                "freezy"
-            },
             RimboardEmoji = ":rimworld:",
             RimboardThreshold = 5
         };
@@ -195,36 +186,6 @@ namespace FluffyEars
         }
 
         #endregion Save/Load Methods
-        // ################################
-        #region Frozen Methods
-
-        /// <summary>Add a recognized Frozen moniker.</summary>
-        public static void AddFrozenName(string name)
-        {
-            if (!IsFrozenName(name))
-            {   // This is not a frozen name.
-                botSettings.FrozenNames.Add(name);
-            }
-        }
-
-        /// <summary>Remove a name from the list of recognized Frozen monikers.</summary>
-        public static void RemoveFrozenName(string name)
-        {
-            if (IsFrozenName(name))
-            {   // This is a frozen name.
-                botSettings.FrozenNames.Remove(name);
-            }
-        }
-
-        /// <summaryCheck if a specified name is a recognized Frozen moniker.</summary>
-        public static bool IsFrozenName(string name)
-            => botSettings.FrozenNames.Contains(name);
-
-        /// <summary>Get all the recognized Frozen monikers.</summary>
-        public static string[] GetFrozenNames()
-            => botSettings.FrozenNames.ToArray();
-
-        #endregion Frozen Methods
         // ################################
         #region Channel Exclusion
 
