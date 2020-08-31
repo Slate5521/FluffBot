@@ -212,8 +212,11 @@ namespace FluffyEars.Commands
                 } // end foreach
             } // end if
 
-            // Delete the message so it's kind of out of the way and doesn't get logged again in the future.
-            await ctx.Message.DeleteAsync();
+            // Delete the message if it's the action channel so it's kind of out of the way and doesn't get logged again in the future.
+            if (ctx.Message.ChannelId == BotSettings.ActionChannelId)
+            {
+                await ctx.Message.DeleteAsync();
+            }
 
             if (pages.Length > 1)
             {   // More than 1 page.
