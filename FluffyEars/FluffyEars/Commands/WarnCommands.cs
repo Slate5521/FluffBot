@@ -66,9 +66,8 @@ namespace FluffyEars.Commands
                 await ctx.Channel.SendMessageAsync(embed: embedResponse);
             }
         }
-        private const string WARN_SEEK_COMMAND = "mentions";
 
-        [Command(WARN_SEEK_COMMAND)]
+        [Command("mentions")]
         public async Task SeekWarns(CommandContext ctx, params DiscordMember[] members)
         {
             // Check if the user can use these sorts of commands.
@@ -88,7 +87,7 @@ namespace FluffyEars.Commands
             }
         }
 
-        [Command(WARN_SEEK_COMMAND)]
+        [Command("mentions")]
         public async Task SeekWarns(CommandContext ctx, params ulong[] members)
         {   
             // Check if the user can use these sorts of commands.
@@ -109,7 +108,7 @@ namespace FluffyEars.Commands
         }
 
        
-
+        /// <summary>Active warn snooper.</summary>
         private async Task SeekWarns_Unwrapper(CommandContext ctx, ulong[] memberIds)
         {
             DiscordChannel actionLogChannel = await Bot.BotClient.GetChannelAsync(BotSettings.ActionChannelId);
@@ -133,7 +132,9 @@ namespace FluffyEars.Commands
                         (
                             title: "Discord Mentions",
                             description: ChatObjects.GetNeutralMessage(warnsFound ? // Warning, really fucking long string ahead:
-                                                                       $"{ctx.Member.Mention}, I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for {ChatObjects.GetMention(member)} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. {(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                                                       $"{ctx.Member.Mention}, I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for " +
+                                                                       $"{ChatObjects.GetMention(member)} in {actionLogChannel.Mention} in the last {BotSettings.WarnThreshold} months. " +
+                                                                       $"{(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
                                                                        $"{ctx.Member.Mention}, I did not find any mentions for {ChatObjects.GetMention(member)}. Good for them..."),
                             color: warnsFound ? DiscordColor.Red : DiscordColor.Green
                         ));
@@ -163,7 +164,7 @@ namespace FluffyEars.Commands
                                 } // end if
 
                                 stringBuilderFooter.Append("\n\n");
-                                stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link to Original Mention", new Uri(ChatObjects.GetMessageUrl(message))));
+                                stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message))));
 
 
                                 // We want to prefer the footer's information over the content. So let's figure out how much of the content we
@@ -283,13 +284,16 @@ namespace FluffyEars.Commands
             }
         }
 
+
+        /// <summary>Passive warn snooping.</summary>
         internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
-            {
+        {
             if(BotSettings.AutoWarnSnoopEnabled &&
                 !e.Author.IsCurrent &&
                 e.Channel.Id == BotSettings.ActionChannelId)
             {   // We only want to continue through here if warn snooping is enabled, the bot isn't self-triggering, and we're in #action-logs.
 
+                // Do not used cache messages in case something changed. Let's get messages directly from the server.
                 var oldMessage = e.MessageBefore;
                 var newMessage = e.Message;
 
@@ -297,10 +301,10 @@ namespace FluffyEars.Commands
                 // end up causing more spam therefore more harm. It's unfortunate because we should always try to find some way to interact with
                 // some kind of data, but this is a hard limitation I've ran into.
 
-                if(!(oldMessage is null && newMessage is null))
-                {
-                    var mentionUsers_old = oldMessage.MentionedUsers;
-                    var mentionUsers_new = newMessage.MentionedUsers;
+                if(!(oldMessage is null) && !(newMessage is null))
+                {   // Only continue if neither message is null.
+                    var mentionUsers_old = GetMessageMentions(oldMessage.Content);
+                    var mentionUsers_new = GetMessageMentions(newMessage.Content);
 
                     // Users that we've found by comparing the old and new lists.
                     var newlyFoundUserIds = new List<ulong>();
@@ -309,10 +313,10 @@ namespace FluffyEars.Commands
                     {
                         var user = mentionUsers_new[i];
 
-                        if(!(user is null) && !mentionUsers_old.Contains(user))
-                        {   // If this isn't null and the old list doesn't contain it, this means it's a new mention.
+                        if(!mentionUsers_old.Contains(user))
+                        {   // If the old list doesn't contain it, this means it's a new mention.
 
-                            newlyFoundUserIds.Add(user.Id);
+                            newlyFoundUserIds.Add(user);
                         }
                     }
 
@@ -325,32 +329,39 @@ namespace FluffyEars.Commands
                         Dictionary<ulong, List<DiscordMessage>> warnDict =
                             await QueryMemberMentions(newlyFoundUserIds, actionChannel, BotSettings.WarnThreshold, e.Message);
 
-                        var embed = FormatWarns(warnDict, actionChannel);
+                        foreach (ulong snowflake in warnDict.Keys)
+                        {   // Iterate through each user snowflake logged in the dictionary.
 
-                        await e.Channel.SendMessageAsync(embed: embed);
+                            if (warnDict[snowflake].Count > 0)
+                            {   // Only make an embed if there are actually mentions.
+                                var embed = FormatWarns(snowflake, warnDict[snowflake], e.Channel);
+
+                                await e.Channel.SendMessageAsync(embed: embed);
+                            } // end if
+                        } // end foreach
                     } // end if
                 } // end if
             } // end if
         } // end method
 
+        /// <summary>Passive warn snooping.</summary>
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
             if (BotSettings.AutoWarnSnoopEnabled &&
                 !e.Author.IsCurrent &&
-                e.Channel.Id == BotSettings.ActionChannelId &&
-                !(e.Message.GetMentionPrefixLength(Bot.BotClient.CurrentUser) != -1 && e.Message.Content.Contains(WARN_SEEK_COMMAND)))
-            {   // Only continue if this is the action channel, and it doesn't look like a command.
+                e.Channel.Id == BotSettings.ActionChannelId)
+            {   // Only continue if this is the action channel and wasn't sent by the bot.
 
                 // ----
                 // Get the DiscordMember of each user.
 
                 var mentionedColonistIds = new List<ulong>();
 
-                foreach(var user in e.MentionedUsers)
+                foreach(var user in GetMessageMentions(e.Message.Content))
                 {
                     try
                     {
-                        var member = await e.Guild.GetMemberAsync(user.Id);
+                        var member = await e.Guild.GetMemberAsync(user);
 
                         if (member.GetHighestRole().Equals(Role.Colonist) && !member.IsBot)
                         {   // Only add this person if they're a colonist and not a bot.
@@ -360,7 +371,7 @@ namespace FluffyEars.Commands
                     } 
                     catch
                     {   // Most likely they're not in the guild if an exception is thrown, so let's just add their id to the list anyway.
-                        mentionedColonistIds.Add(user.Id);
+                        mentionedColonistIds.Add(user);
                     }
                 } // end foreach
 
@@ -381,42 +392,43 @@ namespace FluffyEars.Commands
                     // So at this point, we know there's at least one person who has been warned (0,inf) times.
                     // Now we want to act on each warn, constructing them into a DiscordEmbed.
 
-                    var embed = FormatWarns(warnDict, e.Channel);
+                    foreach(ulong snowflake in warnDict.Keys)
+                    {   // Iterate through each user snowflake logged in the dictionary.
 
-                    await e.Channel.SendMessageAsync(embed: embed);
+                        if (warnDict[snowflake].Count > 0)
+                        {   // Only make an embed if there are actually mentions.
+                            var embed = FormatWarns(snowflake, warnDict[snowflake], e.Channel);
 
+                            await e.Channel.SendMessageAsync(embed: embed);
+                        }
+                    }
                 } // end if
             } // end if
         } // end method
 
         /// <summary>Format all of the warns in a warn dictionary.</summary>
-        private static DiscordEmbed FormatWarns(Dictionary<ulong, List<DiscordMessage>> warnDict, DiscordChannel chan)
+        private static DiscordEmbed FormatWarns(ulong user, List<DiscordMessage> mentions, DiscordChannel chan)
         {
             var embedBase = new DiscordEmbedBuilder();
 
-            foreach (ulong memberId in warnDict.Keys)
-            {
-                List<DiscordMessage> messages = warnDict[memberId];
+            if (mentions.Count > 0)
+            {   // We found warns for this user! How unfortunate...
 
-                if (messages.Count > 0)
-                {   // We found warns for this user! How unfortunate...
-
-                    var stringBuilder = new StringBuilder();
+                var stringBuilder = new StringBuilder();
 
 
-                    stringBuilder.Append($"__**{ChatObjects.GetMention(memberId)} has {messages.Count} mention{(messages.Count == 1 ? String.Empty : @"s")} in {chan.Mention}:**__\n");
+                stringBuilder.Append($"__**{ChatObjects.GetMention(user)} has {mentions.Count + 1} total mention{(mentions.Count == 1 ? String.Empty : @"s")} in {chan.Mention} including the most recent one:**__\n");
 
-                    int count = 0;
-                    stringBuilder.AppendJoin(' ',
-                        messages.Select(a =>    // Generate a bunch of masked urls
-                            Formatter.MaskedUrl($"#{++count}", new Uri(ChatObjects.GetMessageUrl(a)))));
+                int count = 0;
+                stringBuilder.AppendJoin(' ',
+                    mentions.Select(a =>    // Generate a bunch of masked urls
+                        Formatter.MaskedUrl($"#{++count}", new Uri(ChatObjects.GetMessageUrl(a)))));
 
-                    string finalStr = ChatObjects.PreviewString(stringBuilder.ToString(), 2048);
+                string finalStr = ChatObjects.PreviewString(stringBuilder.ToString(), 2048);
 
-                    embedBase.WithDescription(finalStr);
-                    embedBase.WithTitle($"Previous mention{(messages.Count == 1 ? String.Empty : @"s")}  found");
-                    embedBase.WithColor(DiscordColor.Red);
-                }
+                embedBase.WithDescription(finalStr);
+                embedBase.WithTitle($"Previous mention{(mentions.Count == 1 ? String.Empty : @"s")} found");
+                embedBase.WithColor(DiscordColor.Red);
             }
 
             return embedBase;
@@ -436,7 +448,7 @@ namespace FluffyEars.Commands
         {
             const int MESSAGE_COUNT = 2000;
             // Remember to use DTO in the current timezone and not in UTC! API is running on OUR time.
-            DateTime startTime = DateTime.Now.AddMonths(warnThreshold * -1);
+            DateTimeOffset startTime = DateTimeOffset.Now.AddMonths(warnThreshold * -1);
 
             // We want to set the initial messages.
 
@@ -467,7 +479,7 @@ namespace FluffyEars.Commands
                     foreach(var message in messages)
                     {   // For each message, we want to check its mentioned users.
 
-                        if(startTime.Millisecond <= message.CreationTimestamp.Ticks)
+                        if(startTime.ToUnixTimeMilliseconds() <= message.CreationTimestamp.ToUnixTimeMilliseconds())
                         {   // We only want to continue if this is after our startValue.
 
                             foreach (ulong memberId in memberIds)
@@ -537,6 +549,33 @@ namespace FluffyEars.Commands
             }
 
             return returnVal;
+        }
+
+        /// <summary>For searching mentions.</summary>
+        static Regex MentionRegex = new Regex(@"<@!?(\d{17,})>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+
+        /// <summary>Use Regex to get mentions in a message.</summary>
+        /// <returns>A list of found mentions.</returns>
+        private static List<ulong> GetMessageMentions(string message)
+        {
+            var matches = MentionRegex.Matches(message);
+            List<ulong> mentions_returnVal = new List<ulong>();
+
+            foreach (Match match in matches)
+            {
+                // The possible snowflake ID that was found.
+                ulong id;
+
+                if (ulong.TryParse(match.Groups[1].Value, out id) &&
+                    !mentions_returnVal.Contains(id))
+                {   // Only continue if this is absolutely a ulong id, and if it's not a duplicate.
+
+                    mentions_returnVal.Add(id);
+
+                }
+            }
+
+            return mentions_returnVal;
         }
     }
 }
