@@ -50,6 +50,7 @@ namespace FluffyEars
                 Token = authKey,
                 TokenType = TokenType.Bot,
                 AutoReconnect = true,
+                MinimumLogLevel = Microsoft.Extensions.Logging.LogLevel.Information
             };
 
             BotClient = new DiscordClient(botConfig);
@@ -332,8 +333,7 @@ namespace FluffyEars
             if (!(e.Exception is CommandNotFoundException) &&
                 !(e.Exception is ChecksFailedException))
             {
-                e.Context.Client.Logger
-                    .LogMessage("FloppyEars", $"Exception: {e.Exception.GetType()}: {e.Exception.Message}", DateTime.Now);
+                Console.WriteLine($"Exception: {e.Exception.GetType()}: {e.Exception.Message}");
             }
 
             return Task.CompletedTask;
@@ -342,8 +342,7 @@ namespace FluffyEars
         /// <summary>A command was executed.</summary>
         private Task Commands_CommandExecuted(CommandExecutionEventArgs e)
         {
-            e.Context.Client.Logger
-                .LogMessage("FloppyEars", $"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'", DateTime.Now);
+            Console.WriteLine($"{e.Context.User.Username} successfully executed '{e.Command.QualifiedName}'");
 
             SelfAudit.LogSomething
                 (
