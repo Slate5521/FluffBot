@@ -23,13 +23,16 @@
 
   <ItemGroup>
     <Reference Include="DSharpPlus">
-      <HintPath>..\..\..\DSharpPlusButBetter\DSharpPlus\DSharpPlus\bin\Release\netstandard2.0\DSharpPlus.dll</HintPath>
+      <HintPath>..\..\..\DSharpPlus\DSharpPlus\bin\Release\netstandard2.0\DSharpPlus.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="DSharpPlus.CommandsNext">
-      <HintPath>..\..\..\DSharpPlusButBetter\DSharpPlus\DSharpPlus.CommandsNext\bin\Release\netstandard2.0\DSharpPlus.CommandsNext.dll</HintPath>
+      <HintPath>..\..\..\DSharpPlus\DSharpPlus.CommandsNext\bin\Release\netstandard2.0\DSharpPlus.CommandsNext.dll</HintPath>
+      <Private>true</Private>
     </Reference>
     <Reference Include="DSharpPlus.Interactivity">
-      <HintPath>..\..\..\DSharpPlusButBetter\DSharpPlus\DSharpPlus.Interactivity\bin\Release\netstandard2.0\DSharpPlus.Interactivity.dll</HintPath>
+      <HintPath>..\..\..\DSharpPlus\DSharpPlus.Interactivity\bin\Release\netstandard2.0\DSharpPlus.Interactivity.dll</HintPath>
+      <Private>true</Private>
     </Reference>
   </ItemGroup>
 
