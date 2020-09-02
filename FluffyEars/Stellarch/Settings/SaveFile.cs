@@ -72,28 +72,33 @@ namespace BigSister.Settings
                 // Let's wait out any other threads using the files.
                 semaphore.WaitOne();
 
-                // Let's save the SaveFile and the MD5.
-                using (var jsonWriter = new StreamWriter(saveFile, false))
-                using (var md5Writer = new StreamWriter(GetMD5File(saveFile), false))
+                try
                 {
-                    // Write data.
-                    var a = jsonWriter.WriteAsync(json);
-                    var b = md5Writer.WriteAsync(GetHash(json));
+                    // Let's save the SaveFile and the MD5.
+                    using (var jsonWriter = new StreamWriter(saveFile, false))
+                    using (var md5Writer = new StreamWriter(GetMD5File(saveFile), false))
+                    {
+                        // Write data.
+                        var a = jsonWriter.WriteAsync(json);
+                        var b = md5Writer.WriteAsync(GetHash(json));
 
-                    Task.WaitAll(a, b); // Block thread until all data is written.
+                        Task.WaitAll(a, b); // Block thread until all data is written.
 
-                    // Flush streams.
-                    var c = jsonWriter.FlushAsync();
-                    var d = md5Writer.FlushAsync();
+                        // Flush streams.
+                        var c = jsonWriter.FlushAsync();
+                        var d = md5Writer.FlushAsync();
 
-                    Task.WaitAll(c, d); // Block thread until all streams are flushed.
+                        Task.WaitAll(c, d); // Block thread until all streams are flushed.
 
-                    jsonWriter.Close();
-                    md5Writer.Close();
+                        jsonWriter.Close();
+                        md5Writer.Close();
+                    }
+                } 
+                finally
+                {
+                    // Release the semaphore.
+                    semaphore.Release();
                 }
-
-                // Release the semaphore.
-                semaphore.Release();
             }).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
