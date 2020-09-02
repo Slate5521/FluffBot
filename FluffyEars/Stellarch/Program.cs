@@ -31,16 +31,18 @@ namespace BigSister
                 get => AppDomain.CurrentDomain.BaseDirectory;
             }
 
-            const string IDENTITY_FILE = @"sav\identity.json";
+            const string SAVE_DIRECTORY = @"sav";
+
+            const string IDENTITY_FILE = @"identity.json";
             public static string IdentityFile
             {
-                get => Path.Combine(ExecutableDirectory, IDENTITY_FILE);
+                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, IDENTITY_FILE);
             }
 
-            const string SETTINGS_FILE = @"sav\settings.json";
+            const string SETTINGS_FILE = @"settings.json";
             public static string SettingsFile
             {
-                get => Path.Combine(ExecutableDirectory, SETTINGS_FILE);
+                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, SETTINGS_FILE);
             }
         }
 
