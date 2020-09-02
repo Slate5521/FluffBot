@@ -12,6 +12,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BigSister.Settings
@@ -34,73 +35,91 @@ namespace BigSister.Settings
         /// <summary>Get a string describing BaseFile.B</summary>
         private string BaseFileB => $"{baseFileName}.B";
 
+        private Semaphore semaphore;
+
         public SaveFile() { }
         public SaveFile(string baseFile)
         {
             baseFileName = baseFile;
+            semaphore = new Semaphore(1, 1);
+        }
+
+        ~SaveFile()
+        {
+            semaphore.Dispose();
         }
 
         #region Public Methods
 
         /// <summary>Save information to savefile.</summary>
-        /// <param name="lockObj">Locking object for class.</param>
-        public void Save<T>(T saveData, object lockObj)
-        {
-            Save(
-                json: JsonConvert.SerializeObject(saveData),
-                lockObj: lockObj
-                );
-        }
+        public void Save<T>(T saveData)
+            => Save(JsonConvert.SerializeObject(saveData));
+
 
         /// <summary>Save json information to savefile.</summary>
-        /// <param name="lockObj">Locking object for class.</param>
-        public void Save(string json, object lockObj)
+        public void Save(string json)
         {
             string saveFile = GetNextSaveFile();
 
-
             // If there's no value, that means we need to default to bfA.
             if (saveFile.Equals(String.Empty))
-                saveFile = BaseFileA;
-
-            lock (lockObj)
             {
-                // Let's save the SaveFile.
-                using (var sw = new StreamWriter(saveFile, false))
+                saveFile = BaseFileA;
+            }
+
+            Task.Run(() =>
+            {
+                // Let's wait out any other threads using the files.
+                semaphore.WaitOne();
+
+                // Let's save the SaveFile and the MD5.
+                using (var jsonWriter = new StreamWriter(saveFile, false))
+                using (var md5Writer = new StreamWriter(GetMD5File(saveFile), false))
                 {
-                    sw.Write(json);
-                    sw.Flush();
+                    // Write data.
+                    var a = jsonWriter.WriteAsync(json);
+                    var b = md5Writer.WriteAsync(GetHash(json));
+
+                    Task.WaitAll(a, b); // Block thread until all data is written.
+
+                    // Flush streams.
+                    var c = jsonWriter.FlushAsync();
+                    var d = md5Writer.FlushAsync();
+
+                    Task.WaitAll(c, d); // Block thread until all streams are flushed.
+
+                    jsonWriter.Close();
+                    md5Writer.Close();
                 }
 
-                // Let's save the MD5.
-                using (var sw = new StreamWriter(GetMD5File(saveFile), false))
-                {
-                    sw.Write(GetFileMD5(saveFile));
-                    sw.Flush();
-                }
-            }
+                // Release the semaphore.
+                semaphore.Release();
+            }).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>Load information from SaveFile.</summary>
         /// <typeparam name="T">Json serializable struct holding information.</typeparam>
         /// <param name="lockObj">Locking object for class.</param>
-        public T Load<T>(object lockObj)
+        public T Load<T>()
         {
             T returnVal;
 
-            string loadFile = GetLoadFile(lockObj);
+            string loadFile = GetLoadFile();
 
             if (!loadFile.Equals(String.Empty))
             {
                 string fileContents;
 
-                lock (lockObj)
-                    fileContents = ReadFile(loadFile);
+                fileContents = ReadFile(loadFile);
 
                 if (!fileContents.Equals(String.Empty))
+                {
                     returnVal = (T)JsonConvert.DeserializeObject(fileContents, typeof(T));
-                else throw new SaveFileException("SaveFile found, unable to load contents.");
-
+                }
+                else
+                {
+                    throw new SaveFileException("SaveFile found, unable to load contents.");
+                }
             }
             else throw new SaveFileException("Unable to load a SaveFile.");
 
@@ -186,8 +205,7 @@ namespace BigSister.Settings
         }
 
         /// <summary>Gets the savefile we should load from.</summary>
-        /// <param name="lockObj">Locking object for class.</param>
-        private string GetLoadFile(object lockObj)
+        private string GetLoadFile()
         {
             string returnVal;
 
@@ -217,9 +235,9 @@ namespace BigSister.Settings
                    yh  `-+hhyo////////////////////////////+ydy-    +m/                              
      `-/+o++:`     +d//ydso//////////////////////////////////yd+. `hh`    ./syyyo:                  
     :hdddyyyyho-   `hddh+///////////////////////://///////////ohd//m/  ./ydddhddmd+                 
-   `dmy:.....-+hy- `hds//+oo++//////+ss//////////+s+//////+++o+/sddy`:shyo:-.../hmd:                
-   -my.`........+hosd+//+ysssyyyyyyyys+///:///////oyyyyyyyysssso/ymsydo-.......`:dmo                
-   -ds`.-:::::-..-ymy/////////////////////////////////////////////hds-..-::::::.`omo                
+    `dmy:.....-+hy- `hds//+oo++//////+ss//////////+s+//////+++o+/sddy`:shyo:-.../hmd:                
+    -my.`........+hosd+//+ysssyyyyyyyys+///:///////oyyyyyyyysssso/ymsydo-.......`:dmo                
+    -ds`.-:::::-..-ymy/////////////////////////////////////////////hds-..-::::::.`omo                
     yh.-::::::::-..odho//////////////////////////////////////////yd+..-:::::::::.om:                
     -m+.::::::::::..-ydy+oo++oooooooss/////////:/+yssooooooooooohh/..-:::::::::-.yd.                
      sd:-::::::::::-`.+hd+/++////:::---://///////-.-:::///////ydy-..:::::::::::.omo                 
@@ -266,7 +284,7 @@ namespace BigSister.Settings
           ``..----/dmmmmmmmmmmdo::::::om//////:od+//:::+ymmmmmmmmmmmy//oossddhhysyydmmmmmmmmmdh     
          `ydhhdddddddddddddddddddddddddddddddddmdddddddddddmdmdmmmmmmdmmddddddddddyyyyyyyso+:-`     
                       `..........................-----..........-----.--....``                      
-                                                                                                   
+
              */
 
             #endregion ....andfox?!?!?!
@@ -328,38 +346,36 @@ namespace BigSister.Settings
             bool newFileIntegrity;
             bool oldFileIntegrity;
 
-            lock (lockObj)
+            // Let's try load the MD5s of the newer files.
+            if (newFileExists && newestFileMD5Exists)
             {
-                // Let's try load the MD5s of the newer files.
-                if (newFileExists && newestFileMD5Exists)
-                {
-                    newFileTrueMD5 = ReadFile(newestFileMD5);
-                    newFileMD5 = GetFileMD5(newestFile);
-                    newFileIntegrity = CompareMD5(newFileTrueMD5, newFileMD5) && IsValidJson(newestFile);
-                }
-                else
-                {
-                    newFileTrueMD5 = String.Empty;
-                    newFileMD5 = String.Empty;
-                    newFileIntegrity = false;
-                }
-
-                // Let's try load the MD5s of the older files.
-                if (oldFileExists && oldestFileMD5Exists)
-                {
-                    oldFileTrueMD5 = ReadFile(oldestFileMD5);
-                    oldFileMD5 = GetFileMD5(oldestFile);
-                    oldFileIntegrity = CompareMD5(oldFileTrueMD5, oldFileMD5) && IsValidJson(oldestFile);
-                }
-                else
-                {
-                    oldFileTrueMD5 = String.Empty;
-                    oldFileMD5 = String.Empty;
-                    oldFileIntegrity = false;
-                }
-
-                // Great. Now we have all the MD5s, so we need to compare them and see what's up.
+                newFileTrueMD5 = ReadFile(newestFileMD5);
+                newFileMD5 = GetFileMD5(newestFile);
+                newFileIntegrity = CompareMD5(newFileTrueMD5, newFileMD5) && IsValidJson(newestFile);
             }
+            else
+            {
+                newFileTrueMD5 = String.Empty;
+                newFileMD5 = String.Empty;
+                newFileIntegrity = false;
+            }
+
+            // Let's try load the MD5s of the older files.
+            if (oldFileExists && oldestFileMD5Exists)
+            {
+                oldFileTrueMD5 = ReadFile(oldestFileMD5);
+                oldFileMD5 = GetFileMD5(oldestFile);
+                oldFileIntegrity = CompareMD5(oldFileTrueMD5, oldFileMD5) && IsValidJson(oldestFile);
+            }
+            else
+            {
+                oldFileTrueMD5 = String.Empty;
+                oldFileMD5 = String.Empty;
+                oldFileIntegrity = false;
+            }
+
+            // Great. Now we have all the MD5s, so we need to compare them and see what's up.
+
 
             bool newFileExisting = newFileExists && newestFileMD5Exists;
             bool oldFileExisting = oldFileExists && oldestFileMD5Exists;

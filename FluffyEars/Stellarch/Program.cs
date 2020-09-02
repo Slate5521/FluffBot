@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.IO.Pipes;
+using System.Threading;
 
 namespace BigSister
 {
@@ -42,16 +43,11 @@ namespace BigSister
                 get => Path.Combine(ExecutableDirectory, SETTINGS_FILE);
             }
         }
-        
-        /// <summary>SaveFile for BotSettings.</summary>
-        static SaveFile BotSettingsFile;
-        /// <summary>Authkey and webhooks.</summary>
-        static Identity Identity;
 
-        /// <summary>Bot settings.</summary>
         public static BotSettings Settings;
 
-        static object botSettingsLock = new object();
+        static SaveFile BotSettingsFile;
+        static Identity Identity;
 
         static void Main(string[] args)
         {
@@ -62,8 +58,7 @@ namespace BigSister
             //    Environment.Exit(0);
             //}
 
-            BotSettings botSettings; // Bot settings.
-            bool loadSuccess;        // If loading the bot settings was successful.
+            bool loadSuccess;
 
             // ----------------
             // Load authkey and webhooks.
@@ -76,7 +71,7 @@ namespace BigSister
             // ----------------
             // Load bot settings.
             Console.Write("Loading settings... ");
-            loadSuccess = LoadSettings(out botSettings);
+            loadSuccess = LoadSettings(out Settings);
             Console.WriteLine(loadSuccess ? @"Successfully loaded" : @"No file - Using default values.");
 
             // ----------------
@@ -120,9 +115,9 @@ namespace BigSister
             return identity_returnVal;
         }
 
-        public static async Task SaveSettings()
+        public static void SaveSettings()
         {
-                                                                                                                                                throw new NotImplementedException();
+            BotSettingsFile.Save<BotSettings>(Settings);
         }
         
         /// <summary>Load the bot's settings.</summary>
@@ -136,13 +131,16 @@ namespace BigSister
             // Check if it's an existing save file.
             if (BotSettingsFile.IsExistingSaveFile())
             {   // It's an existing file, so let's get the values.
-                botSettings = BotSettingsFile.Load<BotSettings>(botSettingsLock);
                 loadedValues_returnVal = true;
+
+                botSettings = BotSettingsFile.Load<BotSettings>();
             }
             else
-            {   // It's not an existing file, so let's use default values.
+            {   // It's not an existing file, so let's use default values and then save them.
                 botSettings = new BotSettings();
                 loadedValues_returnVal = false;
+
+                BotSettingsFile.Save<BotSettings>(botSettings);
             }
 
             return loadedValues_returnVal;
