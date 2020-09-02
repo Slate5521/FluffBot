@@ -43,8 +43,13 @@ namespace BigSister
             }
         }
         
+        /// <summary>SaveFile for BotSettings.</summary>
         static SaveFile BotSettingsFile;
+        /// <summary>Authkey and webhooks.</summary>
         static Identity Identity;
+
+        /// <summary>Bot settings.</summary>
+        public static BotSettings Settings;
 
         static object botSettingsLock = new object();
 
@@ -57,9 +62,8 @@ namespace BigSister
             //    Environment.Exit(0);
             //}
 
-            BotSettings botSettings;
-            bool loadSuccess;
-
+            BotSettings botSettings; // Bot settings.
+            bool loadSuccess;        // If loading the bot settings was successful.
 
             // ----------------
             // Load authkey and webhooks.
@@ -118,7 +122,7 @@ namespace BigSister
 
         public static async Task SaveSettings()
         {
-            throw new NotImplementedException();
+                                                                                                                                                throw new NotImplementedException();
         }
         
         /// <summary>Load the bot's settings.</summary>
@@ -148,7 +152,7 @@ namespace BigSister
         /// <returns>Boolean indicating if program should end.</returns>
         private static bool ProcessCLI(string[] args)
         {
-            throw new NotImplementedException();
+                                                                                                                                                throw new NotImplementedException();
         }
     }
 }
