@@ -1,7 +1,7 @@
 ﻿{
   "Authkey": "AUTHKEY",
-  "Webhooks": 
-  {
-    "1337": "unused"
+  "Webhooks": {
+    "1337": "unused",
+    "9001": "unused"
   }
 }
