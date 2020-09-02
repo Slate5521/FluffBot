@@ -5,6 +5,7 @@
 //
 // EMIKO
 
+using FluffyEars;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -94,6 +95,10 @@ namespace BigSister.Settings
                         md5Writer.Close();
                     }
                 } 
+                catch(Exception e)
+                {
+                    throw new SaveFileException("Unable to save settings.", e);
+                }
                 finally
                 {
                     // Release the semaphore.
