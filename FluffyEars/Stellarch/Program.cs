@@ -281,9 +281,9 @@ namespace BigSister
                 command.CommandText =
                     @"
                         CREATE TABLE `Roles` (
-	                        `MessageId` BIGINT unsigned NOT NULL, -- 'Snowflake of message'
-	                        `RoleId`    BIGINT unsigned NOT NULL, -- 'Snowflake of role'
-	                        `EmoteId`   BIGINT unsigned NOT NULL  -- 'Snowflake of emote'
+	                        `MessageId` BIGINT unsigned NOT NULL, -- Snowflake of message
+	                        `RoleId`    BIGINT unsigned NOT NULL, -- Snowflake of role
+	                        `EmoteId`   BIGINT unsigned NOT NULL  -- Snowflake of emote
                         );
                     ";
             }
