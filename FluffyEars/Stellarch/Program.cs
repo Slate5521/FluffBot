@@ -13,6 +13,10 @@ using System.IO;
 using BigSister.Settings;
 using Newtonsoft.Json;
 using BigSister.Database;
+using DSharpPlus;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Interactivity;
+using System.Threading.Tasks;
 
 namespace BigSister
 {
@@ -48,6 +52,7 @@ namespace BigSister
 
         public static BotSettings Settings;
         public static BotDatabase Database;
+        public static DiscordClient BotClient;
 
         static SaveFile BotSettingsFile;
         static Identity Identity;
@@ -60,7 +65,7 @@ namespace BigSister
             // Load authkey and webhooks.
             Console.Write("Loading identity... ");
             Identity = LoadIdentity();
-            Console.WriteLine("Found authkey and {0} webhook{1}.", 
+            Console.WriteLine("Found authkey and {0} webhook{1}.",
                 Identity.Webhooks.Count,
                 Identity.Webhooks.Count == 1 ? '\0' : 's');
 
@@ -87,14 +92,35 @@ namespace BigSister
 
             Database = new BotDatabase(Files.DatabaseFile);
 
-
             // ----------------
             // TODO: Initiate logging.
 
-            // ----------------
-            // TODO: Run the bot.
 
-            UpdateSettings(ref Settings.MaxTimeMonths, 7);
+            // ----------------
+            // Run the bot.
+
+            var botConfig = new DiscordConfiguration()
+            {
+                Token = Identity.Authkey,
+                TokenType = TokenType.Bot,
+                AutoReconnect = true
+            };
+
+            BotClient = new DiscordClient(botConfig);
+
+            BotClient.UseCommandsNext(new CommandsNextConfiguration()
+            {
+                CaseSensitive = false,
+                EnableDefaultHelp = false,
+                StringPrefixes = new string[] { "!" }
+            });
+
+            BotClient.UseInteractivity(new InteractivityConfiguration
+            {
+                PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore
+            });
+
+            Bot.RunAsync(BotClient).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>Load authkey and webhooks.</summary>
