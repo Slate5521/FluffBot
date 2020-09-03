@@ -36,18 +36,18 @@ namespace BigSister.Settings
         /// <summary>Get a string describing BaseFile.B</summary>
         private string BaseFileB => $"{baseFileName}.B";
 
-        private Semaphore semaphore;
+        private SemaphoreSlim semaphoreSlim;
 
         public SaveFile() { }
         public SaveFile(string baseFile)
         {
             baseFileName = baseFile;
-            semaphore = new Semaphore(1, 1);
+            semaphoreSlim = new SemaphoreSlim(1, 1);
         }
 
         ~SaveFile()
         {
-            semaphore.Dispose();
+            semaphoreSlim.Dispose();
         }
 
         #region Public Methods
@@ -71,7 +71,7 @@ namespace BigSister.Settings
             Task.Run(() =>
             {
                 // Let's wait out any other threads using the files.
-                semaphore.WaitOne();
+                semaphoreSlim.Wait();
 
                 try
                 {
@@ -102,7 +102,7 @@ namespace BigSister.Settings
                 finally
                 {
                     // Release the semaphore.
-                    semaphore.Release();
+                    semaphoreSlim.Release();
                 }
             }).ConfigureAwait(false).GetAwaiter().GetResult();
         }
