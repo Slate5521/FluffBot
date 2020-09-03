@@ -11,16 +11,8 @@
 using System;
 using System.IO;
 using BigSister.Settings;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using System.IO.Pipes;
-using System.Threading;
-using CommandLine;
-using Microsoft.Data.Sqlite;
+using BigSister.Database;
 
 namespace BigSister
 {
@@ -55,6 +47,7 @@ namespace BigSister
         }
 
         public static BotSettings Settings;
+        public static BotDatabase Database;
 
         static SaveFile BotSettingsFile;
         static Identity Identity;
@@ -80,7 +73,8 @@ namespace BigSister
             // ----------------
             // TODO: Initiate auditing.
 
-
+            // ----------------
+            // Initiate database.
             Console.Write("Looking for database file... ");
             string localDbPath = Path.GetRelativePath(Files.ExecutableDirectory, Files.DatabaseFile);
             if (File.Exists(Files.DatabaseFile)) // DB found
@@ -88,8 +82,11 @@ namespace BigSister
             else
             { // DB not found
                 Console.WriteLine("No database - Instantiating default {0}.", localDbPath);
-                Database.Database.GenerateDefaultFile(Files.DatabaseFile);
+                BotDatabase.GenerateDefaultFile(Files.DatabaseFile);
             }
+
+            Database = new BotDatabase(Files.DatabaseFile);
+
 
             // ----------------
             // TODO: Initiate logging.
