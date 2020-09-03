@@ -19,6 +19,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.IO.Pipes;
 using System.Threading;
+using CommandLine;
+using Microsoft.Data.Sqlite;
 
 namespace BigSister
 {
@@ -45,6 +47,23 @@ namespace BigSister
                 get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, SETTINGS_FILE);
             }
         }
+        protected class CLOptions
+        {
+            [Option('s', "sql",
+                HelpText = "Process SQL file.",
+                Required = false)]
+            public bool ProcessSQLFile { get; set; }
+
+            [Option('m', "md5",
+                HelpText = "Process MD5 file.",
+                Required = false)]
+            public string InputMD5File { get; set; }
+
+            [Option('o', "output",
+                HelpText = "Output file.",
+                Required = false)]
+            public string OutputFile { get; set; }
+        }
 
         public static BotSettings Settings;
 
@@ -55,10 +74,10 @@ namespace BigSister
         {
             // ----------------
             // TODO: Process CLI
-            //if(ProcessCLI(args))
-            //{
-            //    Environment.Exit(0);
-            //}
+            if(ProcessCLI(args))
+            {
+                Environment.Exit(0);
+            }
 
             bool loadSuccess;
 
@@ -80,7 +99,7 @@ namespace BigSister
             // TODO: Initiate auditing.
 
             // ----------------
-            // TODO: Initiate SQL stuff.
+            // TODO: Initiate SQL stuff and load database items.
 
             // ----------------
             // TODO: Initiate logging.
@@ -88,7 +107,7 @@ namespace BigSister
             // ----------------
             // TODO: Run the bot.
 
-
+            UpdateSettings(ref Settings.MaxTimeMonths, 7);
         }
 
         /// <summary>Load authkey and webhooks.</summary>
@@ -117,6 +136,21 @@ namespace BigSister
             return identity_returnVal;
         }
 
+        /// <summary>Update a setting and save if desired.</summary>
+        /// <param name="setting">Reference of the setting to update.</param>
+        /// <param name="newVal">New value of the setting.</param>
+        /// <param name="save">If should be immediately save to disk.</param>
+        public static void UpdateSettings<T>(ref T setting, T newVal, bool save = true)
+        {
+            setting = newVal;
+
+            if(save)
+            {
+                SaveSettings();
+            }
+        }
+
+        /// <summary>Save settings as is.</summary>
         public static void SaveSettings()
         {
             BotSettingsFile.Save<BotSettings>(Settings);
@@ -148,11 +182,113 @@ namespace BigSister
             return loadedValues_returnVal;
         }
 
+        #region CLI
+
         /// <summary>Process CLI.</summary>
         /// <returns>Boolean indicating if program should end.</returns>
         private static bool ProcessCLI(string[] args)
         {
-                                                                                                                                                throw new NotImplementedException();
+            bool processed_returnVal;
+
+            var parseResult = Parser.Default.ParseArguments<CLOptions>(args);
+
+            if (parseResult.Tag.Equals(ParserResultType.NotParsed))
+            {   // Nothing was processed.
+                processed_returnVal = false;
+            }
+            else
+            {   // Something was processed.
+                processed_returnVal = true;
+
+                parseResult.WithParsed(
+                    a =>
+                    {
+                        if(!(a.InputMD5File is null) && !(a.OutputFile is null) && 
+                             a.InputMD5File.Length > 0 && a.OutputFile.Length > 0)
+                        {   // Let's output an MD5 file.
+                            GenerateMd5File(a.InputMD5File, a.OutputFile);
+                        }
+                        else if(!(a.OutputFile is null) &&
+                                  a.ProcessSQLFile && a.OutputFile.Length > 0)
+                        {   // Let's generate an MD5 file
+                            GenerateSQLFile(a.OutputFile);
+                        }
+                    });
+            }
+
+            return processed_returnVal;
         }
+
+        private static void GenerateMd5File(string inputFile, string outputFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static void GenerateSQLFile(string outputFile)
+        {   //Data Source=c:\mydb.db;Version=3;
+            string dataSource = $"Data Source={outputFile};";
+
+            using (var connection = new SqliteConnection(dataSource)) 
+            {
+                connection.Open();
+
+                using var command = connection.CreateCommand();
+
+                // --------------------------------
+                // Rimboard table.
+
+                command.CommandText =
+                    @"
+                        CREATE TABLE `Rimboard` (
+                            `OriginalMessageId` BIGINT unsigned NOT NULL, -- Snowflake of original message.
+                            `PinnedMessageId`   BIGINT unsigned NOT NULL  -- Snowflake of pinned aka reposted message.
+                        );
+                    ";
+
+                command.ExecuteNonQuery();
+
+                // --------------------------------
+                // Reminder table.
+
+                command.CommandText =
+                    @"
+                        CREATE TABLE `Reminders` (
+	                        `Id`            TINYTEXT   NOT NULL, -- Reminder ID
+	                        `Message`       MEDIUMTEXT         , -- Reminder message
+	                        `TriggerTime`   TIMESTAMP  NOT NULL, -- Reminder trigger timestamp
+	                        `Mentions`      MEDIUMTEXT NOT NULL  -- Whitespace separated mention strings
+                        );
+                    ";
+
+                command.ExecuteNonQuery();
+
+                // --------------------------------
+                // Exclude system.
+
+                command.CommandText =
+                    @"
+                        CREATE TABLE `Filter` (
+                            `Type`      TINYINT unsigned NOT NULL DEFAULT '1', -- 1 REGEX 2 EXCLUDE
+                            `String`    MEDIUMTEXT       NOT NULL              -- Mask of regex or exclude
+                        );
+                    ";
+
+                command.ExecuteNonQuery();
+
+                // --------------------------------
+                // Role request.
+
+                command.CommandText =
+                    @"
+                        CREATE TABLE `Roles` (
+	                        `MessageId` BIGINT unsigned NOT NULL, -- 'Snowflake of message'
+	                        `RoleId`    BIGINT unsigned NOT NULL, -- 'Snowflake of role'
+	                        `EmoteId`   BIGINT unsigned NOT NULL  -- 'Snowflake of emote'
+                        );
+                    ";
+            }
+        }
+
+        #endregion CLI
     }
 }
