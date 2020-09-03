@@ -31,7 +31,7 @@ namespace BigSister
 
             const string SAVE_DIRECTORY = @"sav";
 
-            const string IDENTITY_FILE = @"identity.json";
+            const string IDENTITY_FILE = @"identity0.json";
             public static string IdentityFile
             {
                 get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, IDENTITY_FILE);
