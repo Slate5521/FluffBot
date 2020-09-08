@@ -96,6 +96,7 @@ namespace BigSister
             // Initialize everything.
 
             Filter.FilterSystem.Initialize();
+            WebhookDelegator.Initialize(Identity.Webhooks);
 
             // ----------------
             // Run the bot.
