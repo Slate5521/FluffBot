@@ -1,4 +1,9 @@
-﻿using DSharpPlus.Entities;
+﻿// Generics.cs
+// Contains generic chat objects and methods for generating templates.
+//
+// EMIKO
+
+using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.Reflection;

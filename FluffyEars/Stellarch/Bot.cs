@@ -1,4 +1,9 @@
-﻿using DSharpPlus;
+﻿// Bot.cs
+// Initiates commands and events related to the bot and handles event handlers from custom classes. It also runs the bot and maintains a connection.
+//
+// EMIKO
+
+using DSharpPlus;
 using System;
 using System.Collections.Generic;
 using System.Text;

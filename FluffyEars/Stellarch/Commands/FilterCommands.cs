@@ -1,4 +1,11 @@
-﻿using System;
+﻿// FilterCommands.cs
+// Contains commands for the filter system:
+//  !filter add/remove/list
+//  !exclude add/remove/list
+//
+// EMIKO
+
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;

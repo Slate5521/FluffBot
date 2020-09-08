@@ -1,4 +1,9 @@
-﻿using DSharpPlus;
+﻿// GenericResponses.cs
+// These are full generic, standardized responses for situations.
+//
+// EMIKO
+
+using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using System;
