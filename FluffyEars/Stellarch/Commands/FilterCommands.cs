@@ -22,12 +22,14 @@ namespace BigSister.Commands
         [Command("filter"),
          MinimumRole(Role.Mod),
          Description("WIP")]
-        public async Task Filter(CommandContext ctx, string action, [RemainingText] string mask)
+        public async Task FilterBase(CommandContext ctx, string action, [RemainingText] string mask)
         {
+            // Check if they have the permissions to call this command.
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
                 switch (action)
                 {
+                    case "new":
                     case "add":
                         if (!(await FilterSystem.HasMask(mask)))
                         {   // The mask doesn't exist already.
@@ -39,6 +41,7 @@ namespace BigSister.Commands
                         }
                         break;
                     case "remove":
+                    case "delete":
                         if((await FilterSystem.HasMask(mask)))
                         {   // The mask exists.
                             await FilterSystem.RemoveMask(ctx, mask);
@@ -63,36 +66,40 @@ namespace BigSister.Commands
         [Command("exclude"),
          Aliases("excludes"),
          Description("WIP")]
-        public async Task AddExclude(CommandContext ctx, string action, [RemainingText] string exclude)
+        public async Task ExcludeBase(CommandContext ctx, string action, [RemainingText] string exclude)
         {
-            switch(action)
+            // Check if they have the permissions to call this command.
+            if (await Permissions.HandlePermissionsCheck(ctx))
             {
-                case "add":
-                    if (!(await FilterSystem.HasExclude(exclude)))
-                    {   // The exclude doesn't exist already.
-                        await FilterSystem.AddExclude(ctx, exclude);
-                    }
-                    else
-                    {   // The exclude does exist.
-                        //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` exists already...");
-                    }
-                    break;
-                case "remove":
-                    if ((await FilterSystem.HasExclude(exclude)))
-                    {   // The exclude  exists.
-                        await FilterSystem.RemoveExclude(ctx, exclude);
-                    }
-                    else
-                    {   // The exclude doesn't exist.
-                        //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` does not exist already...");
-                    }
-                    break;
-                case "list":
-                    await FilterSystem.ListExcludes(ctx);
-                    break;
-                default:
-                    await GenericResponses.HandleInvalidArguments(ctx);
-                    break;
+                switch (action)
+                {
+                    case "add":
+                        if (!(await FilterSystem.HasExclude(exclude)))
+                        {   // The exclude doesn't exist already.
+                            await FilterSystem.AddExclude(ctx, exclude);
+                        }
+                        else
+                        {   // The exclude does exist.
+                            //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` exists already...");
+                        }
+                        break;
+                    case "remove":
+                        if ((await FilterSystem.HasExclude(exclude)))
+                        {   // The exclude  exists.
+                            await FilterSystem.RemoveExclude(ctx, exclude);
+                        }
+                        else
+                        {   // The exclude doesn't exist.
+                            //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` does not exist already...");
+                        }
+                        break;
+                    case "list":
+                        await FilterSystem.ListExcludes(ctx);
+                        break;
+                    default:
+                        await GenericResponses.HandleInvalidArguments(ctx);
+                        break;
+                }
             }
         }
 
