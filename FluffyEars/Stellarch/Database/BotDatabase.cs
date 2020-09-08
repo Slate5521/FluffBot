@@ -28,28 +28,97 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Data.Sqlite;
 
 namespace BigSister.Database
 {
-    public class BotDatabase
+    public sealed class BotDatabase
     {
+        private static BotDatabase instance =
+            new BotDatabase(Program.Files.DatabaseFile);
+
         SemaphoreSlim semaphoreSlim;
 
         /// <summary>Database connection datasource.</summary>
-        string dataSource;
+        public string DataSource;
 
-        public BotDatabase(string uri)
+        public static BotDatabase Instance
         {
-            dataSource = $"Data Source={uri}";
+            get => instance;
+        }
+
+        static BotDatabase() { }
+
+        BotDatabase(string uri)
+        {
+            DataSource = $"Data Source={uri}";
             semaphoreSlim = new SemaphoreSlim(1, 1);
         }
 
         ~BotDatabase()
         {
             semaphoreSlim.Dispose();
+        }
+
+        public async Task<object> ExecuteScalarAsync(SqliteCommand cmd, Func<SqliteDataReader, object> processAction)
+        {
+            object returnVal;
+
+            semaphoreSlim.Wait();
+
+            try
+            {
+                using(var connection = new SqliteConnection(DataSource))
+                {
+                    DataSet ds = new DataSet();
+
+                    cmd.Connection = connection;
+
+                    connection.Open();
+
+                    using (SqliteDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        returnVal = processAction.Invoke(reader);
+                    }                    
+
+                    connection.Close();
+                    connection.Dispose();
+                }
+            } 
+            finally
+            {
+                semaphoreSlim.Release();
+            }
+
+            return returnVal;
+        }
+
+        public async Task ExecuteNonQuery(SqliteCommand cmd)
+        {
+            semaphoreSlim.Wait();
+
+            try
+            {
+                using (var connection = new SqliteConnection(DataSource))
+                {
+                    cmd.Connection = connection;
+
+                    connection.Open();
+
+                    await cmd.ExecuteNonQueryAsync();
+
+                    connection.Close();
+                    connection.Dispose();
+                }
+            }
+            finally
+            {
+                semaphoreSlim.Release();
+            }
         }
 
         /// <summary>Generate a default database file.</summary>

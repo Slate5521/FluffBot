@@ -22,7 +22,7 @@ namespace BigSister
 {
     public static class Program
     {
-        protected static class Files
+        public static class Files
         {
             public static string ExecutableDirectory
             {
@@ -51,7 +51,6 @@ namespace BigSister
         }
 
         public static BotSettings Settings;
-        public static BotDatabase Database;
         public static DiscordClient BotClient;
 
         static SaveFile BotSettingsFile;
@@ -90,11 +89,13 @@ namespace BigSister
                 BotDatabase.GenerateDefaultFile(Files.DatabaseFile);
             }
 
-            Database = new BotDatabase(Files.DatabaseFile);
-
             // ----------------
             // TODO: Initiate logging.
 
+            // ----------------
+            // Initialize everything.
+
+            Filter.FilterSystem.Initialize();
 
             // ----------------
             // Run the bot.
