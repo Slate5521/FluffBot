@@ -45,6 +45,9 @@ namespace BigSister.Settings
 
         /// <summary>ID of the Rimboard channel.</summary>
         public ulong RimboardChannelId = DEFAULT_CHANNEL;
+        /// <summary>Webhook ID of the Rimboard channel.</summary>
+        /// I have it set to a webhook in my development server.
+        public ulong RimboardWebhookId = 752987486661247159;
         /// <summary>The Rimboard's pinning emote.</summary>
         public string RimboardEmoticon = @"<:rimworld:432227067313127424>";
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
