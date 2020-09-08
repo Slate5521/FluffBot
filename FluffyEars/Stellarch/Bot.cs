@@ -10,15 +10,26 @@ using System.Text;
 using System.Threading.Tasks;
 using BigSister.Commands;
 using DSharpPlus.CommandsNext;
+using System.Timers;
+using BigSister.Reminders;
 
 namespace BigSister
 {
     public static class Bot
     {
+        static Timer reminderTimer;
+
         public static async Task RunAsync(DiscordClient botClient)
         {
+            // Configure timer
+            reminderTimer = new Timer();
+            reminderTimer.Interval = 60000; // 1 minute
+            reminderTimer.AutoReset = true;
+
             RegisterCommands(botClient);
             RegisterEvents(botClient);
+
+            reminderTimer.Start();
 
             await botClient.ConnectAsync();
             await Task.Delay(-1);
@@ -29,13 +40,16 @@ namespace BigSister
             var commands = botClient.GetCommandsNext();
 
             commands.RegisterCommands<FilterCommands>();
+            commands.RegisterCommands<ReminderCommands>();
         }
 
         static void RegisterEvents(DiscordClient botClient)
         {
             botClient.MessageCreated += Filter.FilterSystem.BotClient_MessageCreated;
             botClient.MessageUpdated += Filter.FilterSystem.BotClient_MessageUpdated;
-            
+
+            reminderTimer.Elapsed += ReminderSystem.ReminderTimer_Elapsed;
+
             // Filter triggered.
             Filter.FilterSystem.FilterTriggered += FilterSystem_FilterTriggered;
         }

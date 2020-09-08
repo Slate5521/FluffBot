@@ -32,6 +32,9 @@ namespace BigSister.ChatObjects
         public const string URL_REMINDER_EXCLAIM = @"https://i.imgur.com/NUCrbSl.png";
         public const string URL_REMINDER_DELETED = @"https://i.imgur.com/OnTaJdd.png";
 
+        /// <summary>Gets a mention string from a snowflake.</summary>
+        public static string GetMention(ulong id) => $"<@!{id}>";
+
         /// <summary>A generic embed template.</summary>
         public static DiscordEmbedBuilder GenericEmbedTemplate(DiscordColor? color,
                                                                string description = EMPTY_STRING,

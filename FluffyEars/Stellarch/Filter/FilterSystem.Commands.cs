@@ -81,7 +81,7 @@ namespace BigSister.Filter
             { // Not in caches o we have ot lolok for it
 
                 // Let's build the command.
-                var command = new SqliteCommand(BotDatabase.Instance.DataSource);
+                using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
                 command.CommandText = QQ_ItemExists;
 
                 SqliteParameter a = new SqliteParameter("$type", type);
@@ -148,7 +148,7 @@ namespace BigSister.Filter
             else
             {   // It's not in the cache so we can add it to the thing
                 // Let's build the command.
-                var command = new SqliteCommand(BotDatabase.Instance.DataSource);
+                using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
                 command.CommandText = QQ_ItemAdd;
 
                 var a = new SqliteParameter("$type", type);
@@ -186,7 +186,7 @@ namespace BigSister.Filter
             {
                 // Build commdand
 
-                var command = new SqliteCommand(BotDatabase.Instance.DataSource);
+                using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
                 command.CommandText = QQ_ItemRemove;
 
                 var a = new SqliteParameter("$type", type);
@@ -215,17 +215,17 @@ namespace BigSister.Filter
         /// <summary>List all the items in the database.</summary>
         public static async Task ListItems(CommandContext ctx, int type)
         {
-            string[] shit = await ReadTable(type);
+            string[] items = await ReadTable(type);
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendJoin(' ', shit);
+            sb.AppendJoin(' ', items);
 
             await ctx.Channel.SendMessageAsync("fuck kks\n" + sb.ToString());
         }
         /// <summary>Read a column from the filter table and return it as an array.</summary>
         public static async Task<string[]> ReadTable(int type)
         {
-            var command = new SqliteCommand(BotDatabase.Instance.DataSource);
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
             command.CommandText = QQ_ReadTable;
 
             var a = new SqliteParameter("$type", type);
