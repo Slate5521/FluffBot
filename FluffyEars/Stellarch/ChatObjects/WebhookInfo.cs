@@ -57,8 +57,7 @@ namespace BigSister.ChatObjects
             await webhook.ExecuteAsync(dwb);
         }
 
-        public bool Valid(this WebhookInfo info)
-            => !Equals(Invalid);
+        public bool Valid() => !Equals(Invalid);
 
         public override bool Equals(object obj)
         {
