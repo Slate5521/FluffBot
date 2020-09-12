@@ -144,7 +144,7 @@ namespace BigSister.Reminders
             // At this point, now we have the DateTimeOffset describing when this reminder needs to be set off, and we have a message string if
             // any. So now we just need to make sure it's within reasonable boundaries, set the reminder, and notify the user.
 
-            DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddMonths(Program.Settings.MaxTimeMonths);
+            DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddMonths(Program.Settings.MaxReminderTimeMonths);
             DiscordEmbed embed;
 
             if (dto.UtcTicks == ctx.Message.CreationTimestamp.UtcTicks)

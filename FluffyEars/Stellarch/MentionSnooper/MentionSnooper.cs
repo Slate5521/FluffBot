@@ -60,7 +60,7 @@ namespace BigSister.MentionSnooper
 
                     // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
                     Dictionary<ulong, List<DiscordMessage>> warnDict =
-                        await QueryMemberMentions(mentionedColonistIds, actionChannel, Program.Settings.ActionTimespan, e.Message);
+                        await QueryMemberMentions(mentionedColonistIds, actionChannel, Program.Settings.MaxActionAgeMonths, e.Message);
 
                     // ----
                     // So at this point, we know there's at least one person who has been warned (0,inf) times.
@@ -112,7 +112,7 @@ namespace BigSister.MentionSnooper
 
                         // Create a dictionary based on a DiscordMember and all of the messages mentioning him or her.
                         Dictionary<ulong, List<DiscordMessage>> warnDict =
-                            await QueryMemberMentions(newlyFoundUserIds, actionChannel, Program.Settings.ActionTimespan, e.Message);
+                            await QueryMemberMentions(newlyFoundUserIds, actionChannel, Program.Settings.MaxActionAgeMonths, e.Message);
 
                         await NotifyActionLogsMentionsFound(warnDict, actionChannel);
                     } // end if

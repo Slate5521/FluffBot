@@ -11,6 +11,9 @@ namespace BigSister.Settings
 {
     public class BotSettings
     {
+        /// <summary>Default bot settings.</summary>
+        public static BotSettings Default = new BotSettings();
+
         /// <summary>Default channel, FDS: #dont-ever-delete.</summary>
         /// I have it sent to a channel in my development server.
         const ulong DEFAULT_CHANNEL = 724187658158342204;
@@ -30,7 +33,7 @@ namespace BigSister.Settings
         // Reminder
 
         /// <summary>Maximum reminder time allowed in months.</summary>
-        public int MaxTimeMonths = 12;
+        public int MaxReminderTimeMonths = 12;
 
         // ----------------
         // Mention snooper
@@ -38,13 +41,15 @@ namespace BigSister.Settings
         /// <summary>ID of #action-logs</summary>
         public ulong ActionChannelId = DEFAULT_CHANNEL;
         /// <summary>Maximum timespan for an action to be considered.</summary>
-        public int ActionTimespan = 6;
+        public int MaxActionAgeMonths = 6;
         /// <summary>If passive warn snooping is enabled.</summary>
         public bool AutoWarnSnoopEnabled = false;
 
         // ----------------
         // Rimboard
 
+        /// <summary>If Rimboard is enabled or not.</summary>
+        public bool RimboardEnabled = false;
         /// <summary>ID of the Rimboard channel.</summary>
         public ulong RimboardChannelId = DEFAULT_CHANNEL;
         /// <summary>Webhook ID of the Rimboard channel.</summary>
@@ -53,12 +58,12 @@ namespace BigSister.Settings
         /// <summary>The Rimboard's pinning emote.</summary>
         public string RimboardEmoticon = @"<:rimworld:432227067313127424>";
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
-        public int ReactionsNeeded = 5;
+        public int RimboardReactionsNeeded = 5;
 
         // ----------------
         // Role Requests
 
-        /// <summary>ID of the role request channel.</summary>
-        public ulong RoleChannel = DEFAULT_CHANNEL;
+        /// <summary>If role channel is enabled or not.</summary>
+        public bool RoleChannelEnabled = false;
     }
 }

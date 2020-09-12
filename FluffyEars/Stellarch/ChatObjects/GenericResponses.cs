@@ -8,6 +8,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -34,9 +35,68 @@ namespace BigSister.ChatObjects
                       $"**Description:** {ctx.Command.Description}");
 
             var embedBuilder = Generics.GenericEmbedTemplate(Generics.NegativeColor, description,
-                title: $"Invalid arguments: {ctx.Command.Name}");
+                title: $"Invalid arguments: !{ctx.Command.Name}");
 
             await ctx.Channel.SendMessageAsync(embed: embedBuilder.Build());
+        }
+
+        public static async Task SendMessageChangedNotChanged(DiscordChannel channel, 
+                                                          string title, 
+                                                          string mention, 
+                                                          string body, 
+                                                          Dictionary<DiscordChannel, bool> successChanged, 
+                                                          string verb, 
+                                                          string invertedVerb)
+        {
+            var deb = new DiscordEmbedBuilder(
+                Generics.GenericEmbedTemplate(
+                    color: Generics.NeutralColor,
+                    description: Generics.NeutralDirectResponseTemplate(mention, body),
+                    title: title));
+
+            // ----------------
+            // Changed:
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendJoin(' ', // Select all the values that were changed
+                from a in successChanged
+                where a.Value
+                select a.Key);
+
+            // Check if anything was added and then make a field if anything was.
+            if(stringBuilder.Length > 0)
+                deb.AddField(verb, value: stringBuilder.ToString());
+
+            // ----------------
+            // Not changed:
+            stringBuilder = new StringBuilder();
+            stringBuilder.AppendJoin(' ', // Select all the values that were not changed
+                from a in successChanged
+                where !a.Value
+                select a.Key);
+
+            // Check if anything was added and then make a field if anything was.
+            if (stringBuilder.Length > 0)
+                deb.AddField(invertedVerb, value: stringBuilder.ToString());
+
+            // ----------------
+            // Send something
+
+            await channel.SendMessageAsync(embed: deb.Build());
+        }
+
+        public static async Task SendMessageSettingChanged(DiscordChannel channel,
+                                                           string mention, 
+                                                           string title,
+                                                           string valueName,
+                                                           string newVal)
+        {
+            var deb = new DiscordEmbedBuilder(
+                Generics.GenericEmbedTemplate(
+                    color: Generics.PositiveColor,
+                    description: Generics.PositiveDirectResponseTemplate(mention, $"I changed the setting '{valueName}' to have the value '{newVal}'."),
+                    title: title));
+
+            await channel.SendMessageAsync(embed: deb.Build());
         }
     }
 }

@@ -80,6 +80,10 @@ namespace BigSister.ChatObjects
         }
 
         /// <summary>A template for Floppy directly responding to a user.</summary>
+        public static string PositiveDirectResponseTemplate(string mention, string body)
+            => $"{POSITIVE_PREFIX} {mention}, {body}";
+
+        /// <summary>A template for Floppy directly responding to a user.</summary>
         public static string NegativeDirectResponseTemplate(string mention, string body)
             => $"{NEGATIVE_PREFIX} {mention}, {body}";
 

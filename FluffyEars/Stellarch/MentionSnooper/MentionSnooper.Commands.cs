@@ -20,7 +20,7 @@ namespace BigSister.MentionSnooper
             DiscordChannel actionLogChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
 
             Dictionary<ulong, List<DiscordMessage>> warnDict =
-                await QueryMemberMentions(memberIds.Distinct().ToList(), actionLogChannel, Program.Settings.ActionTimespan, ctx.Message);
+                await QueryMemberMentions(memberIds.Distinct().ToList(), actionLogChannel, Program.Settings.MaxActionAgeMonths, ctx.Message);
 
             // Let's start paginating.
             var pages = new Page[warnDict.Keys.Count];
@@ -41,7 +41,7 @@ namespace BigSister.MentionSnooper
                         Description = Generics.NeutralDirectResponseTemplate(mention: ctx.Member.Mention, 
                                         body: warnsFound ? // Warning, really fucking long string ahead:
                                         $"{ctx.Member.Mention}, I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for " +
-                                        $"{Generics.GetMention(member)} in {actionLogChannel.Mention} in the last {Program.Settings.ActionTimespan} months. " +
+                                        $"{Generics.GetMention(member)} in {actionLogChannel.Mention} in the last {Program.Settings.MaxActionAgeMonths} months. " +
                                         $"{(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
                                         $"{ctx.Member.Mention}, I did not find any mentions for {Generics.GetMention(member)}. Good for them..."),
                         Color = warnsFound ? Generics.NegativeColor : Generics.NeutralColor
