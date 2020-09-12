@@ -93,7 +93,7 @@ namespace BigSister.Filter
                 command.Parameters.Add(a);
                 command.Parameters.Add(b);
 
-                object returnVal = await BotDatabase.Instance.ExecuteScalarAsync(command,
+                object returnVal = await BotDatabase.Instance.ExecuteReaderAsync(command,
                     processAction: delegate (SqliteDataReader reader)
                     {
                         object a;
@@ -233,7 +233,7 @@ namespace BigSister.Filter
 
             command.Parameters.Add(a);
 
-            string[] returnVal = (string[])await BotDatabase.Instance.ExecuteScalarAsync(command,
+            string[] returnVal = (string[])await BotDatabase.Instance.ExecuteReaderAsync(command,
                 processAction: delegate (SqliteDataReader reader)
                 {
                     var rows = new List<string>();
