@@ -16,7 +16,8 @@ namespace BigSister.MentionSnooper
     public static partial class MentionSnooper
     {
         public static async Task SeekWarns(CommandContext ctx, ulong[] memberIds)
-        {
+        {   const int MAX_FIELDS = 10;            
+
             DiscordChannel actionLogChannel = await Program.BotClient.GetChannelAsync(Program.Settings.ActionChannelId);
 
             Dictionary<ulong, List<DiscordMessage>> warnDict =
@@ -37,12 +38,12 @@ namespace BigSister.MentionSnooper
 
                     var deb = new DiscordEmbedBuilder
                     {
-                        Title = $"Mentions in {Generics.GetChannelMention(Program.Settings.ActionChannelId)}",
+                        Title = $"Mentions found in action logs",
                         Description = Generics.NeutralDirectResponseTemplate(mention: ctx.Member.Mention, 
                                         body: warnsFound ? // Warning, really fucking long string ahead:
-                                        $"{ctx.Member.Mention}, I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for " +
+                                        $"I found {warnDict[member].Count} mention{(warnDict[member].Count == 1 ? String.Empty : @"s")} for " +
                                         $"{Generics.GetMention(member)} in {actionLogChannel.Mention} in the last {Program.Settings.MaxActionAgeMonths} months. " +
-                                        $"{(warnDict[member].Count > 25 ? "There are over 25. I will only show the most recent." : String.Empty)}" :
+                                        $"{(warnDict[member].Count > MAX_FIELDS ? $"There are over {MAX_FIELDS}. I will only show the most recent." : String.Empty)}" :
                                         $"{ctx.Member.Mention}, I did not find any mentions for {Generics.GetMention(member)}. Good for them..."),
                         Color = warnsFound ? Generics.NegativeColor : Generics.NeutralColor
                     };
@@ -52,8 +53,8 @@ namespace BigSister.MentionSnooper
                         foreach (var message in warnDict[member])
                         {   // Generate a field for each detected message.
 
-                            if (deb.Fields.Count < 25)
-                            {   // Only continue if we have less than 25 fields.
+                            if (deb.Fields.Count < MAX_FIELDS)
+                            {   // Only continue if we have less than MAX_FIELDS fields.
 
                                 // This SB is for all the content.
                                 var stringBuilder = new StringBuilder();
@@ -72,8 +73,7 @@ namespace BigSister.MentionSnooper
                                 } // end if
 
                                 stringBuilderFooter.Append("\n\n");
-                                //stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link", new Uri(ChatObjects.GetMessageUrl(message))));
-
+                                stringBuilderFooter.Append(Formatter.MaskedUrl(@"Link", new Uri(Generics.GetMessageUrl(message))));
 
                                 // We want to prefer the footer's information over the content. So let's figure out how much of the content we
                                 // need to trim out.
@@ -87,6 +87,7 @@ namespace BigSister.MentionSnooper
                                     {   // Let's get the content in there.
                                         finalStringBuilder.Append(Generics.BuildLimitedString(
                                             originalString: stringBuilder.ToString(), 
+                                            endMessage: @". . . Unable to preview long message...",
                                             maxLength: 1000 - stringBuilderFooter.Length));
                                     }
                                     if (stringBuilderFooter.Length > 0)
@@ -109,7 +110,7 @@ namespace BigSister.MentionSnooper
                                 deb.AddField($"Action on {message.Timestamp.ToString(Generics.DateFormat)}", finalStringBuilder.ToString());
                             }
                             else
-                            {   // Stop the loop if we have 25 fields.
+                            {   // Stop the loop if we have MAX_FIELDS fields.
                                 break; // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
                             } // end else
                         } // end foreach

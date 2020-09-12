@@ -31,7 +31,7 @@ namespace BigSister.Commands
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
-                await MentionsLookupUnwrapper(ctx, (ulong[])users.Select(a => a.Id));
+                await MentionsLookupUnwrapper(ctx, users.Select(a => a.Id).ToArray());
             }
         }
 
