@@ -17,6 +17,7 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using System.Threading.Tasks;
+using BigSister.ChatObjects;
 
 namespace BigSister
 {

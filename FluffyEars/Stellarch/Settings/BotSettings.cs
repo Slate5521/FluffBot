@@ -39,6 +39,8 @@ namespace BigSister.Settings
         public ulong ActionChannelId = DEFAULT_CHANNEL;
         /// <summary>Maximum timespan for an action to be considered.</summary>
         public int ActionTimespan = 6;
+        /// <summary>If passive warn snooping is enabled.</summary>
+        public bool AutoWarnSnoopEnabled = false;
 
         // ----------------
         // Rimboard

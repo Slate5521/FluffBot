@@ -22,6 +22,9 @@ namespace BigSister.Filter
         public static event FilterTriggeredEventHandler FilterTriggered;
         public delegate void FilterTriggeredEventHandler(FilterEventArgs e);
 
+        // Disable compiler warning for async code not having await. DSharpPlus demands that these two methods be an awaitable type, but I want them
+        // to be synchronous. Thanks a lot.
+        #pragma warning disable CS1998
         internal static async Task BotClient_MessageCreated(MessageCreateEventArgs e)
         {
             // Only continue if the channel isn't excluded, if the sender isn't the bot, and if this isn't sent in PMs.
@@ -42,6 +45,7 @@ namespace BigSister.Filter
                 CheckMessage(e.Message);
             }
         }
+        #pragma warning restore CS1998
 
         /// <summary>Check the message against the filter.</summary>
         private static void CheckMessage(DiscordMessage message)

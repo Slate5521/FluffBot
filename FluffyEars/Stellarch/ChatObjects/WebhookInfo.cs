@@ -12,8 +12,8 @@ namespace BigSister.ChatObjects
 
         public ulong Id;
 
-        bool validWebhook;
-        DiscordWebhook webhook;
+        readonly bool validWebhook;
+        readonly DiscordWebhook webhook;
         
         public WebhookInfo() { validWebhook = false; }
 

@@ -413,7 +413,7 @@ namespace BigSister.Reminders
         /// <summary>Checks if a character is a white space.</summary>
         private static bool IsWhitespace(char c)
         {
-            return c.Equals(' ') ||
+            return c.Equals(' ')  ||
                    c.Equals('\r') ||
                    c.Equals('\n') ||
                    c.Equals('\t');
