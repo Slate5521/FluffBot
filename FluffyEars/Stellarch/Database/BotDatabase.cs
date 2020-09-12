@@ -11,7 +11,7 @@
 //  |-----------------------------------+---------------------------------------+---------------------------------------+---------------------------------------+---------------------------------------+---------------------------------------|
 //  |   TinyText not Null               |   String representing UInt64 not Null |   String representing UInt64 not Null |   MediumText                          |   BigInt not Null                     |   MediumText                          |
 //  |   Reminder ID (not the message    |   The user who created the reminder.  |   Snowflake of the channel the        |   Reminder message                    |   Reminder trigger timestamp in Unix  |   Whitespace separated mentions       |
-//  |       snowflake)                  |                                       |   reminder was sent in                |                                       |   epoch UTC                           |                                       |
+//  |       snowflake)                  |                                       |   reminder was sent in                |                                       |   epoch UTC in minutes                |                                       |
 //  3) Filter   =================================================================================================================================================================================================================================
 //  |   Type                            |   String                              |
 //  |-----------------------------------+---------------------------------------|(\(\               
@@ -64,7 +64,7 @@ namespace BigSister.Database
             semaphoreSlim.Dispose();
         }
 
-        public async Task<object> ExecuteScalarAsync(SqliteCommand cmd, Func<SqliteDataReader, object> processAction)
+        public async Task<object> ExecuteReaderAsync(SqliteCommand cmd, Func<SqliteDataReader, object> processAction)
         {
             object returnVal;
 
@@ -155,7 +155,7 @@ namespace BigSister.Database
 	                        `UserId`        TEXT    NOT NULL, -- Snowflake of user who created the reminder
 	                        `ChannelId`     TEXT    NOT NULL, -- Snowflake of channel the reminder was created in
 	                        `Message`       TEXT            , -- Reminder message
-	                        `TriggerTime`   INTEGER NOT NULL, -- Reminder trigger timestamp
+	                        `TriggerTime`   INTEGER NOT NULL, -- Reminder trigger timestamp in minutes
 	                        `Mentions`      TEXT              -- Whitespace separated mention strings
                         );
                     ";

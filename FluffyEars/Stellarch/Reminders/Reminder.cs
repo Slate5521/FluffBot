@@ -16,8 +16,8 @@ namespace BigSister.Reminders
         public ulong User;
         /// <summary>Text to be sent when the reminder is called.</summary>
         public string Text;
-        /// <summary>Time of the reminder.</summary>
-        public long Time;
+        /// <summary>Time of the reminder in minutes.</summary>
+        public int Time;
         /// <summary>Channel the reminder was originally set in.</summary>
         public ulong Channel;
         /// <summary>A list of users to notify.</summary>

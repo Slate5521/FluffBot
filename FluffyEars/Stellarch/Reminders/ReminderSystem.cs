@@ -31,7 +31,7 @@ namespace BigSister.Reminders
         /// <summary>Query to read the entire reminder table.</summary>
         static string QQ_ReadTable = @"SELECT `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders`;";
         /// <summary>Query to return all reminders that need to be triggered.</summary>
-        static string QQ_CheckRemindersElapsed = @"SELECT (`UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions`) 
+        static string QQ_CheckRemindersElapsed = @"SELECT `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
                                                    FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
         /// <summary>Query to delete all reminders that need to be triggered.</summary>
         static string QQ_DeleteRemindersElapsed = @"DELETE FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
@@ -181,7 +181,7 @@ namespace BigSister.Reminders
                 Reminder reminder = new Reminder
                 {
                     Text = messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
-                    Time = dto.ToUnixTimeMilliseconds(),
+                    Time = (int)(dto.ToUnixTimeSeconds() / 60),
                     User = ctx.Member.Id,
                     Channel = ctx.Channel.Id,
                     UsersToNotify = mentions.Select(a => ChatObjects.Generics.GetMention(a)).ToArray()
@@ -249,7 +249,7 @@ namespace BigSister.Reminders
 
             command.Parameters.Add(a);
 
-            object returnVal = await BotDatabase.Instance.ExecuteScalarAsync(command,
+            object returnVal = await BotDatabase.Instance.ExecuteReaderAsync(command,
                     processAction: delegate (SqliteDataReader reader)
                     {
                         object a;
@@ -313,7 +313,7 @@ namespace BigSister.Reminders
                             User    = ulong.Parse(reader.GetString(0)),
                             Channel = ulong.Parse(reader.GetString(1)),
                             Text    = reader.GetString(2),
-                            Time    = reader.GetInt64(3),
+                            Time    = reader.GetInt32(3),
                             UsersToNotify = reader.GetString(4).Split(' ')
                         };
 
@@ -330,24 +330,24 @@ namespace BigSister.Reminders
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
             command.CommandText = QQ_ReadTable;
 
-            Reminder[] returnVal = (Reminder[])await BotDatabase.Instance.ExecuteScalarAsync(command,
+            Reminder[] returnVal = (Reminder[])await BotDatabase.Instance.ExecuteReaderAsync(command,
                 processAction: readReminders);
 
             return returnVal;
         }
 
         /// <summary>Find any reminders that need to be triggered and trigger them.</summary>
-        static async Task LookTriggerReminders(long timeNowMs)
+        static async Task LookTriggerReminders(int timeNowMinutes)
         {
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
             command.CommandText = QQ_CheckRemindersElapsed;
 
-            SqliteParameter a = new SqliteParameter("$timenow", timeNowMs);
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$timenow", timeNowMinutes);
+            a.DbType = DbType.Int32;
 
             command.Parameters.Add(a);
 
-            Reminder[] pendingReminders = (Reminder[])await BotDatabase.Instance.ExecuteScalarAsync(command,
+            Reminder[] pendingReminders = (Reminder[])await BotDatabase.Instance.ExecuteReaderAsync(command,
                 processAction: readReminders);
 
             // Check if there are any reminders
@@ -420,6 +420,7 @@ namespace BigSister.Reminders
         }
 
         internal static async void ReminderTimer_Elapsed(object sender, ElapsedEventArgs e)
-            => await LookTriggerReminders(e.SignalTime.ToUniversalTime().Ticks / TimeSpan.TicksPerMillisecond);
+            => await LookTriggerReminders(
+                (int)(e.SignalTime.ToUniversalTime().Ticks / (TimeSpan.TicksPerMillisecond * 1000 * 60)));
     }
 }
