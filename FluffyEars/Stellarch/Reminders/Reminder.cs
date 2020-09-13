@@ -12,31 +12,67 @@ namespace BigSister.Reminders
     /// </summary>
     public struct Reminder
     {
+        // Invalid reminder.
+        public static Reminder Invalid = new Reminder(
+            originalMessageId: default(string),
+            user:          default(ulong),
+            text:          default(string),
+            time:          default(int),
+            channel:       default(ulong),
+            usersToNotify: default(string[]));
+
+        /// <summary>The original message id.</summary>
+        public string OriginalMessageId { get; }
         /// <summary>User who scheduled the reminder.</summary>
-        public ulong User;
+        public ulong User { get; }
         /// <summary>Text to be sent when the reminder is called.</summary>
-        public string Text;
+        public string Text { get; }
         /// <summary>Time of the reminder in minutes.</summary>
-        public int Time;
+        public int Time { get; }
         /// <summary>Channel the reminder was originally set in.</summary>
-        public ulong Channel;
+        public ulong Channel { get; }
         /// <summary>A list of users to notify.</summary>
-        public string[] UsersToNotify;
+        public string[] UsersToNotify { get; }
 
-        /// <summary>
-        /// This is a command that (tries) to generate a unique identifier for the Reminder, which can be used to cancel the reminder at a later date.
-        /// </summary>
-        /// <returns>A string representing the User's ID and the Time's Unix EPOCH.</returns>
-        public string GetIdentifier() => User.ToString() + '@' + Time.ToString();
+        /// <param name="originalMessageId">The original message id used as a unique identifier.</param>
+        /// <param name="user">User who scheduled the reminder.</param>
+        /// <param name="text">Text to be sent when the reminder is called.</param>
+        /// <param name="time">Time of the reminder in minutes.</param>
+        /// <param name="channel">Channel the reminder was originally set in.</param>
+        /// <param name="usersToNotify">A list of users to notify.</param>
+        public Reminder(string originalMessageId,
+                        ulong user,
+                        string text,
+                        int time,
+                        ulong channel,
+                        string[] usersToNotify = null)
+        {
+            OriginalMessageId = originalMessageId;
+            User = user;
+            Text = text;
+            Time = time;
+            Channel = channel;
 
-        // Yummy overrides!
+            // Check if it's null.
+            if(usersToNotify is null)
+            {   // It's null so set it to an empty string[].
+                UsersToNotify = new string[0];
+            }
+            else
+            {   // Not null so we can set the value.
+                UsersToNotify = usersToNotify;
+            }
+        }
+
         public override bool Equals(object obj)
         {
             return obj is Reminder reminder &&
-                   User == reminder.User &&
-                   Text == reminder.Text &&
-                   Time == reminder.Time &&
-                   Channel == reminder.Channel;
+                   OriginalMessageId == reminder.OriginalMessageId;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(OriginalMessageId);
         }
 
         #region bunny
@@ -49,9 +85,5 @@ namespace BigSister.Reminders
 
         #endregion bunny
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(User, Text, Time, Channel);
-        }
     }
 }

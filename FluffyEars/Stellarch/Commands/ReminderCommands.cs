@@ -1,6 +1,8 @@
-﻿using BigSister.Reminders;
+﻿using BigSister.ChatObjects;
+using BigSister.Reminders;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -28,13 +30,20 @@ namespace BigSister.Commands
                     case "remove":
                     case "delete":
                         // Check if this is even a reminder.
-                        if(await ReminderSystem.IsReminder(args))
+
+                        Reminder possibleReminder = await ReminderSystem.GetReminderFromDatabase(args);
+
+                        if (!possibleReminder.Equals(Reminder.Invalid))
                         {   // It's a reminder.
-                            await ReminderSystem.RemoveReminder(ctx, args);
+                            await ReminderSystem.RemoveReminder(ctx, possibleReminder);
                         }
                         else
                         {   // It's not a reminder.
-                            // Todo: respond
+                            await GenericResponses.SendGenericCommandError(
+                                    ctx.Channel,
+                                    ctx.Member.Mention,
+                                    "Unable to remove reminder",
+                                    $"The reminder id `{args}` does not exist...");
                         }
                         break;
                     case "list":

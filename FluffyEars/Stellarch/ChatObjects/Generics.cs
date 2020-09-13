@@ -55,6 +55,8 @@ namespace BigSister.ChatObjects
 
         /// <summary>Gets a mention string from a snowflake.</summary>
         public static string GetMention(ulong id) => $"<@!{id}>";
+        /// <summary>Gets a mention string from a snowflake.</summary>
+        public static string GetMention(string id) => $"<@!{id}>";
 
         /// <summary>Gets a mention string for a channel.</summary>
         public static string GetChannelMention(ulong id) => $"<#{id}>";

@@ -37,7 +37,11 @@ namespace BigSister.Commands
                         } 
                         else
                         {   // The mask does exist.
-                            //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` exists already...");
+                            await GenericResponses.SendGenericCommandError(
+                                    ctx.Channel, 
+                                    ctx.Member.Mention, 
+                                    "Unable to add mask", 
+                                    $"the provided mask `{mask}` exists already...");
                         }
                         break;
                     case "remove":
@@ -48,7 +52,11 @@ namespace BigSister.Commands
                         }
                         else
                         {   // The mask doesn't exist.
-                            //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` does not exist already...");
+                            await GenericResponses.SendGenericCommandError(
+                                    ctx.Channel,
+                                    ctx.Member.Mention,
+                                    "Unable to remove mask",
+                                    $"the provided mask `{mask}` does not exist...");
                         }
                         break;
                     case "list":
@@ -80,7 +88,11 @@ namespace BigSister.Commands
                         }
                         else
                         {   // The exclude does exist.
-                            //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` exists already...");
+                            await GenericResponses.SendGenericCommandError(
+                                    ctx.Channel,
+                                    ctx.Member.Mention,
+                                    "Unable to add exclude",
+                                    $"the provided exclude `{exclude}` exists already...");
                         }
                         break;
                     case "remove":
@@ -90,7 +102,11 @@ namespace BigSister.Commands
                         }
                         else
                         {   // The exclude doesn't exist.
-                            //await GenericResponses.HandleGenericCommandError(ctx, $"the provided mask `{mask}` does not exist already...");
+                            await GenericResponses.SendGenericCommandError(
+                                    ctx.Channel,
+                                    ctx.Member.Mention,
+                                    "Unable to remove exclude",
+                                    $"the provided exclude `{exclude}` exists already...");
                         }
                         break;
                     case "list":

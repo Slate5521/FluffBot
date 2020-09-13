@@ -40,6 +40,20 @@ namespace BigSister.ChatObjects
             await ctx.Channel.SendMessageAsync(embed: embedBuilder.Build());
         }
 
+        public static async Task SendGenericCommandError(DiscordChannel channel,
+                                                         string mention,
+                                                         string title,
+                                                         string body)
+        {
+            var deb = new DiscordEmbedBuilder(
+                Generics.GenericEmbedTemplate(
+                    color: Generics.NegativeColor,
+                    description: Generics.NegativeDirectResponseTemplate(mention, body),
+                    title: title));
+
+            await channel.SendMessageAsync(embed: deb.Build());
+        }
+
         public static async Task SendMessageChangedNotChanged(DiscordChannel channel, 
                                                           string title, 
                                                           string mention, 

@@ -3,15 +3,15 @@
 //  1) Rimboard =================================================================  ________________________________________________
 //  |   OriginalMessageId               |   PinnedMessageId                     |  | __|  \/  |_ _| |/ / _ \    THE
 //  |-----------------------------------+---------------------------------------|  | _|| |\/| || || ' < (_) |       BEST
-//  |   String representing UInt64      |   String representing UInt64          |  |___|_|  |_|___|_|\_\___/            SNEPBUN
+//  |   String representing UInt64      |   String representing UInt64          |  |___|_|  |_|___|_|\_\___/            VAMPBUN
 //  |   Snowflake of original message   |   Snowflake of pinned aka reposted    |                                           AROUND
 //  |                                   |       message.                        |
 //  2) Reminders    =============================================================================================================================================================================================================================
 //  |   Id                              |   UserId                              |   ChannelId                           |   Message                             |   TriggerTime                         |   Mentions                            |
 //  |-----------------------------------+---------------------------------------+---------------------------------------+---------------------------------------+---------------------------------------+---------------------------------------|
-//  |   TinyText not Null               |   String representing UInt64 not Null |   String representing UInt64 not Null |   MediumText                          |   BigInt not Null                     |   MediumText                          |
-//  |   Reminder ID (not the message    |   The user who created the reminder.  |   Snowflake of the channel the        |   Reminder message                    |   Reminder trigger timestamp in Unix  |   Whitespace separated mentions       |
-//  |       snowflake)                  |                                       |   reminder was sent in                |                                       |   epoch UTC in minutes                |                                       |
+//  |   String not Null                 |   String representing UInt64 not Null |   String representing UInt64 not Null |   String                              |   Integer not Null                    |   String                              |
+//  |   Snowflake of the message that   |   The user who created the reminder.  |   Snowflake of the channel the        |   Reminder message                    |   Reminder trigger timestamp in Unix  |   Whitespace separated mentions       |
+//  |   created the reminder.           |                                       |   reminder was sent in                |                                       |   epoch UTC in seconds                |                                       |
 //  3) Filter   =================================================================================================================================================================================================================================
 //  |   Type                            |   String                              |
 //  |-----------------------------------+---------------------------------------|(\(\               
@@ -20,7 +20,7 @@
 //  4) Roles    =========================================================================================================
 //  |   MessageId                       |   RoleId                              |   EmoteId                             |
 //  |-----------------------------------+---------------------------------------+---------------------------------------|
-//  |String representing UInt64 not Null| String representing UInt64 not Null   |   String representing UInt64 not Null |
+//  |String representing UInt64 not Null|   String representing UInt64 not Null |   String representing UInt64 not Null |
 //  |   Snowflake of message            |   Snowflake of role                   |   Snowflake of emote                  |
 //  =====================================================================================================================
 //
@@ -151,7 +151,7 @@ namespace BigSister.Database
                 command.CommandText =
                     @"
                         CREATE TABLE `Reminders` (
-	                        `Id`            TEXT    NOT NULL, -- Reminder ID
+	                        `Id`            TEXT    NOT NULL, -- Snowflake of the original message that created the reminder.
 	                        `UserId`        TEXT    NOT NULL, -- Snowflake of user who created the reminder
 	                        `ChannelId`     TEXT    NOT NULL, -- Snowflake of channel the reminder was created in
 	                        `Message`       TEXT            , -- Reminder message

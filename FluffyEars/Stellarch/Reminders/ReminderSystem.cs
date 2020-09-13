@@ -3,17 +3,22 @@
 //  
 // EMIKO
 
+using BigSister.ChatObjects;
 using BigSister.Database;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Timers;
 
@@ -29,13 +34,14 @@ namespace BigSister.Reminders
         /// <summary>Query to check if a reminder exists.</summary>
         static string QQ_ReminderExists = @"SELECT EXISTS(SELECT 1 FROM `Reminders` WHERE `Id`=$id);";
         /// <summary>Query to read the entire reminder table.</summary>
-        static string QQ_ReadTable = @"SELECT `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders`;";
+        static string QQ_ReadTable = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders`;";
         /// <summary>Query to return all reminders that need to be triggered.</summary>
         static string QQ_CheckRemindersElapsed = @"SELECT `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
-                                                   FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
+                                                  FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
         /// <summary>Query to delete all reminders that need to be triggered.</summary>
         static string QQ_DeleteRemindersElapsed = @"DELETE FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
-
+        /// <summary>Query to get a single reminder from a list.</summary>
+        static string QQ_GetReminderFromId = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders` WHERE `Id`=$id;";
 
         #region ReminderCommands.cs
 
@@ -45,7 +51,7 @@ namespace BigSister.Reminders
             = new Regex(@"(\d+)\s?(months?|days?|d|weeks?|wks?|w|hours?|hrs?|h|minutes?|mins?)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
         public static async Task AddReminder(CommandContext ctx, string args)
-        {// Firstly get all the matches.
+        {   // Firstly get all the matches.
             MatchCollection regexMatches = DateRegex.Matches(args);
             BitArray regexCoverage = new BitArray(args.Length);
             var dto = ctx.Message.CreationTimestamp;
@@ -145,53 +151,69 @@ namespace BigSister.Reminders
             // any. So now we just need to make sure it's within reasonable boundaries, set the reminder, and notify the user.
 
             DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddMonths(Program.Settings.MaxReminderTimeMonths);
-            DiscordEmbed embed;
+            DiscordEmbedBuilder embed;
 
             if (dto.UtcTicks == ctx.Message.CreationTimestamp.UtcTicks)
             {   // No time was added.
-                /*embed = ChatObjects.FormatEmbedResponse
-                    (
-                        title: @"Unable to Add Reminder",
-                        description: ChatObjects.GetErrMessage(@"I was unable able to add the mask you gave me. You didn't supply me a valid time..."),
-                        color: ChatObjects.ErrColor,
-                        thumbnail: ChatObjects.URL_REMINDER_GENERIC
-                    );*/
+                embed = Generics.GenericEmbedTemplate(
+                        color: Generics.NegativeColor,
+                        description: Generics.NegativeDirectResponseTemplate(
+                            mention: ctx.Member.Mention,
+                            body: @"I was unable able to add the mask you gave me. You didn't supply me a valid time..."),
+                        title: @"Unable to add reminder",
+                        thumbnail: Generics.URL_REMINDER_GENERIC
+                    );
             }
             else if (dto.UtcTicks > maxtime.UtcTicks)
-            {   // More than a year away.
-                /*embed = ChatObjects.FormatEmbedResponse
-                    (
-                        title: @"Unable Add Reminder",
-                        description: ChatObjects.GetErrMessage(@"I was unable able to add the mask you gave me. That's more than a year away..."),
-                        color: ChatObjects.ErrColor,
-                        thumbnail: ChatObjects.URL_REMINDER_GENERIC
-                    );*/
+            {   // More than our allowed time away.
+
+                int maxMonths = Program.Settings.MaxReminderTimeMonths;
+
+                embed = Generics.GenericEmbedTemplate(
+                        color: Generics.NegativeColor,
+                        description: Generics.NegativeDirectResponseTemplate(
+                            mention: ctx.Member.Mention,
+                            body: $"I was unable able to add the mask you gave me. That's more than {maxMonths} month{(maxMonths > 0 ? @"s" : String.Empty)} away..."),
+                        title: @"Unable to add reminder",
+                        thumbnail: Generics.URL_REMINDER_GENERIC
+                    );
             }
             else
             {   // Everything is good in the world... except that the world is burning, but that's not something we're worried about here, for
                 // now...
-                /*embed = ChatObjects.FormatEmbedResponse
-                    (
-                        title: @"Add Reminder",
-                        description: ChatObjects.GetSuccessMessage(@"I added the reminder you gave me!"),
-                        color: ChatObjects.SuccessColor,
-                        thumbnail: ChatObjects.URL_REMINDER_GENERIC
-                    );*/
 
-                Reminder reminder = new Reminder
+                embed = Generics.GenericEmbedTemplate(
+                        color: Generics.PositiveColor,
+                        description: Generics.PositiveDirectResponseTemplate(
+                            mention: ctx.Member.Mention,
+                            body: @"I added the reminder you gave me!"),
+                        title: @"Add reminder",
+                        thumbnail: Generics.URL_REMINDER_GENERIC
+                    );
+
+                Reminder reminder = new Reminder(
+                    originalMessageId: ctx.Message.Id.ToString(),
+                    text: messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
+                    time: (int)(dto.ToUnixTimeSeconds() / 60),
+                    user: ctx.Member.Id,
+                    channel: ctx.Channel.Id,
+                    usersToNotify: mentions.Select(a => Generics.GetMention(a)).ToArray());
+
+                embed.AddField(@"User", ctx.Member.Mention, true);
+                embed.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
+                embed.AddField(@"Remaining time", GetRemainingTime(dto), true);
+                embed.AddField(@"Notification Identifier", reminder.OriginalMessageId.ToString(), false);
+
+                if(GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
                 {
-                    Text = messageString.Length.Equals(0) ? @"n/a" : messageString.ToString(),
-                    Time = (int)(dto.ToUnixTimeSeconds() / 60),
-                    User = ctx.Member.Id,
-                    Channel = ctx.Channel.Id,
-                    UsersToNotify = mentions.Select(a => ChatObjects.Generics.GetMention(a)).ToArray()
-                };
+                    embed.AddField(@"Users to mention", mentionsString, false);
+                }
 
                 // Let's build the command.
                 using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
                 command.CommandText = QQ_AddReminder;
 
-                SqliteParameter a = new SqliteParameter("$id", reminder.GetIdentifier());
+                SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString());
                 a.DbType = DbType.String;
 
                 SqliteParameter b = new SqliteParameter("$userid", reminder.User);
@@ -215,24 +237,54 @@ namespace BigSister.Reminders
                 command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e, f });
 
                 await BotDatabase.Instance.ExecuteNonQuery(command);
+                // Send the response.
+                await ctx.Channel.SendMessageAsync(embed: embed);
             }
         }
 
         /// <summary>Remove a reminder if it exists.</summary>
-        public static async Task RemoveReminder(CommandContext ctx, string args)
+        public static async Task RemoveReminder(CommandContext ctx, Reminder reminder)
         {
             // It's a reminder, so let's remove it.
-
+            
             // Let's build the command.
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
             command.CommandText = QQ_RemoveReminder;
 
-            SqliteParameter a = new SqliteParameter("$id", args);
+            SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString());
             a.DbType = DbType.String;
 
             command.Parameters.Add(a);
 
+            // Now that we have the old reminder, let's remove the old one from the database.
             await BotDatabase.Instance.ExecuteNonQuery(command);
+
+            // Now let's respond.
+
+            var discordEmbedBuilder = new DiscordEmbedBuilder(Generics.GenericEmbedTemplate(
+                color: Generics.PositiveColor,
+                description: Generics.PositiveDirectResponseTemplate(
+                    mention: ctx.Member.Mention,
+                    @"I able to remove the reminder you gave me!"),
+                thumbnail: Generics.URL_REMINDER_DELETED,
+                title: @"Removed reminder"));
+            
+            DateTimeOffset dto = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60); // The reminder's DTO.
+            TimeSpan remainingTime = dto.Subtract(DateTimeOffset.UtcNow); // The remaining time left for the reminder.
+            string originalAuthorMention = Generics.GetMention(reminder.User);
+
+            discordEmbedBuilder.AddField(@"User", originalAuthorMention, true);
+            discordEmbedBuilder.AddField(@"Time (UTC)", dto.ToString(Generics.DateFormat), true);
+            discordEmbedBuilder.AddField(@"Notification Identifier", reminder.OriginalMessageId.ToString(), false);
+            if (GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
+            {
+                discordEmbedBuilder.AddField(@"Users to mention", mentionsString, false);
+            }
+            discordEmbedBuilder.AddField(@"Remaining time", GetRemainingTime(dto), false);
+            discordEmbedBuilder.AddField(@"Message", reminder.Text, false);
+
+            // Send the response.
+            await ctx.Channel.SendMessageAsync(embed: discordEmbedBuilder);
         }
 
         /// <summary>Check if a provided ID is a reminder.</summary>
@@ -284,20 +336,134 @@ namespace BigSister.Reminders
             return hasItem_returnVal;
         }
 
+        public static async Task<Reminder> GetReminderFromDatabase(string id)
+        {
+            Reminder item_returnVal;
+
+            // Let's build the command.
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
+            command.CommandText = QQ_GetReminderFromId;
+
+            SqliteParameter a = new SqliteParameter("$id", id);
+            a.DbType = DbType.String;
+
+            command.Parameters.Add(a);
+
+            // Get a single item from the list.
+            // We're using a delegate that supposedly returns a list of reminders, but in this case it should only return one.
+            item_returnVal = ((Reminder[])await BotDatabase.Instance.ExecuteReaderAsync(command,
+                    processAction: readReminders)).SingleOrDefault();
+
+            // Check if it's default aka nothing found (for some reason). We should've already checked that this item exists previously, but I still
+            // want to be super careful
+            if(item_returnVal.Equals(default(Reminder)))
+            {   // Equals default.
+                item_returnVal = Reminder.Invalid;
+            }
+
+            return item_returnVal;
+        }
+
         /// <summary>List all the reminders</summary>
         public static async Task ListReminders(CommandContext ctx)
         {
             Reminder[] reminders = await ReadTable();
 
-            StringBuilder sb = new StringBuilder();
-            foreach(Reminder reminder in reminders)
-            {
-                sb.Append($"{reminder.GetIdentifier()}|{reminder.User}|{reminder.Text}|{reminder.Time}|");
-                sb.AppendJoin(' ', reminder.UsersToNotify);
-                sb.Append('\n');
-            }
+            // Check if there are any notifications. If there are none, let the user know.
+            if (reminders.Length > 0)
+            {   // There are reminders.
+                var interactivity = Program.BotClient.GetInteractivity();
+                List<Page> pages = new List<Page>();
 
-            await ctx.Channel.SendMessageAsync("fuck kks\n" + sb.ToString());
+                var deb = new DiscordEmbedBuilder();
+
+                int count = 0;
+                int curPage = 1;
+
+                // Paginate all the results.
+                const int REMINDERS_PER_PAGE = 5;
+                for (int i = 0; i < reminders.Length; i++)
+                {
+                    Reminder reminder = reminders[i];
+
+                    
+
+                    var dto = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60);
+
+                    var valueStringBuilder = new StringBuilder();
+
+                    valueStringBuilder.Append($"{Generics.GetMention(reminder.User)}: {reminder.Text}\n");
+                    if (GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
+                    {
+                        valueStringBuilder.Append($"**Users to mention:** {mentionsString}\n");
+                    }
+                    valueStringBuilder.Append($"**Id:** {reminder.OriginalMessageId}\n");
+                    valueStringBuilder.Append($"**Remaining time** {GetRemainingTime(dto)}");
+
+                    #region a bunny
+
+                    //                      .".
+                    //                     /  |
+                    //                    /  /
+                    //                   / ,"
+                    //       .-------.--- /
+                    //      "._ __.-/ o. o\
+                    //         "   (    Y  )
+                    //              )     /
+                    //             /     (
+                    //            /       Y
+                    //        .-"         |
+                    //       /  _     \    \
+                    //      /    `. ". ) /' )
+                    //     Y       )( / /(,/
+                    //    ,|      /     )
+                    //   ( |     /     /
+                    //    " \_  (__   (__        [nabis]
+                    //        "-._,)--._,)
+                    //  o < bunny poopy l0l
+                    // ------------------------------------------------
+                    // This ASCII pic can be found at
+                    // https://asciiart.website/index.php?art=animals/rabbits
+
+                    #endregion a bunny
+
+                    string name = dto.ToString(Generics.DateFormat);
+
+                    deb.AddField(name, valueStringBuilder.ToString());
+                    count++;
+
+                    if (count == REMINDERS_PER_PAGE || i == reminders.Length - 1)
+                    {   // Create a new page.
+                        deb.WithDescription(Generics.NeutralDirectResponseTemplate(
+                            mention: ctx.User.Mention,
+                            body: $"Hello {ctx.Member.Mention}, please note you are the only one who can react to this message.\n\n" +
+                            $"**Showing {count} reminders out of a total of {reminders.Length}.**"));
+                        deb.WithTitle($"Reminders Page {curPage}/{Math.Ceiling((float)reminders.Length / (float)REMINDERS_PER_PAGE)}");
+                        deb.WithColor(Generics.NeutralColor);
+                        deb.WithThumbnail(Generics.URL_REMINDER_GENERIC);
+
+                        pages.Add(new Page(embed: deb));
+                        count = 0;
+                        curPage++;
+
+                        deb = new DiscordEmbedBuilder();
+                    } // end if
+                } // end for
+
+                await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, emojis: Generics.DefaultPaginationEmojis);
+            }
+            else
+            {   // There are no reminders.
+                await ctx.Channel.SendMessageAsync(
+                        embed: Generics.GenericEmbedTemplate(
+                            color: Generics.NegativeColor,
+                            description: Generics.NegativeDirectResponseTemplate(
+                                mention: ctx.Member.Mention,
+                                body: "there are no reminders..."),
+                            thumbnail: Generics.URL_SPEECH_BUBBLE,
+                            title: "Reminders"));
+
+            }
         }
 
         static Func<SqliteDataReader, object> readReminders = 
@@ -308,14 +474,14 @@ namespace BigSister.Reminders
                     while (reader.Read())
                     {   // Generate a reminder per each row.
 
-                        var r = new Reminder
-                        {
-                            User    = ulong.Parse(reader.GetString(0)),
-                            Channel = ulong.Parse(reader.GetString(1)),
-                            Text    = reader.GetString(2),
-                            Time    = reader.GetInt32(3),
-                            UsersToNotify = reader.GetString(4).Split(' ')
-                        };
+                        var r = new Reminder(
+                            originalMessageId: reader.GetString(0),
+                            user:          ulong.Parse(reader.GetString(1)),
+                            channel:       ulong.Parse(reader.GetString(2)),
+                            text:          reader.GetString(3),
+                            time:          reader.GetInt32(4),
+                            usersToNotify: reader.GetString(5).Split(' ')
+                        );
 
                         reminderList.Add(r);
                     }
@@ -419,8 +585,111 @@ namespace BigSister.Reminders
                    c.Equals('\t');
         }
 
+        private static bool GetUsersToNotify(string[] users, out string mentions)
+        {
+            bool usersFound_returnVal = false;
+
+            var stringBuilder = new StringBuilder();
+
+            foreach (string user in users)
+            {
+                if (user.Length > 0)
+                {
+                    stringBuilder.Append($"{user} ");
+
+                    if (!usersFound_returnVal)
+                    {
+                        usersFound_returnVal = true;
+                    }
+                }
+            }
+
+            mentions = stringBuilder.ToString();
+
+            return usersFound_returnVal;
+        }
+
         internal static async void ReminderTimer_Elapsed(object sender, ElapsedEventArgs e)
             => await LookTriggerReminders(
                 (int)(e.SignalTime.ToUniversalTime().Ticks / (TimeSpan.TicksPerMillisecond * 1000 * 60)));
+
+        /// <summary>Get the remaining time.</summary>
+        /// <returns>A string representing how much time is left.</returns>
+        private static string GetRemainingTime(DateTimeOffset dto)
+        {
+            const string HEARTBEAT_TRIGGER = "Should trigger at next heartbeat...";
+
+            var dtoNow = DateTimeOffset.UtcNow;
+            string returnVal;
+
+
+            if (dtoNow.ToUnixTimeMilliseconds() >= dto.ToUnixTimeMilliseconds())
+            {   // Check if this should be triggering already.
+                returnVal = HEARTBEAT_TRIGGER;
+            }
+            else
+            {   // No, it's not triggering that soon.
+                TimeSpan remainingTime = dto.UtcDateTime - dtoNow;
+                var stringBuilder = new StringBuilder();
+
+                // If anything has been added to the time string.
+                bool timeAdded = false;
+
+                // Add days
+                if (remainingTime.Days > 0)
+                {
+                    stringBuilder.Append(remainingTime.Days);
+                    stringBuilder.Append(" days ");
+
+                    timeAdded = true;
+                }
+
+                // Add hours
+                if (remainingTime.Hours > 0)
+                {
+                    stringBuilder.Append(remainingTime.Hours);
+                    stringBuilder.Append(" hours ");
+
+                    timeAdded = true;
+                }
+
+                // Add minutes
+                if (remainingTime.Minutes > 0)
+                {
+                    stringBuilder.Append(remainingTime.Minutes);
+                    stringBuilder.Append(" minutes ");
+
+                    timeAdded = true;
+
+                }
+
+                // Add seconds
+                if (remainingTime.Seconds > 0)
+                {
+                    stringBuilder.Append(remainingTime.Seconds);
+                    stringBuilder.Append(" seconds ");
+
+                    timeAdded = true;
+                }
+
+                if (timeAdded)
+                {   // Time was added. We want to check if time was added on the off-chance this is called when there are milliseconds or ticks left.
+                    // We haven't checked for those two units so it could cause a malformed string. Reason I don't want to check for those two is
+                    // because it'll make the string longer than it really should be for any regular user.
+                    stringBuilder.Append("left.");
+                }
+                else
+                {   // No time added. Let's let the user know that, basically, it SHOULD trigger next heartbeat. In the case it doesn't trigger on 
+                    // the immediately next heartbeat, then it should trigger the next one. The user won't know this, so being super accurate doesn't
+                    // matter here.
+                    stringBuilder.Clear();
+                    stringBuilder.Append(HEARTBEAT_TRIGGER);
+                }
+
+                returnVal = stringBuilder.ToString();
+            }
+
+            return returnVal;
+        }
     }
 }

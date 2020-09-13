@@ -18,6 +18,12 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DSharpPlus.EventArgs;
+using BigSister.ChatObjects;
+using System.Reflection.Emit;
+using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using DSharpPlus;
+using Microsoft.VisualBasic.CompilerServices;
 
 namespace BigSister.Filter
 {
@@ -30,6 +36,7 @@ namespace BigSister.Filter
         public const int TYPE_MASK = 1;
         /// <summary>Exclude data type.</summary>
         public const int TYPE_EXCLUDE = 2;
+
 
         /// <summary>Query to check if a mask or exclude exists in the database.</summary>
         static string QQ_ItemExists = @"SELECT EXISTS(SELECT 1 FROM `FILTER` WHERE `STRING`=$string);";
@@ -45,6 +52,16 @@ namespace BigSister.Filter
         static string[] MaskCache;
         static string[] ExcludeCache;
         static Regex[] FilterRegex;
+
+        public static string GetLabelString(int a)
+        {
+            switch(a)               // SESE HELL ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+            {
+                case TYPE_MASK: return "mask";
+                case TYPE_EXCLUDE: return "exclude";
+                default: return String.Empty;
+            }
+        }
 
         static FilterSystem() { }
 
@@ -140,10 +157,17 @@ namespace BigSister.Filter
         /// <summary>Try to add an item to the database.</summary>
         static async Task AddItem(CommandContext ctx, int type, string item)
         {
+            string label = GetLabelString(type);
+
             // Check the cache.
             if (ExistsInCache(type, item))
-            {   // It's in the cache, so we need to let th e use know th at they it's in the cache
-                await ctx.Channel.SendMessageAsync("thats already a thing inthere");
+            {   // It's in the cache, so we need to let the user know that this word already exists.
+
+                await GenericResponses.SendGenericCommandError(
+                        ctx.Channel,
+                        ctx.Member.Mention,
+                        $"Unable to add {label}",
+                        $"the provided {label} exists already...");
             }
             else
             {   // It's not in the cache so we can add it to the thing
@@ -163,7 +187,16 @@ namespace BigSister.Filter
                 // Add it to the database.
                 await BotDatabase.Instance.ExecuteNonQuery(command);
 
-                await ctx.Channel.SendMessageAsync("hey man I just added that item thanks m");
+                // Respond
+                var deb = Generics.GenericEmbedTemplate(
+                    color: Generics.PositiveColor,
+                    description: Generics.PositiveDirectResponseTemplate(
+                        mention: ctx.Member.Mention,
+                        body: $"I added a new {label} to the filter: `{item}`"),
+                        thumbnail: Generics.URL_FILTER_ADD,
+                        title: $"Added new {label}");
+                await ctx.Channel.SendMessageAsync(embed: deb);
+
                 await UpdateCache();
             }
         }
@@ -177,10 +210,16 @@ namespace BigSister.Filter
         /// <summary>Remove an item from the database.</summary>
         static async Task RemoveItem(CommandContext ctx, int type, string item)
         {
+            string label = GetLabelString(type);
+
             // Check if it's in cache.
             if (!ExistsInCache(type, item))
-            {   // It's in the cache, so we need to let th e use know th at they it's in the cache
-                await ctx.Channel.SendMessageAsync("thats not already a thing inthere");
+            {   // It's in the cache, so we need to let the user know that it wasn't added
+                await GenericResponses.SendGenericCommandError(
+                        ctx.Channel,
+                        ctx.Member.Mention,
+                        $"Unable to remove {label}",
+                        $"the provided {label} does not exist already...");
             }
             else
             {
@@ -201,26 +240,69 @@ namespace BigSister.Filter
                 // please remove it from the database thank you
                 await BotDatabase.Instance.ExecuteNonQuery(command);
 
-                await ctx.Channel.SendMessageAsync("hey man I just re,ovedd that item thanks m");
+                // Respond
+                var deb = Generics.GenericEmbedTemplate(
+                    color: Generics.PositiveColor,
+                    description: Generics.PositiveDirectResponseTemplate(
+                        mention: ctx.Member.Mention,
+                        body: $"I removed the {label} from the filter: `{item}`"),
+                        thumbnail: Generics.URL_FILTER_SUB,
+                        title: $"Removed {label}");
+                await ctx.Channel.SendMessageAsync(embed: deb);
+
                 await UpdateCache();
             }
         }
 
-        /// <summary>List all the masks in the database.</summary>
+        /// <summary>List all the masks in the database.</summary>  
         public static async Task ListMasks(CommandContext ctx)
             => await ListItems(ctx, TYPE_MASK);
         /// <summary>List all the excludes in the database.</summary>
         public static async Task ListExcludes(CommandContext ctx)
             => await ListItems(ctx, TYPE_EXCLUDE);
-        /// <summary>List all the items in the database.</summary>
+        /// <summary>List all the items in the database in a paginated string.</summary>
         public static async Task ListItems(CommandContext ctx, int type)
         {
             string[] items = await ReadTable(type);
+            string label = GetLabelString(type);
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendJoin(' ', items);
+            var stringBuilder = new StringBuilder();
+            foreach(string item in items) // Make a list of all the items.
+            {
+                stringBuilder.AppendLine(Formatter.InlineCode(item));
+            }
 
-            await ctx.Channel.SendMessageAsync("fuck kks\n" + sb.ToString());
+            var interactivity = Program.BotClient.GetInteractivity();
+
+            Page[] pages = interactivity.GeneratePagesInEmbed(
+                    input: stringBuilder.ToString(),
+                    splittype: SplitType.Line,
+                    embedbase: 
+                        Generics.GenericEmbedTemplate(
+                            color: Generics.NeutralColor,
+                            thumbnail: Generics.URL_FILTER_GENERIC));
+
+            // Go through each embed and give them a header because for some reason I can't provide my own description in the base embed. Thanks
+            // for that.
+            for(int i = 0; i < pages.Length; i++)
+            {
+                DiscordEmbedBuilder deb = new DiscordEmbedBuilder(pages[i].Embed);
+
+                deb.Description = 
+                    Generics.NeutralDirectResponseTemplate(
+                        mention: ctx.Member.Mention,
+                        body: $"please note you are the only one who can react to this. Here is the {label} list:\n{deb.Description}");
+
+                pages[i].Embed = deb.Build();
+            }
+
+            // Send the paginated message.
+            await interactivity
+                .SendPaginatedMessageAsync(
+                    c: ctx.Channel,
+                    u: ctx.User,
+                    pages: pages,
+                    emojis: Generics.DefaultPaginationEmojis);
         }
         /// <summary>Read a column from the filter table and return it as an array.</summary>
         public static async Task<string[]> ReadTable(int type)
