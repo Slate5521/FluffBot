@@ -6,6 +6,7 @@
 // EMIKO
 
 using BigSister.Settings;
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using System;
@@ -30,22 +31,26 @@ namespace BigSister.Filter
             // Only continue if the channel isn't excluded, if the sender isn't the bot, and if this isn't sent in PMs.
             if(!Program.Settings.ExcludedChannels.Contains(e.Channel.Id) && 
                !e.Channel.IsPrivate &&
-               !e.Author.IsCurrent)
+               !e.Author.IsCurrent &&
+                e.Message.MessageType == MessageType.Default)
             {
                 CheckMessage(e.Message);
             }
         }
         internal static async Task BotClient_MessageUpdated(MessageUpdateEventArgs e)
         {
-            // Only continue if the channel isn't excluded, if the sender isn't the bot, and if this isn't sent in PMs.
+            // Only continue if the channel isn't excluded, if the sender isn't the bot, if this isn't sent in PMs, and if this isn't due to a
+            // system messages e.g. message pinned, member joins, 
             if (!Program.Settings.ExcludedChannels.Contains(e.Channel.Id) &&
                !e.Channel.IsPrivate &&
-               !e.Author.IsCurrent)
+               !e.Author.IsCurrent &&
+                e.Message.MessageType == MessageType.Default)
             {
                 CheckMessage(e.Message);
             }
         }
         #pragma warning restore CS1998
+
 
         /// <summary>Check the message against the filter.</summary>
         private static void CheckMessage(DiscordMessage message)
