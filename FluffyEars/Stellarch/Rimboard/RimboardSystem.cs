@@ -30,6 +30,8 @@ namespace BigSister.Rimboard
         const string QQ_RimboardHasMessage = @"SELECT EXISTS(SELECT 1 FROM `Rimboard` WHERE `OriginalMessageId`=$originalMessageId;";
         /// <summary>Query to get a message.</summary>
         const string QQ_RimboardSelectMessage = @"SELECT `OriginalMessageId`, `PinnedMessageId`, `OriginalMessageChannelId`, `PinnedMessageChannelId` FROM `Rimboard` WHERE `OriginalMessageId`=$originalMessageId;";
+        /// <summary>Query to get a message from rimboard id.</summary>
+        const string QQ_RimboardSelectMessageViaId = @"SELECT `OriginalMessageId`, `PinnedMessageId`, `OriginalMessageChannelId`, `PinnedMessageChannelId` FROM `Rimboard` WHERE `PinnedMessageId`=$pinnedMessageId;";
         /// <summary>Query to add an entry.</summary>
         const string QQ_AddEntry = @"INSERT INTO `Rimboard` (`OriginalMessageId`, `PinnedMessageId`, `OriginalMessageChannelId`, `PinnedMessageChannelId`) VALUES ($originalMessageId, $pinnedMessageId, $originalChannelId, $originalPinChannelId);";
         /// <summary>Query to remove an entry.</summary>
@@ -295,9 +297,9 @@ namespace BigSister.Rimboard
         static async Task<PinInfo> QueryPinInfoFromRimboardId(ulong rimboardMessageId)
         {
             using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_RimboardSelectMessage;
+            command.CommandText = QQ_RimboardSelectMessageViaId;
 
-            SqliteParameter a = new SqliteParameter("$messageId", rimboardMessageId.ToString());
+            SqliteParameter a = new SqliteParameter("$pinnedMessageId", rimboardMessageId.ToString());
             a.DbType = DbType.String;
 
             command.Parameters.Add(a);
@@ -320,15 +322,18 @@ namespace BigSister.Rimboard
                 // Be warned: OriginalReactCount is always equal to -1.
                 PinInfo pinInfo = await QueryPinInfoFromRimboardId(e.Message.Id);
 
-                // Get the channels.
-                DiscordChannel originalChannel = e.Guild.GetChannel(pinInfo.OriginalChannelId);
+                if (!pinInfo.Equals(PinInfo.Invalid))
+                {
+                    // Get the channels.
+                    DiscordChannel originalChannel = e.Guild.GetChannel(pinInfo.OriginalChannelId);
 
-                DiscordMessage originalMessage = await originalChannel.GetMessageAsync(pinInfo.OriginalMessageId);
+                    DiscordMessage originalMessage = await originalChannel.GetMessageAsync(pinInfo.OriginalMessageId);
 
-                var a = originalMessage.DeleteAllReactionsAsync();
-                var b = RemovePinFromDatabase(pinInfo);
+                    var a = originalMessage.DeleteAllReactionsAsync();
+                    var b = RemovePinFromDatabase(pinInfo);
 
-                await Task.WhenAll(a, b);
+                    await Task.WhenAll(a, b);
+                }
             }
         }
 
