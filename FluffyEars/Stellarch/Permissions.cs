@@ -37,13 +37,54 @@ namespace BigSister
 
     public static class Permissions
     {
-        /// <summary>Handle checking permissions for a command.</summary>
-        /// <returns>True if the user has the permissions to run a command.</returns>
         public static async Task<bool> HandlePermissionsCheck(CommandContext ctx)
+        {
+            MinimumRole minRole;
+
+            // Let's make sure this isn't null.
+            if (!(ctx.Command.CustomAttributes is null))
+            {
+                var linq = ctx.Command.CustomAttributes.OfType<MinimumRole>();
+
+                // Let's make sure there's actually the attribute we want.
+                if (linq.Count() > 0)
+                {   // The attribute we want is here. 
+                    minRole = linq.First();
+                }
+                else
+                {   // It's not there for some reason, so let's throw an exception.
+                    throw new Exception("Unable to load MinimumRole attribute.");
+                }
+            }
+            else
+            {   // It's null, so let's throw an exception.
+                throw new Exception("Unable to load MinimumRole attribute.");
+            }
+
+            return await HandlePermissionsCheck(
+                member: ctx.Member, 
+                chan: ctx.Channel, 
+                minRole: minRole,
+                shouldRespondToRejection: true,
+                commandName: ctx.Command.Name);
+        }
+
+        /// <summary>Handle checking permissions for a command.</summary>
+        /// <param name="member">The member whose roles need to be checked</param>
+        /// <param name="chan">The channel the check takes place in.</param>
+        /// <param name="minRole">The minimum role required to use a command.</param>
+        /// <param name="shouldRespondToRejection">If it should send a rejection message when minimum role isn't met. Defaults to true.</param>
+        /// <param name="commandName">The command name. Defaults to empty.</param>
+        /// <returns>True if the user has the permissions to run a command.</returns>
+        public static async Task<bool> HandlePermissionsCheck(DiscordMember member, 
+                                                              DiscordChannel chan, 
+                                                              MinimumRole minRole, 
+                                                              bool shouldRespondToRejection = true, 
+                                                              string commandName = @"")
         {
             bool pass_returnVal;
 
-            var userPerms = new UserPermissions(ctx.Member.Roles);
+            var userPerms = new UserPermissions(member.Roles);
 
             // Let's make sure they're not muted or have no role first of all.
             if (userPerms.Muted || userPerms.UserRoles == Role.None)
@@ -53,35 +94,14 @@ namespace BigSister
             else
             {   // They are not muted and do have roles, so let's continue.
                 bool userHasPerms;
-                MinimumRole minRole;
 
-                // Let's make sure this isn't null.
-                if (!(ctx.Command.CustomAttributes is null))
-                {
-                    var linq = ctx.Command.CustomAttributes.OfType<MinimumRole>();
+                userHasPerms = userPerms.IsRoleOrHigher(minRole.MinRole);
 
-                    // Let's make sure there's actually the attribute we want.
-                    if (linq.Count() > 0)
-                    {   // The attribute we want is here. 
-                        minRole = linq.First();
+                pass_returnVal = userHasPerms;
 
-                        userHasPerms = userPerms.IsRoleOrHigher(minRole.MinRole);
-
-                        pass_returnVal = userHasPerms;
-                    }
-                    else
-                    {   // It's not there for some reason, so let's throw an exception.
-                        throw new Exception("Unable to load MinimumRole attribute.");
-                    }
-                }
-                else
-                {   // It's null, so let's throw an exception.
-                    throw new Exception("Unable to load MinimumRole attribute.");
-                }
-
-                if(!pass_returnVal)
-                {   // If they didn't pass but aren't muted and they do have roles, let's handle a response.
-                    await HandleRejection(ctx, userPerms, minRole.MinRole);
+                if (!pass_returnVal && shouldRespondToRejection)
+                {   // If they didn't pass but aren't muted and they do have roles, and we want to respond let's handle a response.
+                    await HandleRejection(chan, member.Mention, minRole.MinRole, commandName);
                 }
             }
 
@@ -89,14 +109,14 @@ namespace BigSister
         }
 
         /// <summary>Handle a rejection that occurs due to insufficient permissions.</summary>
-        public static async Task HandleRejection(CommandContext ctx, UserPermissions userPerms, Role minRole)
+        public static async Task HandleRejection(DiscordChannel chan, string mention, Role minRole, string commandName)
         {
-            await ctx.Channel.SendMessageAsync(
+            await chan.SendMessageAsync(
                 embed: GenericResponses.GetMessageInsufficientPermissions
                 (
-                    mention: ctx.Member.Mention,
+                    mention: mention,
                     minRole: UserPermissions.GetRoleString(minRole),
-                    command: ctx.Command.Name
+                    command: commandName
                 ));
         }
     }

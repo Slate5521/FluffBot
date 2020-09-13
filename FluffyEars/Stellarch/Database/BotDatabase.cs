@@ -1,11 +1,11 @@
 ﻿// BotDatabase.cs
 // Contains methods for accessing the SQLite database. So far there are four tables:
-//  1) Rimboard =================================================================  ________________________________________________
-//  |   OriginalMessageId               |   PinnedMessageId                     |  | __|  \/  |_ _| |/ / _ \    THE
-//  |-----------------------------------+---------------------------------------|  | _|| |\/| || || ' < (_) |       BEST
-//  |   String representing UInt64      |   String representing UInt64          |  |___|_|  |_|___|_|\_\___/            VAMPBUN
-//  |   Snowflake of original message   |   Snowflake of pinned aka reposted    |                                           AROUND
-//  |                                   |       message.                        |
+//  1) Rimboard =================================================================================================================================================
+//  |   OriginalMessageId               |   PinnedMessageId                     |   OriginalMessageChannelId            |   PinnedMessageChannelId              |  
+//  |-----------------------------------+---------------------------------------|---------------------------------------|---------------------------------------|  
+//  |   String representing UInt64      |   String representing UInt64          |   String representing UInt64          |   String representing UInt64          |  
+//  |   Snowflake of original message   |   Snowflake of pinned aka reposted    |   Snowflake of pinned aka reposted    |   Snowflake of pinned aka reposted    |  
+//  |                                   |       message.                        |       message.                        |       message.                        |
 //  2) Reminders    =============================================================================================================================================================================================================================
 //  |   Id                              |   UserId                              |   ChannelId                           |   Message                             |   TriggerTime                         |   Mentions                            |
 //  |-----------------------------------+---------------------------------------+---------------------------------------+---------------------------------------+---------------------------------------+---------------------------------------|
@@ -13,13 +13,13 @@
 //  |   Snowflake of the message that   |   The user who created the reminder.  |   Snowflake of the channel the        |   Reminder message                    |   Reminder trigger timestamp in Unix  |   Whitespace separated mentions       |
 //  |   created the reminder.           |                                       |   reminder was sent in                |                                       |   epoch UTC in seconds                |                                       |
 //  3) Filter   =================================================================================================================================================================================================================================
-//  |   Type                            |   String                              |
-//  |-----------------------------------+---------------------------------------|(\(\               
-//  |   Integer not Null Default '1'    |   String not Null                     |(-,-)      <-- bunnies ftw
-//  |   1 = Regex Mask and 2 = Exclude  |   Mask of Regex or Exclude            |o_(")(")
-//  4) Roles    =========================================================================================================
-//  |   MessageId                       |   RoleId                              |   EmoteId                             |
-//  |-----------------------------------+---------------------------------------+---------------------------------------|
+//  |   Type                            |   String                              |                                           
+//  |-----------------------------------+---------------------------------------|(\(\                                       
+//  |   Integer not Null Default '1'    |   String not Null                     |(-,-)      <-- bunnies ftw                 ________________________________________________
+//  |   1 = Regex Mask and 2 = Exclude  |   Mask of Regex or Exclude            |o_(")(")                                   | __|  \/  |_ _| |/ / _ \    THE
+//  4) Roles    =========================================================================================================   | _|| |\/| || || ' < (_) |       BEST
+//  |   MessageId                       |   RoleId                              |   EmoteId                             |   |___|_|  |_|___|_|\_\___/            VAMPBUN
+//  |-----------------------------------+---------------------------------------+---------------------------------------|                                            AROUND
 //  |String representing UInt64 not Null|   String representing UInt64 not Null |   String representing UInt64 not Null |
 //  |   Snowflake of message            |   Snowflake of role                   |   Snowflake of emote                  |
 //  =====================================================================================================================
@@ -138,8 +138,10 @@ namespace BigSister.Database
                 command.CommandText =
                     @"
                         CREATE TABLE `Rimboard` (
-                            `OriginalMessageId` TEXT NOT NULL, -- Snowflake of original message.
-                            `PinnedMessageId`   TEXT NOT NULL  -- Snowflake of pinned aka reposted message.
+                            `OriginalMessageId`        TEXT NOT NULL, -- Snowflake of original message.
+                            `PinnedMessageId`          TEXT NOT NULL, -- Snowflake of pinned aka reposted message.
+                            `OriginalMessageChannelId` TEXT NOT NULL, -- Snowflake of channel of original message.
+                            `PinnedMessageChannelId`   TEXT NOT NULL  -- Snowflake of channel of pinned aka reposted message.
                         );
                     ";
 

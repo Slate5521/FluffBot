@@ -1,6 +1,7 @@
 ﻿using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,9 +29,11 @@ namespace BigSister.ChatObjects
             validWebhook = true;
         }
 
+        public async Task<DiscordMessage> SendWebhookMessage(string content = null, 
+                                             DiscordEmbed[] embeds = null, 
+                                             FileStream fileStream = null, 
+                                             string fileName = null)
 
-        public async Task SendMessage(string content = null, 
-                                      DiscordEmbed[] embeds = null)
         {
             var dwb = new DiscordWebhookBuilder();
 
@@ -49,12 +52,17 @@ namespace BigSister.ChatObjects
                 dwb.WithContent(content);
             }
 
-            if (embeds is null && content is null)
+            if (!(fileStream is null) && !(fileName is null))
+            {
+                dwb.AddFile(fileName, fileStream);
+            }
+
+            if (embeds is null && content is null && fileStream is null)
             {
                 throw new ArgumentException("Cannot send an empty message.");
             }
 
-            await webhook.ExecuteAsync(dwb);
+            return await webhook.ExecuteAsync(dwb);
         }
 
         public bool Valid() => !Equals(Invalid);

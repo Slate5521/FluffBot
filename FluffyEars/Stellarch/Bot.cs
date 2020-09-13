@@ -66,6 +66,10 @@ namespace BigSister
             // ----------------
             // Reminder timer
             reminderTimer.Elapsed += ReminderSystem.ReminderTimer_Elapsed;
+
+            botClient.MessageReactionAdded += Rimboard.RimboardSystem.BotClientMessageReactionAdded;
+            botClient.MessageReactionsCleared += Rimboard.RimboardSystem.BotClientMessageReactionsCleared;
+            botClient.MessageDeleted += Rimboard.RimboardSystem.BotClientMessageDeleted;
         }
 
         private static void FilterSystem_FilterTriggered(Filter.FilterEventArgs e)

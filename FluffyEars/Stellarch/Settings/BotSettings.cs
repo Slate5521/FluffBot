@@ -56,9 +56,11 @@ namespace BigSister.Settings
         /// I have it set to a webhook in my development server.
         public ulong RimboardWebhookId = 752987486661247159;
         /// <summary>The Rimboard's pinning emote.</summary>
-        public string RimboardEmoticon = @"<:rimworld:432227067313127424>";
+        public ulong RimboardEmoticonId = 432227067313127424;
+        /// <summary>Number of reactions needed to repost a message to Rimboard.</summary>
+        public int RimboardReactionsNeeded = 3;
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
-        public int RimboardReactionsNeeded = 5;
+        public int RimboardPinReactionsNeeded = 5;
 
         // ----------------
         // Role Requests

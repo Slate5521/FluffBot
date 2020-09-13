@@ -261,7 +261,7 @@ namespace BigSister.Commands
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
-                Program.UpdateSettings(ref Program.Settings.RimboardEmoticon, emote.ToString());
+                Program.UpdateSettings(ref Program.Settings.RimboardEmoticonId, emote.Id);
 
                 await GenericResponses.SendMessageSettingChanged(
                     channel: ctx.Channel,
@@ -287,6 +287,25 @@ namespace BigSister.Commands
                     mention: ctx.Member.Mention,
                     title: @"Rimboard reactions required changed",
                     valueName: @"Rimboard reaction requirement",
+                    newVal: count.ToString());
+            }
+        }
+
+        [Command("rimboardpinreaction"), Aliases("rimboardpinreactions", "rimboardpinreactionsrequired"), MinimumRole(ConfigPerm), Description("WIP")]
+        public async Task SetRimboardReactionsRequiredToPin(CommandContext ctx, uint count)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+                // Clamp it to the max value first so the bot doesn't crash.
+                int countInt = (int)Math.Min(count, int.MaxValue);
+
+                Program.UpdateSettings(ref Program.Settings.RimboardPinReactionsNeeded, countInt);
+
+                await GenericResponses.SendMessageSettingChanged(
+                    channel: ctx.Channel,
+                    mention: ctx.Member.Mention,
+                    title: @"Rimboard reactions to pin message required changed",
+                    valueName: @"Rimboard reaction to pin requirement",
                     newVal: count.ToString());
             }
         }

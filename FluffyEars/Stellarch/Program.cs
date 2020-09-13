@@ -30,7 +30,11 @@ namespace BigSister
                 get => AppDomain.CurrentDomain.BaseDirectory;
             }
 
-            const string SAVE_DIRECTORY = @"sav";
+            public const string SAVE_DIRECTORY = @"sav";
+            public static string SaveDirectory
+            {
+                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY);
+            }
 
             const string IDENTITY_FILE = @"identity0.json";
             public static string IdentityFile
@@ -49,10 +53,18 @@ namespace BigSister
             {
                 get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, DATABASE_FILE);
             }
+
+            public const string RIMBOARD_DIR = @"temp";
+            public static string RimboardTempFileDirectory
+            {
+                get => Path.Combine(ExecutableDirectory, RIMBOARD_DIR);
+            }
         }
 
         public static BotSettings Settings;
         public static DiscordClient BotClient;
+
+        public const string Prefix = @"!";
 
         static SaveFile BotSettingsFile;
         static Identity Identity;
@@ -60,6 +72,25 @@ namespace BigSister
         static void Main(string[] args)
         {
             bool loadSuccess;
+
+            // ----------------
+            // Initiate folders
+
+            // Check if the save directory exists.
+            if (!Directory.Exists(Files.SaveDirectory))
+            {
+                Console.Write("Folder {0} not found, creating directory... ", Files.SAVE_DIRECTORY);
+                Directory.CreateDirectory(Files.SaveDirectory);
+                Console.WriteLine("Created!");
+            }
+
+            // Check if the rimboard temp file directory exists.
+            if (!Directory.Exists(Files.RimboardTempFileDirectory))
+            {   
+                Console.Write("Folder {0} not found, creating directory... ", Files.RIMBOARD_DIR);
+                Directory.CreateDirectory(Files.RimboardTempFileDirectory);
+                Console.WriteLine("Created!");
+            }
 
             // ----------------
             // Load authkey and webhooks.
@@ -90,14 +121,9 @@ namespace BigSister
                 BotDatabase.GenerateDefaultFile(Files.DatabaseFile);
             }
 
+
             // ----------------
             // TODO: Initiate logging.
-
-            // ----------------
-            // Initialize everything.
-
-            Filter.FilterSystem.Initialize();
-            WebhookDelegator.Initialize(Identity.Webhooks);
 
             // ----------------
             // Run the bot.
@@ -115,13 +141,20 @@ namespace BigSister
             {
                 CaseSensitive = false,
                 EnableDefaultHelp = false,
-                StringPrefixes = new string[] { "!" }
+                StringPrefixes = new string[] { Prefix }
             });
 
             BotClient.UseInteractivity(new InteractivityConfiguration
             {
                 PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore
             });
+
+            // ----------------
+            // Initialize static classes.
+
+            Filter.FilterSystem.Initialize();
+            WebhookDelegator.Initialize(Identity.Webhooks);
+
 
             Bot.RunAsync(BotClient).ConfigureAwait(false).GetAwaiter().GetResult();
         }
