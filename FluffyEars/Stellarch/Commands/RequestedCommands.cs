@@ -24,6 +24,7 @@ namespace BigSister.Commands
          Description("WIP")]
         public async Task GetUserInfo(CommandContext ctx, DiscordMember member)
         {
+            const string RECENT_MSG = @"In the last minute...";
             // Check if the user can use commands.
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -42,8 +43,8 @@ namespace BigSister.Commands
                         thumbnail: member.AvatarUrl
                         );
 
-                    deb.AddField(@"Joined Discord:", Generics.GetRemainingTime(GetJoinedDiscordTime(member.Id)));
-                    deb.AddField($"Joined {ctx.Guild.Name}:", Generics.GetRemainingTime(member.JoinedAt));
+                    deb.AddField(@"Joined Discord:", Generics.GetRemainingTime(GetJoinedDiscordTime(member.Id), false, RECENT_MSG, @"ago"));
+                    deb.AddField($"Joined {ctx.Guild.Name}:", Generics.GetRemainingTime(member.JoinedAt, false, RECENT_MSG, @"ago"));
 
                     await ctx.Channel.SendMessageAsync(embed: deb);
                 }

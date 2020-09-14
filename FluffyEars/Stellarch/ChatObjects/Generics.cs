@@ -219,23 +219,32 @@ namespace BigSister.ChatObjects
         } // end method
 
 
+        const string HEARTBEAT_TRIGGER = "Should trigger at next heartbeat...";
+
         /// <summary>Get the remaining time.</summary>
         /// <returns>A string representing how much time is left.</returns>
-        public static string GetRemainingTime(DateTimeOffset dto)
+        public static string GetRemainingTime(DateTimeOffset dto, bool timeInFuture = true, string recentMsg = HEARTBEAT_TRIGGER, string capMsg = @"left")
         {
-            const string HEARTBEAT_TRIGGER = "Should trigger at next heartbeat...";
-
             var dtoNow = DateTimeOffset.UtcNow;
             string returnVal;
 
-
-            if (dtoNow.ToUnixTimeMilliseconds() >= dto.ToUnixTimeMilliseconds())
+            if ( (timeInFuture && dtoNow.ToUnixTimeMilliseconds()  >= dto.ToUnixTimeMilliseconds() ) ||
+                 (!timeInFuture && dtoNow.ToUnixTimeMilliseconds() <= dto.ToUnixTimeMilliseconds() ) )
             {   // Check if this should be triggering already.
-                returnVal = HEARTBEAT_TRIGGER;
+                returnVal = recentMsg;
             }
             else
             {   // No, it's not triggering that soon.
-                TimeSpan remainingTime = dto.UtcDateTime - dtoNow;
+                TimeSpan remainingTime;
+
+                if (timeInFuture)
+                {   // This is some time in the future.
+                    remainingTime = dto.UtcDateTime - dtoNow;
+                }
+                else
+                {   // This is some time in the past.
+                    remainingTime = dtoNow - dto.UtcDateTime;
+                }
                 var stringBuilder = new StringBuilder();
 
                 // If anything has been added to the time string.
@@ -282,14 +291,15 @@ namespace BigSister.ChatObjects
                 {   // Time was added. We want to check if time was added on the off-chance this is called when there are milliseconds or ticks left.
                     // We haven't checked for those two units so it could cause a malformed string. Reason I don't want to check for those two is
                     // because it'll make the string longer than it really should be for any regular user.
-                    stringBuilder.Append("left.");
+                    stringBuilder.Append(capMsg);
+                    stringBuilder.Append('.');
                 }
                 else
                 {   // No time added. Let's let the user know that, basically, it SHOULD trigger next heartbeat. In the case it doesn't trigger on 
                     // the immediately next heartbeat, then it should trigger the next one. The user won't know this, so being super accurate doesn't
                     // matter here.
                     stringBuilder.Clear();
-                    stringBuilder.Append(HEARTBEAT_TRIGGER);
+                    stringBuilder.Append(recentMsg);
                 }
 
                 returnVal = stringBuilder.ToString();

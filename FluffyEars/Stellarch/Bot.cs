@@ -46,6 +46,7 @@ namespace BigSister
             commands.RegisterCommands<ReminderCommands>();
             commands.RegisterCommands<MentionCommands>();
             commands.RegisterCommands<SettingsCommands>();
+            commands.RegisterCommands<RequestedCommands>();
         }
 
         static void RegisterEvents(DiscordClient botClient)
