@@ -81,6 +81,7 @@ namespace BigSister.Commands
             {
                 switch (action)
                 {
+                    case "new":
                     case "add":
                         if (!(await FilterSystem.HasExclude(exclude)))
                         {   // The exclude doesn't exist already.
@@ -96,6 +97,7 @@ namespace BigSister.Commands
                         }
                         break;
                     case "remove":
+                    case "delete":
                         if ((await FilterSystem.HasExclude(exclude)))
                         {   // The exclude  exists.
                             await FilterSystem.RemoveExclude(ctx, exclude);

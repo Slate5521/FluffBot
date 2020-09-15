@@ -25,7 +25,7 @@ namespace BigSister.Commands
 
         #region Filter
 
-        [Command("excludedchannels"), Aliases("excludedchans"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("excluded-channels"), Aliases("excluded-chans"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task ExcludeChannel(CommandContext ctx, string command, params DiscordChannel[] channels)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -111,7 +111,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("filterchannel"), Aliases("filterchan"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("filter-channel"), Aliases("filter-chan"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task ExcludeChannel(CommandContext ctx, DiscordChannel channel)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -130,7 +130,7 @@ namespace BigSister.Commands
         #endregion Filter
         #region Reminders
 
-        [Command("reminderlimit"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("reminder-limit"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetReminderTimeLimit(CommandContext ctx, uint months)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -152,7 +152,7 @@ namespace BigSister.Commands
         #endregion Reminders
         #region Warn Snooper
 
-        [Command("warnmonthlimit"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("warn-month-limit"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetMaxWarnLimit(CommandContext ctx, uint months)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -171,7 +171,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("actionchannel"), Aliases("actionchan"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("action-channel"), Aliases("action-chan"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetActionChannel(CommandContext ctx, DiscordChannel channel)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -187,7 +187,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("snoopenabled"), Aliases("warnsnoopenabled", "snoopdogenabled"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("snoop-enabled"), Aliases("warnsnoopenabled", "snoopdogenabled"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetActionChannel(CommandContext ctx, bool enabled)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -207,7 +207,7 @@ namespace BigSister.Commands
         #endregion Warn Snooper
         #region Rimboard
 
-        [Command("rimboardenabled"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("rimboard-enabled"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task RimboardEnabled(CommandContext ctx, bool enabled)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -224,7 +224,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("rimboardchannel"), Aliases("rimboardchan"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("rimboard-channel"), Aliases("rimboard-chan"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetRimboardChannel(CommandContext ctx, DiscordChannel channel)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -240,7 +240,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("rimboardwebhook"), MinimumRole(ConfigPerm), Hidden(), Description("WIP")]
+        [Command("rimboard-webhook"), MinimumRole(ConfigPerm), Hidden(), Description("WIP")]
         public async Task SetRimboardWebhook(CommandContext ctx, ulong id)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -256,7 +256,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("rimboardemote"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("rimboard-emote"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetRimboardEmote(CommandContext ctx, DiscordEmoji emote)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -272,7 +272,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("rimboardreaction"), Aliases("rimboardreactions", "rimboardreactionsrequired"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("rimboard-reaction"), Aliases("rimboard-reactions", "rimboard-reactions-required"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetRimboardReactionsRequired(CommandContext ctx, uint count)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -291,7 +291,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("rimboardpinreaction"), Aliases("rimboardpinreactions", "rimboardpinreactionsrequired"), MinimumRole(ConfigPerm), Description("WIP")]
+        [Command("rimboard-pin-reaction"), Aliases("rimboard-pin-reactions", "rimboard-pin-reactions-required"), MinimumRole(ConfigPerm), Description("WIP")]
         public async Task SetRimboardReactionsRequiredToPin(CommandContext ctx, uint count)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
