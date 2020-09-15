@@ -115,7 +115,7 @@ namespace BigSister.Rimboard
                     var a = RemovePinFromDatabase(pinInfo);
                     var b = pinnedMessage.DeleteAsync();
 
-                    await Task.WhenAny(a, b);
+                    await Task.WhenAll(a, b);
                 }
             }
         }
@@ -137,7 +137,11 @@ namespace BigSister.Rimboard
                 var message_noCache = await e.Channel.GetMessageAsync(e.Message.Id);
 
                 // This contains a list of the reactions that have rimboardEmoji. It's only ever really going to be be 1 long.
-                var pinReactionsList = message_noCache.Reactions.Where(a => a.Emoji.Id == emoji.Id);
+                var pinReactionsList = message_noCache.Reactions.Where(a => a.Emoji.Name == emoji.Name).ToArray();
+
+                if (pinReactionsList.Length == 0)
+                    return;         // NON-SESE ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+
                 int reactCount = pinReactionsList.FirstOrDefault().Count;
 
                 // Let's now try to get the Rimboard message.

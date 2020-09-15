@@ -99,10 +99,10 @@ namespace BigSister.ChatObjects
         /// <summary>Build a string that's limited to a certain length that caps with a specified message when it overflows.</summary>
         public static string BuildLimitedString(string originalString, string endMessage = @". . .", int maxLength = 2000)
         {
-            string returnVal; 
+            string returnVal;
 
             // Check if we're over the maximum length.
-            if(originalString.Length > maxLength)
+            if (originalString.Length > maxLength)
             {   // We are over the max length so let's trim the string and cap it with the end message.
                 returnVal = String.Concat(
                     originalString.Substring(0, length: maxLength - endMessage.Length),
@@ -144,7 +144,7 @@ namespace BigSister.ChatObjects
                 int linksToTake = 0;
 
                 // Turn every provided link into a masked link. Stop if we find a link that will make the list too large.
-                for(int i = 0; i < links.Length && linkTooBigIndex == -1; i++)
+                for (int i = 0; i < links.Length && linkTooBigIndex == -1; i++)
                 {
                     // Get a masked link.
                     string maskedLink = Formatter.MaskedUrl(
@@ -155,35 +155,35 @@ namespace BigSister.ChatObjects
 
                     // Firstly, make the size of this field the length of the masked link.
                     int curSize = maskedLink.Length;
-                    
+
                     // Secondly, let's add the length of a prepended if this is not the first entry. Because we're also tracking the link list 
                     // additively, let's also add the previous size (if there's even anything before this link).
                     curSize += (i > 0 ? 1 + totalLinkListSize[i - 1] : 0);
 
                     // Firstly, let's make the size of this field the size of the masked link.
                     totalLinkListSize[i] = curSize;
-                    
+
                     // Check if this link will cause the link list string to be too big.
-                    if(curSize > maxLength)
+                    if (curSize > maxLength)
                     {   // It's going to cause the link list string to be far too big.
                         linkTooBigIndex = i;
                         fullListNotPossible = true;
                     }
                 }
-                
+
                 // Check if we ever found a link that will make the link list string too large.
-                if(fullListNotPossible)
+                if (fullListNotPossible)
                 {   // We did, and now we need to find out how many links we can take.
 
                     // Variable to stop the for loop.
                     bool continueLoop = true;
 
                     // Start looking for the last link we can take starting from the end moving towards the start of the array.
-                    for(int i = linkTooBigIndex; i >= 0 && continueLoop; i--)
+                    for (int i = linkTooBigIndex; i >= 0 && continueLoop; i--)
                     {
                         // Let's see if we can take the current link and pair it with the endMessage with a space between. If we can do this, we can
                         // terminate the string gracefully with as many links as we can with the string capped with the endMessage.
-                        if(totalLinkListSize[i] + 1 + endMessage.Length <= maxLength)
+                        if (totalLinkListSize[i] + 1 + endMessage.Length <= maxLength)
                         {   // Yes, the current list size plus an end message is under our max length.
                             linksToTake = i + 1;  // Let's set the number of links we're going to take.
                             continueLoop = false; // Let's also let the loop know we want to stop now.
@@ -202,7 +202,7 @@ namespace BigSister.ChatObjects
 
                 stringBuilder.AppendJoin(' ', maskedLinks.Take(linksToTake));
 
-                if(fullListNotPossible)
+                if (fullListNotPossible)
                 {   // If a full listing was not possible, let's cap the message with the end message.
                     stringBuilder.Append(' ');
                     stringBuilder.Append(endMessage);
@@ -228,8 +228,8 @@ namespace BigSister.ChatObjects
             var dtoNow = DateTimeOffset.UtcNow;
             string returnVal;
 
-            if ( (timeInFuture && dtoNow.ToUnixTimeMilliseconds()  >= dto.ToUnixTimeMilliseconds() ) ||
-                 (!timeInFuture && dtoNow.ToUnixTimeMilliseconds() <= dto.ToUnixTimeMilliseconds() ) )
+            if ((timeInFuture && dtoNow.ToUnixTimeMilliseconds() >= dto.ToUnixTimeMilliseconds()) ||
+                 (!timeInFuture && dtoNow.ToUnixTimeMilliseconds() <= dto.ToUnixTimeMilliseconds()))
             {   // Check if this should be triggering already.
                 returnVal = recentMsg;
             }

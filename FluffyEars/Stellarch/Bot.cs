@@ -44,6 +44,7 @@ namespace BigSister
 
             commands.RegisterCommands<FilterCommands>();
             commands.RegisterCommands<ReminderCommands>();
+            commands.RegisterCommands<RoleRequestCommands>();
             commands.RegisterCommands<MentionCommands>();
             commands.RegisterCommands<SettingsCommands>();
             commands.RegisterCommands<RequestedCommands>();
@@ -68,9 +69,17 @@ namespace BigSister
             // Reminder timer
             reminderTimer.Elapsed += ReminderSystem.ReminderTimer_Elapsed;
 
+            // ----------------
+            // Rimboard
             botClient.MessageReactionAdded += Rimboard.RimboardSystem.BotClientMessageReactionAdded;
             botClient.MessageReactionsCleared += Rimboard.RimboardSystem.BotClientMessageReactionsCleared;
             botClient.MessageDeleted += Rimboard.RimboardSystem.BotClientMessageDeleted;
+
+            // ----------------
+            // RoleRequest
+
+            botClient.MessageReactionAdded += RoleRequest.RoleRequestSystem.MessageReactionAdded;
+            botClient.MessageReactionRemoved += RoleRequest.RoleRequestSystem.MessageReactionRemoved;
         }
 
         private static void FilterSystem_FilterTriggered(Filter.FilterEventArgs e)

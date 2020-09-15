@@ -15,16 +15,16 @@
 //  3) Filter   =================================================================================================================================================================================================================================
 //  |   Type                            |   String                              |                                           
 //  |-----------------------------------+---------------------------------------|(\(\                                       
-//  |   Integer not Null Default '1'    |   String not Null                     |(-,-)      <-- bunnies ftw                 ________________________________________________
-//  |   1 = Regex Mask and 2 = Exclude  |   Mask of Regex or Exclude            |o_(")(")                                   | __|  \/  |_ _| |/ / _ \    THE
-//  4) Roles    =========================================================================================================   | _|| |\/| || || ' < (_) |       BEST
-//  |   MessageId                       |   RoleId                              |   EmoteId                             |   |___|_|  |_|___|_|\_\___/            VAMPBUN
-//  |-----------------------------------+---------------------------------------+---------------------------------------|                                            AROUND
-//  |String representing UInt64 not Null|   String representing UInt64 not Null |   String representing UInt64 not Null |
-//  |   Snowflake of message            |   Snowflake of role                   |   Snowflake of emote                  |
-//  =====================================================================================================================
+//  |   Integer not Null Default '1'    |   String not Null                     |(-,-)      <-- bunnies ftw                                                        _______________________________________________
+//  |   1 = Regex Mask and 2 = Exclude  |   Mask of Regex or Exclude            |o_(")(")                                                                          | __|  \/  |_ _| |/ / _ \    THE
+//  4) Roles    =================================================================================================================================================  | _|| |\/| || || ' < (_) |       BEST
+//  |   MessageId                       |   RoleId                              |   IsUnicode                           |   EmoteData                           |  |___|_|  |_|___|_|\_\___/            VAMPBUN
+//  |-----------------------------------+---------------------------------------+---------------------------------------|---------------------------------------|                                           AROUND
+//  |String representing UInt64 not Null|   String representing UInt64 not Null |   Integer representing boolean        |   String representing either a unicode|
+//  |   Snowflake of message            |   Snowflake of role                   |   If the EmoteData is a unicode value |   character or a ulong id.            |
+//  =============================================================================================================================================================
 //
-// EMIKO
+// EMIKO                          
 
 using System;
 using System.Collections.Generic;
@@ -32,6 +32,8 @@ using System.Data;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DSharpPlus.CommandsNext.Converters;
+using DSharpPlus.Entities;
 using Microsoft.Data.Sqlite;
 
 namespace BigSister.Database
@@ -183,11 +185,14 @@ namespace BigSister.Database
                 command.CommandText =
                     @"
                         CREATE TABLE `Roles` (
-	                        `MessageId` TEXT NOT NULL, -- Snowflake of message
-	                        `RoleId`    TEXT NOT NULL, -- Snowflake of role
-	                        `EmoteId`   TEXT NOT NULL  -- Snowflake of emote
+	                        `MessageId` TEXT    NOT NULL, -- Snowflake of message
+	                        `RoleId`    TEXT    NOT NULL, -- Snowflake of role
+	                        `IsUnicode` Integer NOT NULL, -- (Boolean) If emote data is unicode character.
+	                        `EmoteData` TEXT    NOT NULL  -- Emote data (either unicode character or a ulong id)
                         );
                     ";
+
+                command.ExecuteNonQuery();
             }
         }
     }

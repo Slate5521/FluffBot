@@ -311,25 +311,5 @@ namespace BigSister.Commands
         }
 
         #endregion Rimboard
-        #region Role System
-
-        [Command("rolesenabled"), MinimumRole(ConfigPerm), Description("WIP")]
-        public async Task RolesEnabled(CommandContext ctx, bool enabled)
-        {
-            if (await Permissions.HandlePermissionsCheck(ctx))
-            {
-                Program.UpdateSettings(ref Program.Settings.RoleChannelEnabled, enabled);
-
-                string a = GetEnabledDisabled(enabled);
-                await GenericResponses.SendMessageSettingChanged(
-                    channel: ctx.Channel,
-                    mention: ctx.Member.Mention,
-                    title: $"Role requesting {a}",
-                    valueName: @"role requests",
-                    newVal: a);
-            }
-        }
-
-        #endregion
     }
 }

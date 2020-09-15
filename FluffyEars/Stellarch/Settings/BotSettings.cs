@@ -61,11 +61,5 @@ namespace BigSister.Settings
         public int RimboardReactionsNeeded = 3;
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
         public int RimboardPinReactionsNeeded = 5;
-
-        // ----------------
-        // Role Requests
-
-        /// <summary>If role channel is enabled or not.</summary>
-        public bool RoleChannelEnabled = false;
     }
 }
