@@ -80,6 +80,13 @@ namespace BigSister
 
             botClient.MessageReactionAdded += RoleRequest.RoleRequestSystem.MessageReactionAdded;
             botClient.MessageReactionRemoved += RoleRequest.RoleRequestSystem.MessageReactionRemoved;
+
+            // ----------------
+            // Auditing
+
+            var commandsNext = botClient.GetCommandsNext();
+
+            commandsNext.CommandExecuted += Loggah.AuditSystem.Bot_CommandExecuted;
         }
 
         private static void FilterSystem_FilterTriggered(Filter.FilterEventArgs e)

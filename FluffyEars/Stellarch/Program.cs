@@ -48,6 +48,12 @@ namespace BigSister
                 get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, SETTINGS_FILE);
             }
 
+            const string LOG_FILE = @"log.txt";
+            public static string LogFile
+            {
+                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, LOG_FILE);
+            }
+
             const string DATABASE_FILE = @"database.db";
             public static string DatabaseFile
             {
