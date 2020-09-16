@@ -18,7 +18,13 @@ namespace BigSister.Commands
 {
     class FilterCommands : BaseCommandModule
     {
-        [Command("filter"), MinimumRole(Role.Mod)]
+        [Command("filter"), 
+            MinimumRole(Role.Mod),
+            Description("Depending on user input, adds a new mask, removes a mask, or lists all the masks.\n\n" +
+            "Usage:\n" +
+            "!filter new/add <regexString> e.g. !filter new b[aeiou]nny" +
+            "!filter remove/delete <regexString> e.g. !filter remove b[aeiou]nny" +
+            "!filter list")]
         public async Task FilterBase(CommandContext ctx, string action, [RemainingText] string mask)
         {
             // Check if they have the permissions to call this command.
@@ -68,7 +74,14 @@ namespace BigSister.Commands
 
         #region Excludes
 
-        [Command("exclude"), Aliases("excludes"), MinimumRole(Role.Mod)]
+        [Command("exclude"), 
+            Aliases("excludes"), 
+            MinimumRole(Role.Mod),
+            Description("Depending on user input, adds a new exclude, removes an exclude, or lists all the excludes.\n\n" +
+            "Usage:\n" +
+            "!exclude(s) new/add <excludePhrase> e.g. !exclude new bunnyes cute" +
+            "!exclude(s) remove/delete <excludePhrase> e.g. !exclude remove bunnyes cute" +
+            "!exclude(s) list")]
         public async Task ExcludeBase(CommandContext ctx, string action, [RemainingText] string exclude)
         {
             // Check if they have the permissions to call this command.
