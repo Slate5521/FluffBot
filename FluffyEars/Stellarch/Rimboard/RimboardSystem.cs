@@ -130,7 +130,7 @@ namespace BigSister.Rimboard
                 Program.Settings.RimboardEnabled &&
                 Program.Settings.RimboardWebhookId != BotSettings.Default.RimboardWebhookId)
             {
-                DiscordEmoji emoji = await GetReactionEmoji(e.Guild);
+                DiscordEmoji emoji = GetReactionEmoji(e.Client, e.Guild);
 
                 // We don't want the cached version of this message because if it was sent during downtime, the bot won't be able to do
                 // anything with it.
@@ -341,8 +341,8 @@ namespace BigSister.Rimboard
             }
         }
 
-        static async Task<DiscordEmoji> GetReactionEmoji(DiscordGuild e)
-            => await e.GetEmojiAsync(Program.Settings.RimboardEmoticonId);
+        static DiscordEmoji GetReactionEmoji(BaseDiscordClient cl, DiscordGuild e)
+            => EmojiConverter.GetEmoji(cl, Program.Settings.RimboardEmoticon);
         static DiscordEmoji GetPinEmoji(BaseDiscordClient client)
             => DiscordEmoji.FromName(client, @":pushpin:");
     }

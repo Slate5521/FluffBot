@@ -261,7 +261,7 @@ namespace BigSister.Commands
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
-                Program.UpdateSettings(ref Program.Settings.RimboardEmoticonId, emote.Id);
+                Program.UpdateSettings(ref Program.Settings.RimboardEmoticon, new EmojiData(emote));
 
                 await GenericResponses.SendMessageSettingChanged(
                     channel: ctx.Channel,

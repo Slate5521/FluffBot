@@ -12,9 +12,9 @@ namespace BigSister
     public struct EmojiData
     {
         /// <summary>The main data of the emoji. Can either be a string or a ulong emote id.</summary>
-        public readonly string Value;
+        public string Value;
         /// <summary>If the emoji is a unicode character.</summary>
-        public readonly bool IsUnicodeCharacter;
+        public bool IsUnicodeCharacter;
 
         /// <summary>Get a new instance of this struct with a unicode character.</summary>
         public EmojiData(string unicodeCharacter)
