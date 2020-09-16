@@ -10,6 +10,9 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using BigSister.Reminders;
 using BigSister.Commands;
+using DSharpPlus.Entities;
+using System.Text;
+using BigSister.ChatObjects;
 
 namespace BigSister
 {
@@ -92,10 +95,55 @@ namespace BigSister
             botClient.Heartbeated += FunStuff.BotClient_Heartbeated;
         }
 
-        private static void FilterSystem_FilterTriggered(Filter.FilterEventArgs e)
+        /// <summary>Send a message to the filter channel.</summary>
+        /// <param name="embed">The embed to send</param>
+        /// <param name="text">The text to send</param>
+        private static async Task NotifyFilterChannel(DiscordEmbed embed)
         {
+            var auditChannel = await Program.BotClient.GetChannelAsync(Program.Settings.FilterChannelId);
 
-            throw new NotImplementedException();
+            try
+            {
+                await auditChannel.SendMessageAsync(embed: embed).ConfigureAwait(false);
+            }
+            catch
+            {
+                throw new ArgumentException("Audit channel not found.");
+            }
+        }
+
+        private static async Task FilterSystem_FilterTriggered(Filter.FilterEventArgs e)
+        {
+            var stringBuilder = new StringBuilder();
+
+            // Append all the found bad words to the string builder.
+            foreach (string str in e.BadWords)
+            {
+                stringBuilder.Append(str);
+                stringBuilder.Append(' ');
+            }
+
+            // Create the Discord Embed
+            var deb = new DiscordEmbedBuilder()
+            {
+                Title = "Filter: Word Detected",
+                Color = DiscordColor.Red
+            };
+
+            deb.WithDescription(String.Format("Filter Trigger(s):```{0}```Excerpt:```{1}```",
+                stringBuilder.ToString(), e.NotatedMessage));
+
+            deb.AddField(@"Author ID", e.User.Id.ToString(), inline: true);
+            deb.AddField(@"Author Username", $"{e.User.Username}#{e.User.Discriminator}", inline: true);
+            deb.AddField(@"Author Mention", e.User.Mention, inline: true);
+            deb.AddField(@"Channel", e.Channel.Mention, inline: true);
+            deb.AddField(@"Timestamp (UTC)", e.Message.CreationTimestamp.UtcDateTime.ToString(Generics.DateFormat), inline: true);
+            deb.AddField(@"Link", Generics.GetMessageUrl(e.Message));
+
+            deb.WithThumbnail(Generics.URL_FILTER_BUBBLE);
+
+            // Notify the filter channel.
+            await NotifyFilterChannel(deb.Build());
         }
     }
 }

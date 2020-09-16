@@ -35,7 +35,9 @@ namespace BigSister.Filter
 
 
         /// <summary>Query to check if a mask or exclude exists in the database.</summary>
-        const string QQ_ItemExists = @"SELECT EXISTS(SELECT 1 FROM `FILTER` WHERE `STRING`=$string);";
+        const string QQ_ItemExistsAny = @"SELECT EXISTS(SELECT 1 FROM `FILTER` WHERE `String`=$string);";
+        /// <summary>Query to check if a mask or exclude exists in the database.</summary>
+        const string QQ_ItemExistsType = @"SELECT EXISTS(SELECT 1 FROM `FILTER` WHERE `Type`=$type AND `String`=$string);";
         /// <summary>Query to add a mask or exclude into the database.</summary>
         const string QQ_ItemAdd = @"INSERT INTO `Filter` (`Type`, `String`) VALUES ($type, $string);";
         /// <summary>Query to remove a mask or exclude into the database.</summary>
@@ -53,7 +55,7 @@ namespace BigSister.Filter
         {
             return a switch
             {
-                TYPE_MASK => "mask",
+                TYPE_MASK => "filter",
                 TYPE_EXCLUDE => "exclude",
                 _ => String.Empty,
             };
@@ -72,45 +74,55 @@ namespace BigSister.Filter
                 .ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
-        /// <summary>Check if a mask exists in the database.</summary>
-        public static async Task<bool> HasMask(string mask)
-            => await HasItem(TYPE_MASK, mask);
+        public static async Task<bool> HasMask(string item)
+            => await HasItem(item, TYPE_MASK);
+        public static async Task<bool> HasExclude(string item)
+            => await HasItem(item, TYPE_EXCLUDE);
 
-        /// <summary>Check if an exclude exists in the database.</summary>
-        public static async Task<bool> HasExclude(string exclude)
-            => await HasItem(TYPE_EXCLUDE, exclude);
-        
         /// <summary>Check if an item (possibly a mask or an exclude) exists in the database.</summary>
-        static async Task<bool> HasItem(int type, string item)
+        public static async Task<bool> HasItem(string item, int type = -1)
         {
             bool hasItem_returnVal;
+            bool anyType = type == -1;
 
-            // Check the cache.
-            if (ExistsInCache(type, item))
-            {   // In cahce
+            // Check the cache with three possible cases:
+            //  CASE A: We're looking for a mask so we search for a mask.
+            //  CASE B: We're looking for an exclude so we search for an exclude.
+            //  CASE C: We're not looking for anything in particular so we search indiscriminately.
+            if ( (type == TYPE_MASK && ExistsInCache(TYPE_MASK, item)) || // CASE A
+                 (type == TYPE_EXCLUDE && ExistsInCache(TYPE_EXCLUDE, item) ) || // CASE B
+                 (type == -1 && (ExistsInCache(TYPE_MASK, item) || ExistsInCache(TYPE_EXCLUDE, item))) ) // CASE C
+            {   // In cache.
                 hasItem_returnVal = true;
             }
             else
-            { // Not in caches o we have ot lolok for it
+            {   // Not in cache so we have to look for it
 
                 // Let's build the command.
                 using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
                 {
-                    CommandText = QQ_ItemExists
+                    CommandText = anyType ? 
+                                    QQ_ItemExistsAny :  // We're looking for any kind of type.
+                                    QQ_ItemExistsType   // We're looking for a specific item type.
                 };
 
-                SqliteParameter a = new SqliteParameter("$type", type)
-                {
-                    DbType = DbType.Byte
-                };
-
-                SqliteParameter b = new SqliteParameter("$string", item)
+                SqliteParameter a = new SqliteParameter("$string", item)
                 {
                     DbType = DbType.String
                 };
 
                 command.Parameters.Add(a);
-                command.Parameters.Add(b);
+
+                // We're looking for a specific type.
+                if(!anyType)
+                {
+                    SqliteParameter b = new SqliteParameter("$type", type)
+                    {
+                        DbType = DbType.String
+                    };
+
+                    command.Parameters.Add(b);
+                }
 
                 object returnVal = await BotDatabase.Instance.ExecuteReaderAsync(command,
                     processAction: delegate (SqliteDataReader reader)
@@ -277,47 +289,88 @@ namespace BigSister.Filter
         /// <summary>List all the items in the database in a paginated string.</summary>
         public static async Task ListItems(CommandContext ctx, int type)
         {
+            // Making this a constant in case DSharpPlus changes how many lines until a pagination is split (it is currently 15 as of 2020-Sep-16).
+            const int SPLIT_LINES = 15;
+
             string[] items = await ReadTable(type);
             string label = GetLabelString(type);
 
             var stringBuilder = new StringBuilder();
-            foreach(string item in items) // Make a list of all the items.
+            foreach (string item in items) // Make a list of all the items.
             {
                 stringBuilder.AppendLine(Formatter.InlineCode(item));
             }
 
             var interactivity = Program.BotClient.GetInteractivity();
 
-            Page[] pages = interactivity.GeneratePagesInEmbed(
+            // Now we want to define the pages.
+            Page[] pages;
+            
+            // If we actually have items, we can set up the variable.
+            if (items.Length > 0)
+            {   // Items there, make page.
+                pages = interactivity.GeneratePagesInEmbed(
                     input: stringBuilder.ToString(),
                     splittype: SplitType.Line,
-                    embedbase: 
+                    embedbase:
                         Generics.GenericEmbedTemplate(
                             color: Generics.NeutralColor,
                             thumbnail: Generics.URL_FILTER_GENERIC));
+            }
+            else
+            {   // No items, make blank variable.
+                pages = new Page[0];
+            }
 
             // Go through each embed and give them a header because for some reason I can't provide my own description in the base embed. Thanks
             // for that.
-            for(int i = 0; i < pages.Length; i++)
+            for (int i = 0; i < pages.Length; i++)
             {
                 DiscordEmbedBuilder deb = new DiscordEmbedBuilder(pages[i].Embed);
 
-                deb.Description = 
+                deb.Description =
                     Generics.NeutralDirectResponseTemplate(
                         mention: ctx.Member.Mention,
-                        body: $"please note you are the only one who can react to this. Here is the {label} list:\n{deb.Description}");
+                        body: $"please note you are the only one who can react to this. Here is the {label} list:\n\n{deb.Description}");
 
                 pages[i].Embed = deb.Build();
             }
 
-            // Send the paginated message.
-            await interactivity
-                .SendPaginatedMessageAsync(
-                    c: ctx.Channel,
-                    u: ctx.User,
-                    pages: pages,
-                    emojis: Generics.DefaultPaginationEmojis);
+            // Check if there are even any pages. If it's equal to SPLIT_LINES or SPLIT_LINES + 1 it means the pagination embed builder is going to
+            // try and fit it all into one page, so we also want to account for those too.
+            if (pages.Length == 1 || items.Length == SPLIT_LINES || items.Length == SPLIT_LINES + 1)
+            {   // Exactly one page we need to send.
+
+                // Delete the page footer.
+                DiscordEmbedBuilder deb = new DiscordEmbedBuilder(pages[0].Embed);
+                deb.WithFooter(String.Empty);
+
+                await ctx.RespondAsync(embed: deb);
+            }
+            else if (pages.Length > 1)
+            {   // There are pages we need to send.
+
+                // Send the paginated message.
+                await interactivity
+                    .SendPaginatedMessageAsync(
+                        c: ctx.Channel,
+                        u: ctx.User,
+                        pages: pages,
+                        emojis: Generics.DefaultPaginationEmojis);
+            }
+            else if(pages.Length == 0)
+            {   // There are no pages we need to send.
+                await ctx.RespondAsync(
+                    embed: Generics.GenericEmbedTemplate(
+                        color: Generics.NeutralColor,
+                        description: Generics.NeutralDirectResponseTemplate(
+                            mention: ctx.Member.Mention,
+                            body: $"there are no {label}s currently"),
+                        thumbnail: Generics.URL_FILTER_GENERIC,
+                        title: $"List of {label}s"));
+            }
         }
+
         /// <summary>Read a column from the filter table and return it as an array.</summary>
         public static async Task<string[]> ReadTable(int type)
         {

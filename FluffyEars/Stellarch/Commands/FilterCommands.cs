@@ -18,9 +18,7 @@ namespace BigSister.Commands
 {
     class FilterCommands : BaseCommandModule
     {
-        [Command("filter"),
-         MinimumRole(Role.Mod),
-         Description("WIP")]
+        [Command("filter"), MinimumRole(Role.Mod)]
         public async Task FilterBase(CommandContext ctx, string action, [RemainingText] string mask)
         {
             // Check if they have the permissions to call this command.
@@ -30,7 +28,7 @@ namespace BigSister.Commands
                 {
                     case "new":
                     case "add":
-                        if (!(await FilterSystem.HasMask(mask)))
+                        if (!(await FilterSystem.HasItem(mask)))
                         {   // The mask doesn't exist already.
                             await FilterSystem.AddMask(ctx, mask);
                         } 
@@ -40,7 +38,7 @@ namespace BigSister.Commands
                                     ctx.Channel, 
                                     ctx.Member.Mention, 
                                     "Unable to add mask", 
-                                    $"the provided mask `{mask}` exists already...");
+                                    $"the provided mask `{mask}` exists already as an exclude or mask...");
                         }
                         break;
                     case "remove":
@@ -70,9 +68,7 @@ namespace BigSister.Commands
 
         #region Excludes
 
-        [Command("exclude"),
-         Aliases("excludes"),
-         Description("WIP")]
+        [Command("exclude"), Aliases("excludes"), MinimumRole(Role.Mod)]
         public async Task ExcludeBase(CommandContext ctx, string action, [RemainingText] string exclude)
         {
             // Check if they have the permissions to call this command.
@@ -82,7 +78,7 @@ namespace BigSister.Commands
                 {
                     case "new":
                     case "add":
-                        if (!(await FilterSystem.HasExclude(exclude)))
+                        if (!(await FilterSystem.HasItem(exclude)))
                         {   // The exclude doesn't exist already.
                             await FilterSystem.AddExclude(ctx, exclude);
                         }
@@ -92,7 +88,7 @@ namespace BigSister.Commands
                                     ctx.Channel,
                                     ctx.Member.Mention,
                                     "Unable to add exclude",
-                                    $"the provided exclude `{exclude}` exists already...");
+                                    $"the provided exclude `{exclude}` exists already as an exclude or mask...");
                         }
                         break;
                     case "remove":

@@ -19,7 +19,7 @@ namespace BigSister.Filter
     {
         /// <summary>Invoked when the filter is triggered.</summary>
         public static event FilterTriggeredEventHandler FilterTriggered;
-        public delegate void FilterTriggeredEventHandler(FilterEventArgs e);
+        public delegate Task FilterTriggeredEventHandler(FilterEventArgs e);
 
         // Disable compiler warning for async code not having await. DSharpPlus demands that these two methods be an awaitable type, but I want them
         // to be synchronous. Thanks a lot.
