@@ -86,7 +86,12 @@ namespace BigSister
 
             var commandsNext = botClient.GetCommandsNext();
 
-            commandsNext.CommandExecuted += Loggah.AuditSystem.Bot_CommandExecuted;
+            commandsNext.CommandExecuted += AuditSystem.Bot_CommandExecuted;
+
+            // ----------------
+            // Fun stuff
+
+            botClient.MessageCreated += FunStuff.BotClientMessageCreated;
         }
 
         private static void FilterSystem_FilterTriggered(Filter.FilterEventArgs e)

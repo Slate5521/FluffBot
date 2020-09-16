@@ -6,14 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.5" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\FluffyEars\FluffyEars.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,6 +25,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="sav\botReactions.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="sav\identity0.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

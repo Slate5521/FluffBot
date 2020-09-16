@@ -311,5 +311,26 @@ namespace BigSister.Commands
         }
 
         #endregion Rimboard
+        #region Fun stuff
+
+        [Command("fun-allowed"), MinimumRole(ConfigPerm), Description("WIP")]
+        public async Task FunAllowed(CommandContext ctx, bool enabled)
+        {
+            if (await Permissions.HandlePermissionsCheck(ctx))
+            {
+                Program.UpdateSettings(ref Program.Settings.FunAllowed, enabled);
+
+                string a = GetEnabledDisabled(enabled);
+                await GenericResponses.SendMessageSettingChanged(
+                    channel: ctx.Channel,
+                    mention: ctx.Member.Mention,
+                    title: $"Fun {a}",
+                    valueName: @"fun allowed",
+                    newVal: a);
+            }
+        }
+
+
+        #endregion
     }
 }

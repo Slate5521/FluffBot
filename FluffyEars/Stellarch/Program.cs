@@ -48,6 +48,12 @@ namespace BigSister
                 get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, SETTINGS_FILE);
             }
 
+            const string FUN_FILE = @"botReactions.json";
+            public static string FunFile
+            {
+                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, FUN_FILE);
+            }
+
             const string LOG_FILE = @"log.txt";
             public static string LogFile
             {
@@ -127,9 +133,16 @@ namespace BigSister
                 BotDatabase.GenerateDefaultFile(Files.DatabaseFile);
             }
 
-
             // ----------------
-            // TODO: Initiate logging.
+            // Load fun stuff settings.
+            Console.Write("Loading fun stuff... ");
+            loadSuccess = FunStuff.LoadFunStuffJson(Files.FunFile);
+            Console.WriteLine(loadSuccess ? @"Successfully loaded" : @"No file - No fun allowed.");
+
+            if(Settings.FunAllowed && !loadSuccess)
+            {
+                UpdateSettings(ref Settings.FunAllowed, false);
+            }
 
             // ----------------
             // Run the bot.

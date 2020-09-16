@@ -61,5 +61,13 @@ namespace BigSister.Settings
         public int RimboardReactionsNeeded = 3;
         /// <summary>Number of reactions needed to pin a message in Rimboard.</summary>
         public int RimboardPinReactionsNeeded = 5;
+
+        // ----------------
+        // FunStuff
+
+        /// <summary>If fun is allowed or not.</summary>
+        public bool FunAllowed = false;
+        /// <summary>The per user cooldown in ms.</summary>
+        public ulong PerUserCooldownMilliseconds = 300000;
     }
 }
