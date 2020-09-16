@@ -87,6 +87,17 @@ namespace BigSister.ChatObjects
         public static string NegativeDirectResponseTemplate(string mention, string body)
             => $"{NEGATIVE_PREFIX} {mention}, {body}";
 
+        #region bunny
+        //                     ,\
+        //             \\\,_
+        //              \` ,\
+        //         __,.-" =__)
+        //       ."        )
+        //    ,_/   ,    \/\_
+        //    \_|    )_-\ \_-`
+        //jgs    `-----` `--`
+        #endregion bunny
+
         /// <summary>A template for Floppy directly responding to a user.</summary>
         public static string NeutralDirectResponseTemplate(string mention, string body)
             => $"{NEUTRAL_PREFIX} {mention}, {body}";

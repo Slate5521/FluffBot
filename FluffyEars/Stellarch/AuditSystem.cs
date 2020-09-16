@@ -16,15 +16,14 @@ namespace BigSister
     {
         static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
+#pragma warning disable IDE0063
         internal static async Task Bot_CommandExecuted(CommandExecutionEventArgs e)
         {
             semaphore.Wait();
 
             try
             {
-#pragma warning disable IDE0063
                 using (StreamWriter sw = new StreamWriter(Program.Files.LogFile, true))
-#pragma warning restore IDE0063
                 {
                     DateTimeOffset dto = DateTimeOffset.UtcNow;
                     string timeStamp = dto.ToString(Generics.DateFormat);
@@ -43,5 +42,6 @@ namespace BigSister
                 semaphore.Release();
             }
         }
+#pragma warning restore IDE0063
     }
 }

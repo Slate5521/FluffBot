@@ -189,11 +189,10 @@ namespace BigSister.Rimboard
 
                     DiscordMessage rimboardMessage;
 
+#pragma warning disable IDE0063
                     if (file)
                     {   // Send a message with a file.
-#pragma warning disable IDE0063
                         using (WebClient webclient = new WebClient())
-#pragma warning restore IDE0063
                         {
                             string fileName = Path.Combine(
                                 path1: Program.Files.RimboardTempFileDirectory,
@@ -221,6 +220,7 @@ namespace BigSister.Rimboard
                             } // end if
                         } // end using
                     }
+#pragma warning restore IDE0063
                     else
                     {   // Send a message with no file.
 

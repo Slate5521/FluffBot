@@ -12,6 +12,10 @@ namespace BigSister.Commands
     {
         public Role MinRole;
 
+   // ( Y )
+   //(  . .)
+   //o(") (")
+
         public MinimumRole(Role minimumRole)
             => MinRole = minimumRole;
     }

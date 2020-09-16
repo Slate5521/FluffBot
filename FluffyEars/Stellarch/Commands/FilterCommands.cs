@@ -3,6 +3,9 @@
 //  !filter add/remove/list
 //  !exclude add/remove/list
 //
+// (\-/)
+//(='.'=)
+//(")-(")o
 // EMIKO
 
 using System.Threading.Tasks;

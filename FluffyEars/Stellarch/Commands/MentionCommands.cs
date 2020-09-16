@@ -3,6 +3,10 @@
 //  !mentions <users>
 //  !mentions <userIds>
 //
+//   (\_/)
+//   (>.<)
+//   (")_(")
+//
 // EMIKO
 
 using System.Linq;

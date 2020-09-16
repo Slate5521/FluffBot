@@ -62,6 +62,7 @@ namespace BigSister.Database
             semaphoreSlim.Dispose();
         }
 
+#pragma warning disable IDE0063
         public async Task<object> ExecuteReaderAsync(SqliteCommand cmd, Func<SqliteDataReader, object> processAction)
         {
             object returnVal;
@@ -70,9 +71,7 @@ namespace BigSister.Database
 
             try
             {
-#pragma warning disable IDE0063
                 using(var connection = new SqliteConnection(DataSource))
-#pragma warning restore IDE0063
                 {
                     DataSet ds = new DataSet();
 
@@ -96,16 +95,16 @@ namespace BigSister.Database
 
             return returnVal;
         }
+#pragma warning restore IDE0063
 
+#pragma warning disable IDE0063
         public async Task ExecuteNonQuery(SqliteCommand cmd)
         {
             semaphoreSlim.Wait();
 
             try
             {
-#pragma warning disable IDE0063 
                 using (var connection = new SqliteConnection(DataSource))
-#pragma warning restore IDE0063 
                 {
                     cmd.Connection = connection;
 
@@ -122,15 +121,15 @@ namespace BigSister.Database
                 semaphoreSlim.Release();
             }
         }
+#pragma warning restore IDE0063
 
+#pragma warning disable IDE0063
         /// <summary>Generate a default database file.</summary>
         public static void GenerateDefaultFile(string outputFile)
         {   //Data Source=c:\mydb.db;Version=3;
             string dataSource = $"Data Source={outputFile};";
 
-#pragma warning disable IDE0063 
             using (var connection = new SqliteConnection(dataSource))
-#pragma warning restore IDE0063 
             {
                 connection.Open();
 
@@ -197,5 +196,6 @@ namespace BigSister.Database
                 command.ExecuteNonQuery();
             }
         }
+#pragma warning restore IDE0063 
     }
 }

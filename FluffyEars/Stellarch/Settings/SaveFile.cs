@@ -76,7 +76,6 @@ namespace BigSister.Settings
 #pragma warning disable IDE0063
                     using (var jsonWriter = new StreamWriter(saveFile, false))
                     using (var md5Writer = new StreamWriter(GetMD5File(saveFile), false))
-#pragma warning restore IDE0063
                     {
                         // Write data.
                         var a = jsonWriter.WriteAsync(json);
@@ -93,8 +92,9 @@ namespace BigSister.Settings
                         jsonWriter.Close();
                         md5Writer.Close();
                     }
-                } 
-                catch(Exception e)
+#pragma warning restore IDE0063
+                }
+                catch (Exception e)
                 {
                     throw new SaveFileException("Unable to save settings.", e);
                 }
@@ -140,6 +140,7 @@ namespace BigSister.Settings
         /// <returns>True if save file exists.</returns>
         public bool IsExistingSaveFile() => File.Exists(BaseFileA) || File.Exists(BaseFileB);
 
+#pragma warning disable IDE0063
         /// <summary>Read information from file.</summary>
         /// <param name="file">File to read from.</param>
         /// <returns>File contents.</returns>
@@ -149,9 +150,7 @@ namespace BigSister.Settings
 
             using (FileStream fs = File.OpenRead(file))
             {
-#pragma warning disable IDE0063
                 using (StreamReader sr = new StreamReader(fs))
-#pragma warning restore IDE0063
                 {
                     returnVal = sr.ReadToEnd();
                 }
@@ -159,6 +158,7 @@ namespace BigSister.Settings
 
             return returnVal;
         }
+#pragma warning restore IDE0063
 
         /// <summary>Get the file's MD5.</summary>
         /// <param name="file">File to get MD5 from.</param>
@@ -364,14 +364,14 @@ namespace BigSister.Settings
                 newFileMD5 = GetFileMD5(newestFile);
                 newFileIntegrity = CompareMD5(newFileTrueMD5, newFileMD5) && IsValidJson(newestFile);
             }
+#pragma warning disable IDE0059
             else
             {
-#pragma warning disable IDE0059
                 newFileTrueMD5 = String.Empty;
                 newFileMD5 = String.Empty;
-#pragma warning restore IDE0059 
                 newFileIntegrity = false;
             }
+#pragma warning restore IDE0059 
 
             // Let's try load the MD5s of the older files.
             if (oldFileExists && oldestFileMD5Exists)
@@ -380,14 +380,14 @@ namespace BigSister.Settings
                 oldFileMD5 = GetFileMD5(oldestFile);
                 oldFileIntegrity = CompareMD5(oldFileTrueMD5, oldFileMD5) && IsValidJson(oldestFile);
             }
+#pragma warning disable IDE0059
             else
             {
-#pragma warning disable IDE0059
                 oldFileTrueMD5 = String.Empty;
                 oldFileMD5 = String.Empty;
-#pragma warning restore IDE0059 
                 oldFileIntegrity = false;
             }
+#pragma warning restore IDE0059 
 
             // Great. Now we have all the MD5s, so we need to compare them and see what's up.
 

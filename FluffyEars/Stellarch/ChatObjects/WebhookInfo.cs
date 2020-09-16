@@ -33,6 +33,28 @@ namespace BigSister.ChatObjects
             validWebhook = true;
         }
 
+        #region bunny
+        //        ,
+        //        /|      __
+        //       / |   ,-~ /
+        //      Y :|  //  /
+        //      | jj /( .^
+        //      >-"~"-v"
+        //     /       Y
+        //    jo  o    |
+        //   ( ~T~j
+        //    >._-' _./
+        //   /   "~"  |
+        //  Y _,  |
+        // /| ;-"~ _  l
+        /// l/ ,-"~    \
+        //\//\/      .- \
+        // Y        /    Y    -Row
+        // l       I     !
+        // ]\      _\    /"\
+        //(" ~----( ~   Y.  )
+        #endregion bunny
+
         public async Task<DiscordMessage> SendWebhookMessage(string content = null, 
                                              DiscordEmbed[] embeds = null, 
                                              FileStream fileStream = null, 
