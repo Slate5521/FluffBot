@@ -3,27 +3,20 @@
 //
 // EMIKO
 
-using BigSister.ChatObjects;
-using BigSister.Commands;
-using BigSister.Database;
-using BigSister.Settings;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using DSharpPlus.Interactivity;
-using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Data;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using BigSister.ChatObjects;
+using BigSister.Database;
+using BigSister.Settings;
 
 namespace BigSister.Rimboard
 {

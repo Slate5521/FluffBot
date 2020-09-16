@@ -3,17 +3,16 @@
 //
 // Emiko
 
-using BigSister.Commands;
-using BigSister.Database;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Data.Sqlite;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
+using BigSister.Commands;
+using BigSister.Database;
 
 namespace BigSister.RoleRequest
 {
