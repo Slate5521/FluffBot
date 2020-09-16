@@ -3,16 +3,13 @@
 //
 // EMIKO
 
-using DSharpPlus;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using BigSister.Commands;
-using DSharpPlus.CommandsNext;
 using System.Timers;
+using DSharpPlus;
+using DSharpPlus.CommandsNext;
 using BigSister.Reminders;
-using BigSister.MentionSnooper;
+using BigSister.Commands;
 
 namespace BigSister
 {

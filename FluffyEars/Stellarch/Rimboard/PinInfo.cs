@@ -9,7 +9,7 @@ namespace BigSister.Rimboard
 {
     public struct PinInfo
     {
-        public static PinInfo Invalid = new PinInfo(default(ulong), default(ulong), default(ulong), default(ulong), default(int));
+        public static PinInfo Invalid = new PinInfo(default, default, default, default, default);
 
         /// <summary>The pinned message (in the rimboard channel).</summary>
         public ulong PinnedMessageId { get; }

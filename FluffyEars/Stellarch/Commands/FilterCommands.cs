@@ -5,13 +5,9 @@
 //
 // EMIKO
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus;
 using BigSister.ChatObjects;
 using BigSister.Filter;
 

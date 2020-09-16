@@ -10,14 +10,12 @@
 
 using System;
 using System.IO;
-using BigSister.Settings;
 using Newtonsoft.Json;
-using BigSister.Database;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
-using System.Threading.Tasks;
-using BigSister.ChatObjects;
+using BigSister.Settings;
+using BigSister.Database;
 
 namespace BigSister
 {
@@ -83,6 +81,8 @@ namespace BigSister
 
         static void Main(string[] args)
         {
+            // TODO: CLI
+
             bool loadSuccess;
 
             // ----------------

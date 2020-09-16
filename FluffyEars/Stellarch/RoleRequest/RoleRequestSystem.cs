@@ -34,8 +34,6 @@ namespace BigSister.RoleRequest
         //MessageIdRoleIdIsUnicodeEmoteData
         const string QQ_AddRow = @"INSERT INTO `Roles` (`MessageId`, `RoleId`, `IsUnicode`, `EmoteData`) VALUES ($messageId, $roleId, $isUnicode, $emoteData);";
         const string QQ_RemoveRow = @"DELETE FROM `Roles` WHERE `MessageId`=$messageId AND `EmoteData`=$emoteData;";
-        const string QQ_GetRole = @"SELECT `RoleId` FROM `Roles` WHERE `MessageId`=$messageId AND `EmoteData`=$emoteData;";
-        const string QQ_QueryRowExists = @"SELECT EXISTS 1 FROM `Roles` WHERE `MessageId`=$messageId AND `EmoteData`=$emoteData AND `RoleId`=$roleId;";
         const string QQ_CheckMessageEmoteExists = @"SELECT 1 FROM `Roles` WHERE `MessageId`=$messageId AND `EmoteData`=$emoteData;";
         const string QQ_QueryRowsMessageId = @"SELECT `RoleId`, `IsUnicode`, `EmoteData` FROM `Roles` WHERE `MessageId`=$messageId;";
         const string QQ_QueryRoleMessageIdEmote = @"SELECT `RoleId` FROM `ROLES` WHERE `MessageId`=$messageId AND `EmoteData`=$emoteData;";
@@ -45,20 +43,30 @@ namespace BigSister.RoleRequest
             var emojiData = new EmojiData(emoji);
 
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_AddRow;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_AddRow
+            };
 
-            SqliteParameter a = new SqliteParameter("$messageId", id.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$messageId", id.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter b = new SqliteParameter("$roleId", role.Id.ToString());
-            b.DbType = DbType.String;
+            SqliteParameter b = new SqliteParameter("$roleId", role.Id.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter c = new SqliteParameter("$isUnicode", emojiData.IsUnicodeCharacter);
-            c.DbType = DbType.Boolean;
+            SqliteParameter c = new SqliteParameter("$isUnicode", emojiData.IsUnicodeCharacter)
+            {
+                DbType = DbType.Boolean
+            };
 
-            SqliteParameter d = new SqliteParameter("$emoteData", emojiData.Value);
-            d.DbType = DbType.String;
+            SqliteParameter d = new SqliteParameter("$emoteData", emojiData.Value)
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d });
 
@@ -69,14 +77,20 @@ namespace BigSister.RoleRequest
             var emojiData = new EmojiData(emoji);
 
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_CheckMessageEmoteExists;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_CheckMessageEmoteExists
+            };
 
-            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter b = new SqliteParameter("$emoteData", emojiData.Value);
-            b.DbType = DbType.String;
+            SqliteParameter b = new SqliteParameter("$emoteData", emojiData.Value)
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.AddRange(new SqliteParameter[] { a, b });
 
@@ -117,11 +131,15 @@ namespace BigSister.RoleRequest
             RoleInfo[] @return;
 
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_QueryRowsMessageId;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_QueryRowsMessageId
+            };
 
-            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
 
@@ -148,14 +166,20 @@ namespace BigSister.RoleRequest
         private static async Task RemoveRow(ulong messageId, string emoteData)
         {
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_RemoveRow;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_RemoveRow
+            };
 
-            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter b = new SqliteParameter("$emoteData", emoteData);
-            b.DbType = DbType.String;
+            SqliteParameter b = new SqliteParameter("$emoteData", emoteData)
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
             command.Parameters.Add(b);
@@ -168,14 +192,20 @@ namespace BigSister.RoleRequest
             ulong @return;
 
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_QueryRoleMessageIdEmote;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_QueryRoleMessageIdEmote
+            };
 
-            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$messageId", messageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter b = new SqliteParameter("$emoteData", emoteData);
-            b.DbType = DbType.String;
+            SqliteParameter b = new SqliteParameter("$emoteData", emoteData)
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
             command.Parameters.Add(b);

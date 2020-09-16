@@ -27,23 +27,19 @@
 // EMIKO                          
 
 using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using DSharpPlus.CommandsNext.Converters;
-using DSharpPlus.Entities;
 using Microsoft.Data.Sqlite;
 
 namespace BigSister.Database
 {
     public sealed class BotDatabase
     {
-        private static BotDatabase instance =
+        private static readonly BotDatabase instance =
             new BotDatabase(Program.Files.DatabaseFile);
 
-        SemaphoreSlim semaphoreSlim;
+        readonly SemaphoreSlim semaphoreSlim;
 
         /// <summary>Database connection datasource.</summary>
         public string DataSource;
@@ -74,7 +70,9 @@ namespace BigSister.Database
 
             try
             {
+#pragma warning disable IDE0063
                 using(var connection = new SqliteConnection(DataSource))
+#pragma warning restore IDE0063
                 {
                     DataSet ds = new DataSet();
 
@@ -105,7 +103,9 @@ namespace BigSister.Database
 
             try
             {
+#pragma warning disable IDE0063 
                 using (var connection = new SqliteConnection(DataSource))
+#pragma warning restore IDE0063 
                 {
                     cmd.Connection = connection;
 
@@ -128,7 +128,9 @@ namespace BigSister.Database
         {   //Data Source=c:\mydb.db;Version=3;
             string dataSource = $"Data Source={outputFile};";
 
+#pragma warning disable IDE0063 
             using (var connection = new SqliteConnection(dataSource))
+#pragma warning restore IDE0063 
             {
                 connection.Open();
 

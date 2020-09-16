@@ -3,51 +3,48 @@
 //  
 // EMIKO
 
-using BigSister.ChatObjects;
-using BigSister.Database;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.Entities;
-using DSharpPlus.Interactivity;
-using Microsoft.Data.Sqlite;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Data.Sqlite;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
+using DSharpPlus.Interactivity;
+using BigSister.ChatObjects;
+using BigSister.Database;
 
 namespace BigSister.Reminders
 {
     public static partial class ReminderSystem
     {
         /// <summary>Query to add a reminder to the database.</summary>
-        static string QQ_AddReminder = @"INSERT INTO `Reminders` (`Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions`) 
+        const string QQ_AddReminder = @"INSERT INTO `Reminders` (`Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions`) 
                                          VALUES ($id, $userid, $channelid, $message, $time, $mention);";
         /// <summary>Query to remove a reminder from the database.</summary>
-        static string QQ_RemoveReminder = @"DELETE FROM `Reminders` WHERE `Id`=$id;";
+        const string QQ_RemoveReminder = @"DELETE FROM `Reminders` WHERE `Id`=$id;";
         /// <summary>Query to check if a reminder exists.</summary>
-        static string QQ_ReminderExists = @"SELECT EXISTS(SELECT 1 FROM `Reminders` WHERE `Id`=$id);";
+        const string QQ_ReminderExists = @"SELECT EXISTS(SELECT 1 FROM `Reminders` WHERE `Id`=$id);";
         /// <summary>Query to read the entire reminder table.</summary>
-        static string QQ_ReadTable = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders`;";
+        const string QQ_ReadTable = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders`;";
         /// <summary>Query to return all reminders that need to be triggered.</summary>
-        static string QQ_CheckRemindersElapsed = @"SELECT `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
+        const string QQ_CheckRemindersElapsed = @"SELECT `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
                                                   FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
         /// <summary>Query to delete all reminders that need to be triggered.</summary>
-        static string QQ_DeleteRemindersElapsed = @"DELETE FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
+        const string QQ_DeleteRemindersElapsed = @"DELETE FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
         /// <summary>Query to get a single reminder from a list.</summary>
-        static string QQ_GetReminderFromId = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders` WHERE `Id`=$id;";
+        const string QQ_GetReminderFromId = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders` WHERE `Id`=$id;";
 
         #region ReminderCommands.cs
 
         /// <summary>The date recognition Regex.</summary>
         // It groups every number/time unit pairing "(number)+(time unit)" into a group. 
-        static Regex DateRegex
+        static readonly Regex DateRegex
             = new Regex(@"(\d+)\s?(months?|days?|d|weeks?|wks?|w|hours?|hrs?|h|minutes?|mins?)",
                 RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
         public static async Task AddReminder(CommandContext ctx, string args)
@@ -204,35 +201,49 @@ namespace BigSister.Reminders
                 embed.AddField(@"Remaining time", Generics.GetRemainingTime(dto), true);
                 embed.AddField(@"Notification Identifier", reminder.OriginalMessageId.ToString(), false);
 
-                if(GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
+                if (GetUsersToNotify(reminder.UsersToNotify, out string mentionsString))
                 {
                     embed.AddField(@"Users to mention", mentionsString, false);
                 }
 
                 // Let's build the command.
-                using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-                command.CommandText = QQ_AddReminder;
+                using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+                {
+                    CommandText = QQ_AddReminder
+                };
 
-                SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString());
-                a.DbType = DbType.String;
+                SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString())
+                {
+                    DbType = DbType.String
+                };
 
-                SqliteParameter b = new SqliteParameter("$userid", reminder.User);
-                b.DbType = DbType.String;
+                SqliteParameter b = new SqliteParameter("$userid", reminder.User)
+                {
+                    DbType = DbType.String
+                };
 
-                SqliteParameter c = new SqliteParameter("$channelid", reminder.Channel);
-                c.DbType = DbType.String;
+                SqliteParameter c = new SqliteParameter("$channelid", reminder.Channel)
+                {
+                    DbType = DbType.String
+                };
 
-                SqliteParameter d = new SqliteParameter("$message", reminder.Text);
-                d.DbType = DbType.String;
+                SqliteParameter d = new SqliteParameter("$message", reminder.Text)
+                {
+                    DbType = DbType.String
+                };
 
-                SqliteParameter e = new SqliteParameter("$time", reminder.Time);
-                e.DbType = DbType.Int64;
+                SqliteParameter e = new SqliteParameter("$time", reminder.Time)
+                {
+                    DbType = DbType.Int64
+                };
 
                 var stringBuilder = new StringBuilder();
                 stringBuilder.AppendJoin(' ', reminder.UsersToNotify);
 
-                SqliteParameter f = new SqliteParameter("$mention", stringBuilder.ToString());
-                f.DbType = DbType.String;
+                SqliteParameter f = new SqliteParameter("$mention", stringBuilder.ToString())
+                {
+                    DbType = DbType.String
+                };
 
                 command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d, e, f });
 
@@ -246,13 +257,17 @@ namespace BigSister.Reminders
         public static async Task RemoveReminder(CommandContext ctx, Reminder reminder)
         {
             // It's a reminder, so let's remove it.
-            
-            // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_RemoveReminder;
 
-            SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString());
-            a.DbType = DbType.String;
+            // Let's build the command.
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_RemoveReminder
+            };
+
+            SqliteParameter a = new SqliteParameter("$id", reminder.OriginalMessageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
 
@@ -293,11 +308,15 @@ namespace BigSister.Reminders
             bool hasItem_returnVal;
 
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_ReminderExists;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_ReminderExists
+            };
 
-            SqliteParameter a = new SqliteParameter("$id", id);
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$id", id)
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
 
@@ -341,11 +360,15 @@ namespace BigSister.Reminders
             Reminder item_returnVal;
 
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_GetReminderFromId;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_GetReminderFromId
+            };
 
-            SqliteParameter a = new SqliteParameter("$id", id);
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$id", id)
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
 
@@ -466,7 +489,7 @@ namespace BigSister.Reminders
             }
         }
 
-        static Func<SqliteDataReader, object> readReminders = 
+        static readonly Func<SqliteDataReader, object> readReminders = 
             delegate (SqliteDataReader reader)
                 {
                     var reminderList = new List<Reminder>();
@@ -493,8 +516,10 @@ namespace BigSister.Reminders
         /// <summary>Read the table and return as an array.</summary>
         public static async Task<Reminder[]> ReadTable()
         {
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_ReadTable;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_ReadTable
+            };
 
             Reminder[] returnVal = (Reminder[])await BotDatabase.Instance.ExecuteReaderAsync(command,
                 processAction: readReminders);
@@ -505,11 +530,15 @@ namespace BigSister.Reminders
         /// <summary>Find any reminders that need to be triggered and trigger them.</summary>
         static async Task LookTriggerReminders(int timeNowMinutes)
         {
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_CheckRemindersElapsed;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_CheckRemindersElapsed
+            };
 
-            SqliteParameter a = new SqliteParameter("$timenow", timeNowMinutes);
-            a.DbType = DbType.Int32;
+            SqliteParameter a = new SqliteParameter("$timenow", timeNowMinutes)
+            {
+                DbType = DbType.Int32
+            };
 
             command.Parameters.Add(a);
 
@@ -519,8 +548,10 @@ namespace BigSister.Reminders
             // Check if there are any reminders
             if (pendingReminders.Length > 0)
             {   // There are reminders.
-                using var delCommand = new SqliteCommand(BotDatabase.Instance.DataSource);
-                delCommand.CommandText = QQ_DeleteRemindersElapsed;
+                using var delCommand = new SqliteCommand(BotDatabase.Instance.DataSource)
+                {
+                    CommandText = QQ_DeleteRemindersElapsed
+                };
 
                 delCommand.Parameters.Add(a);
 

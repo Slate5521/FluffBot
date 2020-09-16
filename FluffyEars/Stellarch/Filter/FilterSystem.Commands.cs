@@ -6,24 +6,20 @@
 //
 // EMIKO
 
-using BigSister.Database;
-using DSharpPlus.CommandsNext;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Data.Sqlite;
 using System.Data;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Linq;
 using System.Text.RegularExpressions;
-using DSharpPlus.EventArgs;
-using BigSister.ChatObjects;
-using System.Reflection.Emit;
+using Microsoft.Data.Sqlite;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus;
-using Microsoft.VisualBasic.CompilerServices;
+using DSharpPlus.CommandsNext;
+using BigSister.ChatObjects;
+using BigSister.Database;
 
 namespace BigSister.Filter
 {
@@ -39,15 +35,15 @@ namespace BigSister.Filter
 
 
         /// <summary>Query to check if a mask or exclude exists in the database.</summary>
-        static string QQ_ItemExists = @"SELECT EXISTS(SELECT 1 FROM `FILTER` WHERE `STRING`=$string);";
+        const string QQ_ItemExists = @"SELECT EXISTS(SELECT 1 FROM `FILTER` WHERE `STRING`=$string);";
         /// <summary>Query to add a mask or exclude into the database.</summary>
-        static string QQ_ItemAdd = @"INSERT INTO `Filter` (`Type`, `String`) VALUES ($type, $string);";
+        const string QQ_ItemAdd = @"INSERT INTO `Filter` (`Type`, `String`) VALUES ($type, $string);";
         /// <summary>Query to remove a mask or exclude into the database.</summary>
-        static string QQ_ItemRemove = @"DELETE FROM `Filter` WHERE `Type`=$type AND `String`=$string;";
+        const string QQ_ItemRemove = @"DELETE FROM `Filter` WHERE `Type`=$type AND `String`=$string;";
         /// <summary>Query to read the table for either a mask or an exclude.</summary>
-        static string QQ_ReadTable = @"SELECT `String` FROM `Filter` WHERE `Type`=$type;";
+        const string QQ_ReadTable = @"SELECT `String` FROM `Filter` WHERE `Type`=$type;";
 
-        static RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
+        static readonly RegexOptions regexOptions = RegexOptions.IgnoreCase | RegexOptions.Multiline;
 
         static string[] MaskCache;
         static string[] ExcludeCache;
@@ -55,12 +51,12 @@ namespace BigSister.Filter
 
         public static string GetLabelString(int a)
         {
-            switch(a)               // SESE HELL ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! !
+            return a switch
             {
-                case TYPE_MASK: return "mask";
-                case TYPE_EXCLUDE: return "exclude";
-                default: return String.Empty;
-            }
+                TYPE_MASK => "mask",
+                TYPE_EXCLUDE => "exclude",
+                _ => String.Empty,
+            };
         }
 
         static FilterSystem() { }
@@ -98,14 +94,20 @@ namespace BigSister.Filter
             { // Not in caches o we have ot lolok for it
 
                 // Let's build the command.
-                using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-                command.CommandText = QQ_ItemExists;
+                using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+                {
+                    CommandText = QQ_ItemExists
+                };
 
-                SqliteParameter a = new SqliteParameter("$type", type);
-                a.DbType = DbType.Byte;
+                SqliteParameter a = new SqliteParameter("$type", type)
+                {
+                    DbType = DbType.Byte
+                };
 
-                SqliteParameter b = new SqliteParameter("$string", item);
-                b.DbType = DbType.String;
+                SqliteParameter b = new SqliteParameter("$string", item)
+                {
+                    DbType = DbType.String
+                };
 
                 command.Parameters.Add(a);
                 command.Parameters.Add(b);
@@ -172,14 +174,20 @@ namespace BigSister.Filter
             else
             {   // It's not in the cache so we can add it to the thing
                 // Let's build the command.
-                using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-                command.CommandText = QQ_ItemAdd;
+                using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+                {
+                    CommandText = QQ_ItemAdd
+                };
 
-                var a = new SqliteParameter("$type", type);
-                a.DbType = DbType.Byte;
+                var a = new SqliteParameter("$type", type)
+                {
+                    DbType = DbType.Byte
+                };
 
-                var b = new SqliteParameter("$string", item);
-                b.DbType = DbType.String;
+                var b = new SqliteParameter("$string", item)
+                {
+                    DbType = DbType.String
+                };
 
                 command.Parameters.Add(a);
                 command.Parameters.Add(b);
@@ -225,14 +233,20 @@ namespace BigSister.Filter
             {
                 // Build commdand
 
-                using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-                command.CommandText = QQ_ItemRemove;
+                using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+                {
+                    CommandText = QQ_ItemRemove
+                };
 
-                var a = new SqliteParameter("$type", type);
-                a.DbType = DbType.Byte;
+                var a = new SqliteParameter("$type", type)
+                {
+                    DbType = DbType.Byte
+                };
 
-                var b = new SqliteParameter("$string", item);
-                b.DbType = DbType.String;
+                var b = new SqliteParameter("$string", item)
+                {
+                    DbType = DbType.String
+                };
 
                 command.Parameters.Add(a);
                 command.Parameters.Add(b);
@@ -307,11 +321,15 @@ namespace BigSister.Filter
         /// <summary>Read a column from the filter table and return it as an array.</summary>
         public static async Task<string[]> ReadTable(int type)
         {
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_ReadTable;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_ReadTable
+            };
 
-            var a = new SqliteParameter("$type", type);
-            a.DbType = DbType.Byte;
+            var a = new SqliteParameter("$type", type)
+            {
+                DbType = DbType.Byte
+            };
 
             command.Parameters.Add(a);
 
@@ -334,22 +352,13 @@ namespace BigSister.Filter
         /// <summary>Checks if an item is in cache.</summary>
         static bool ExistsInCache(int type, string searchItem)
         {
-            bool exists_returnVal; //r eturn value
-
-            switch(type)
+            return type switch
             {
-                case TYPE_MASK:
-                    exists_returnVal = MaskCache.Contains(searchItem);
-                    break;
-                case TYPE_EXCLUDE:
-                    exists_returnVal = ExcludeCache.Contains(searchItem);
-                    break;
-                default: // why are you here?
-                    exists_returnVal = false;
-                    break;
-            }
-
-            return exists_returnVal;
+                TYPE_MASK => MaskCache.Contains(searchItem),
+                TYPE_EXCLUDE => ExcludeCache.Contains(searchItem),
+                // why are you here?
+                _ => false,
+            };
         }
 
         /// <summary>Update the cache.</summary>

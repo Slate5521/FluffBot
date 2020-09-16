@@ -156,7 +156,7 @@ namespace BigSister.MentionSnooper
         }
 
         /// <summary>For searching mentions.</summary>
-        static Regex MentionRegex = new Regex(@"<@!?(\d{17,})>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        static readonly Regex MentionRegex = new Regex(@"<@!?(\d{17,})>", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         /// <summary>Use Regex to get mentions in a message.</summary>
         /// <returns>A list of found mentions.</returns>

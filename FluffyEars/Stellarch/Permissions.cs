@@ -7,18 +7,14 @@
 //
 // EMIKO
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
 using BigSister.ChatObjects;
 using BigSister.Commands;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics.Tracing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BigSister
 {
@@ -205,36 +201,17 @@ namespace BigSister
         /// <summary>Turn a Role into a user-friendly string.</summary>
         public static string GetRoleString(Role role)
         {
-            string roleString_returnVal;
-
-            switch(role)
+            string roleString_returnVal = role switch
             {
-                default:
-                    roleString_returnVal = String.Empty;
-                    break;
-                case Role.Colonist:
-                    roleString_returnVal = @"Colonist";
-                    break;
-                case Role.Troubleshooter:
-                    roleString_returnVal = @"Troubleshooter";
-                    break;
-                case Role.CS:
-                    roleString_returnVal = @"Community Support";
-                    break;
-                case Role.Mod:
-                    roleString_returnVal = @"Moderator";
-                    break;
-                case Role.SeniorMod:
-                    roleString_returnVal = @"Senior Moderator";
-                    break;
-                case Role.BotManager:
-                    roleString_returnVal = @"Bot Manager";
-                    break;
-                case Role.Admin:
-                    roleString_returnVal = @"Admin";
-                    break;
-            }
-
+                Role.Colonist       => @"Colonist",
+                Role.Troubleshooter => @"Troubleshooter",
+                Role.CS             => @"Community Support",
+                Role.Mod            => @"Moderator",
+                Role.SeniorMod      => @"Senior Moderator",
+                Role.BotManager     => @"Bot Manager",
+                Role.Admin          => @"Admin",
+                                  _ => String.Empty,
+            };
             return roleString_returnVal;
         }
     }

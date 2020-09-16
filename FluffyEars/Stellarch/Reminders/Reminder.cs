@@ -14,12 +14,12 @@ namespace BigSister.Reminders
     {
         // Invalid reminder.
         public static Reminder Invalid = new Reminder(
-            originalMessageId: default(string),
-            user:          default(ulong),
-            text:          default(string),
-            time:          default(int),
-            channel:       default(ulong),
-            usersToNotify: default(string[]));
+            originalMessageId: default,
+            user:          default,
+            text:          default,
+            time:          default,
+            channel:       default,
+            usersToNotify: default);
 
         /// <summary>The original message id.</summary>
         public string OriginalMessageId { get; }

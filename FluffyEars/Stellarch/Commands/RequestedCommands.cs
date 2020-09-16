@@ -5,14 +5,12 @@
 // 
 // EMIKO
 
-using BigSister.ChatObjects;
+using System;
+using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using BigSister.ChatObjects;
 
 namespace BigSister.Commands
 {

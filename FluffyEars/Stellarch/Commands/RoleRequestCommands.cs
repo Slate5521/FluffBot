@@ -8,17 +8,11 @@
 //
 // EMIKO
 
-using BigSister.ChatObjects;
-using BigSister.RoleRequest;
-using DSharpPlus;
+using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.CommandsNext.Converters;
 using DSharpPlus.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using BigSister.RoleRequest;
 
 namespace BigSister.Commands
 {
@@ -64,7 +58,7 @@ namespace BigSister.Commands
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
-                await RoleRequestSystem.RoleMessageNew(ctx, channel, content);
+                await RoleRequestSystem.RoleMessageNew(channel, content);
             }
         }
 
@@ -75,7 +69,7 @@ namespace BigSister.Commands
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
-                await RoleRequestSystem.RoleMessageEdit(ctx, channel, messageId, content);
+                await RoleRequestSystem.RoleMessageEdit(channel, messageId, content);
             }
         }
     }

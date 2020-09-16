@@ -31,8 +31,6 @@ namespace BigSister.Rimboard
     {
        
 
-        /// <summary>Query to check if the Rimboard has this message.</summary>
-        const string QQ_RimboardHasMessage = @"SELECT EXISTS(SELECT 1 FROM `Rimboard` WHERE `OriginalMessageId`=$originalMessageId;";
         /// <summary>Query to get a message.</summary>
         const string QQ_RimboardSelectMessage = @"SELECT `OriginalMessageId`, `PinnedMessageId`, `OriginalMessageChannelId`, `PinnedMessageChannelId` FROM `Rimboard` WHERE `OriginalMessageId`=$originalMessageId;";
         /// <summary>Query to get a message from rimboard id.</summary>
@@ -42,7 +40,7 @@ namespace BigSister.Rimboard
         /// <summary>Query to remove an entry.</summary>
         const string QQ_RemoveEntry = @"DELETE FROM `Rimboard` WHERE `PinnedMessageId`=$pinnedMessageId;";
 
-        static Func<SqliteDataReader, object> ParsePinInfo = delegate (SqliteDataReader reader)
+        static readonly Func<SqliteDataReader, object> ParsePinInfo = delegate (SqliteDataReader reader)
         {
             Tuple<ulong, ulong, ulong, ulong> info;
 
@@ -67,11 +65,15 @@ namespace BigSister.Rimboard
             PinInfo pinInfo_returnVal;
 
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_RimboardSelectMessage;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_RimboardSelectMessage
+            };
 
-            SqliteParameter a = new SqliteParameter("$originalMessageId", originalId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$originalMessageId", originalId.ToString())
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
 
@@ -135,7 +137,7 @@ namespace BigSister.Rimboard
                 Program.Settings.RimboardEnabled &&
                 Program.Settings.RimboardWebhookId != BotSettings.Default.RimboardWebhookId)
             {
-                DiscordEmoji emoji = GetReactionEmoji(e.Client, e.Guild);
+                DiscordEmoji emoji = GetReactionEmoji(e.Client);
 
                 // We don't want the cached version of this message because if it was sent during downtime, the bot won't be able to do
                 // anything with it.
@@ -164,8 +166,10 @@ namespace BigSister.Rimboard
 
                     deb.WithColor(DiscordColor.Gold);
 
-                    UriBuilder avatarUri = new UriBuilder(message_noCache.Author.AvatarUrl);
-                    avatarUri.Query = "?size=64";
+                    UriBuilder avatarUri = new UriBuilder(message_noCache.Author.AvatarUrl)
+                    {
+                        Query = "?size=64"
+                    };
 
                     deb.WithThumbnail(avatarUri.ToString());
                     deb.WithDescription(message_noCache.Content);
@@ -179,8 +183,10 @@ namespace BigSister.Rimboard
 
                     // Let's send this shit already.
 
-                    List<DiscordEmbed> embeds = new List<DiscordEmbed>();
-                    embeds.Add(deb.Build());
+                    List<DiscordEmbed> embeds = new List<DiscordEmbed>
+                    {
+                        deb.Build()
+                    };
 
                     if (message_noCache.Embeds.Count > 0)
                     {   // We only want to have up to 10 embeds. Keep in mind we alread have an embed, so we can only take up to 9.
@@ -192,7 +198,9 @@ namespace BigSister.Rimboard
 
                     if (file)
                     {   // Send a message with a file.
+#pragma warning disable IDE0063
                         using (WebClient webclient = new WebClient())
+#pragma warning restore IDE0063
                         {
                             string fileName = Path.Combine(
                                 path1: Program.Files.RimboardTempFileDirectory,
@@ -269,20 +277,30 @@ namespace BigSister.Rimboard
 
             //($originalmessageId, $pinnedMessageId, $originalChannelId, $originalPinChannelId)
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_AddEntry;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_AddEntry
+            };
 
-            SqliteParameter a = new SqliteParameter("$originalMessageId", pin.OriginalMessageId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$originalMessageId", pin.OriginalMessageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter b = new SqliteParameter("$pinnedMessageId", pin.PinnedMessageId.ToString());
-            b.DbType = DbType.String;
+            SqliteParameter b = new SqliteParameter("$pinnedMessageId", pin.PinnedMessageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter c = new SqliteParameter("$originalChannelId", pin.OriginalChannelId.ToString());
-            c.DbType = DbType.String;
+            SqliteParameter c = new SqliteParameter("$originalChannelId", pin.OriginalChannelId.ToString())
+            {
+                DbType = DbType.String
+            };
 
-            SqliteParameter d = new SqliteParameter("$originalPinChannelId", pin.PinnedChannelId.ToString());
-            d.DbType = DbType.String;
+            SqliteParameter d = new SqliteParameter("$originalPinChannelId", pin.PinnedChannelId.ToString())
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.AddRange(new SqliteParameter[] { a, b, c, d });
 
@@ -292,11 +310,15 @@ namespace BigSister.Rimboard
         static async Task RemovePinFromDatabase(PinInfo pinInfo)
         {
             // Let's build the command.
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_RemoveEntry;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_RemoveEntry
+            };
 
-            SqliteParameter a = new SqliteParameter(@"$pinnedMessageId", pinInfo.PinnedMessageId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter(@"$pinnedMessageId", pinInfo.PinnedMessageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
 
@@ -305,11 +327,15 @@ namespace BigSister.Rimboard
 
         static async Task<PinInfo> QueryPinInfoFromRimboardId(ulong rimboardMessageId)
         {
-            using var command = new SqliteCommand(BotDatabase.Instance.DataSource);
-            command.CommandText = QQ_RimboardSelectMessageViaId;
+            using var command = new SqliteCommand(BotDatabase.Instance.DataSource)
+            {
+                CommandText = QQ_RimboardSelectMessageViaId
+            };
 
-            SqliteParameter a = new SqliteParameter("$pinnedMessageId", rimboardMessageId.ToString());
-            a.DbType = DbType.String;
+            SqliteParameter a = new SqliteParameter("$pinnedMessageId", rimboardMessageId.ToString())
+            {
+                DbType = DbType.String
+            };
 
             command.Parameters.Add(a);
             
@@ -346,7 +372,7 @@ namespace BigSister.Rimboard
             }
         }
 
-        static DiscordEmoji GetReactionEmoji(BaseDiscordClient cl, DiscordGuild e)
+        static DiscordEmoji GetReactionEmoji(BaseDiscordClient cl)
             => EmojiConverter.GetEmoji(cl, Program.Settings.RimboardEmoticon);
         static DiscordEmoji GetPinEmoji(BaseDiscordClient client)
             => DiscordEmoji.FromName(client, @":pushpin:");

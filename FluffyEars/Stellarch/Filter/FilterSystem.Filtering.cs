@@ -5,15 +5,13 @@
 //
 // EMIKO
 
-using BigSister.Settings;
-using DSharpPlus;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
-using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DSharpPlus;
+using DSharpPlus.Entities;
+using DSharpPlus.EventArgs;
 
 namespace BigSister.Filter
 {
@@ -58,9 +56,10 @@ namespace BigSister.Filter
             // Let's check if the audit channel is set.
             if (Program.Settings.FilterChannelId != 0)
             {
-                string notatedMessage;
 
-                var badWords = GetBadWords(message.Content, out notatedMessage); // The detected bad words.
+                var badWords = GetBadWords(message.Content, 
+                    out 
+                    string notatedMessage); // The detected bad words.
 
                 if (badWords.Count > 0)
                 {

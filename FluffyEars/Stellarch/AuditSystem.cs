@@ -3,20 +3,18 @@
 //
 // EMIKO
 
-using BigSister.ChatObjects;
-using DSharpPlus.CommandsNext;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DSharpPlus.CommandsNext;
+using BigSister.ChatObjects;
 
 namespace BigSister
 {
     static class AuditSystem
     {
-        static SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
+        static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1);
 
         internal static async Task Bot_CommandExecuted(CommandExecutionEventArgs e)
         {
@@ -24,7 +22,9 @@ namespace BigSister
 
             try
             {
+#pragma warning disable IDE0063
                 using (StreamWriter sw = new StreamWriter(Program.Files.LogFile, true))
+#pragma warning restore IDE0063
                 {
                     DateTimeOffset dto = DateTimeOffset.UtcNow;
                     string timeStamp = dto.ToString(Generics.DateFormat);

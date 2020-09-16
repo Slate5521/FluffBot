@@ -3,14 +3,12 @@
 //
 // EMIKO
 
+using System;
+using System.Linq;
+using System.Text;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
 
 namespace BigSister.ChatObjects
 {

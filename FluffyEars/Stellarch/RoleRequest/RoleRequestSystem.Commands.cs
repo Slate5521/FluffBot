@@ -3,18 +3,13 @@
 //
 // EMIKO
 
-using BigSister.ChatObjects;
-using BigSister.Commands;
-using DSharpPlus;
-using DSharpPlus.CommandsNext;
-using DSharpPlus.CommandsNext.Attributes;
-using DSharpPlus.Entities;
-using DSharpPlus.EventArgs;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DSharpPlus.CommandsNext;
+using DSharpPlus.Entities;
+using BigSister.ChatObjects;
 
 namespace BigSister.RoleRequest
 {
@@ -183,15 +178,13 @@ namespace BigSister.RoleRequest
             }
         }
 
-        internal static async Task RoleMessageNew(CommandContext ctx, 
-                                                  DiscordChannel channel, 
+        internal static async Task RoleMessageNew(DiscordChannel channel, 
                                                   string content)
         {
             await channel.SendMessageAsync(content);
         }
 
-        internal static async Task RoleMessageEdit(CommandContext ctx, 
-                                                   DiscordChannel channel, 
+        internal static async Task RoleMessageEdit(DiscordChannel channel, 
                                                    ulong messageId, 
                                                    string content)
         {

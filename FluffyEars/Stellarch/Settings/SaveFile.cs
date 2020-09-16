@@ -5,15 +5,13 @@
 //
 // EMIKO
 
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace BigSister.Settings
 {
@@ -28,14 +26,14 @@ namespace BigSister.Settings
         // File.B.MD5
         //
         // ... And the file system will switch between each file and saving in the MD5.
-        private string baseFileName;
+        private readonly string baseFileName;
 
         /// <summary>Get a string describing BaseFile.A</summary>
         private string BaseFileA => $"{baseFileName}.A";
         /// <summary>Get a string describing BaseFile.B</summary>
         private string BaseFileB => $"{baseFileName}.B";
 
-        private SemaphoreSlim semaphoreSlim;
+        private readonly SemaphoreSlim semaphoreSlim;
 
         public SaveFile() { }
         public SaveFile(string baseFile)
@@ -75,8 +73,10 @@ namespace BigSister.Settings
                 try
                 {
                     // Let's save the SaveFile and the MD5.
+#pragma warning disable IDE0063
                     using (var jsonWriter = new StreamWriter(saveFile, false))
                     using (var md5Writer = new StreamWriter(GetMD5File(saveFile), false))
+#pragma warning restore IDE0063
                     {
                         // Write data.
                         var a = jsonWriter.WriteAsync(json);
@@ -149,7 +149,9 @@ namespace BigSister.Settings
 
             using (FileStream fs = File.OpenRead(file))
             {
+#pragma warning disable IDE0063
                 using (StreamReader sr = new StreamReader(fs))
+#pragma warning restore IDE0063
                 {
                     returnVal = sr.ReadToEnd();
                 }
@@ -364,8 +366,10 @@ namespace BigSister.Settings
             }
             else
             {
+#pragma warning disable IDE0059
                 newFileTrueMD5 = String.Empty;
                 newFileMD5 = String.Empty;
+#pragma warning restore IDE0059 
                 newFileIntegrity = false;
             }
 
@@ -378,8 +382,10 @@ namespace BigSister.Settings
             }
             else
             {
+#pragma warning disable IDE0059
                 oldFileTrueMD5 = String.Empty;
                 oldFileMD5 = String.Empty;
+#pragma warning restore IDE0059 
                 oldFileIntegrity = false;
             }
 

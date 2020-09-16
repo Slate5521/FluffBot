@@ -1,13 +1,9 @@
 ﻿// WebhookDelegator.cs
 // Returns a WebhookInfo for a specified webhook Id.
 
-using BigSister.ChatObjects;
-using DSharpPlus.EventArgs;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Linq;
-using System.Text;
+using BigSister.ChatObjects;
 
 namespace BigSister
 {

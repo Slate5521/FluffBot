@@ -1,19 +1,15 @@
 ﻿// FunStuff.cs
 // Because I can.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
-using Newtonsoft.Json;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace BigSister
 {
@@ -47,8 +43,8 @@ namespace BigSister
                 RegexString = jsonData.RegexString;
                 ResponseString = jsonData.Response;
                 CooldownMilliseconds = jsonData.Cooldown;
-                BotState = jsonData.BotState == null ? String.Empty : jsonData.BotState;
-                RequiredBotState = jsonData.RequiresBotState == null ? String.Empty : jsonData.RequiresBotState;
+                BotState = jsonData.BotState ?? String.Empty;
+                RequiredBotState = jsonData.RequiresBotState ?? String.Empty;
 
                 HasBotState = BotState.Length > 0;
                 RequiresBotState = RequiredBotState.Length > 0;
@@ -107,7 +103,7 @@ namespace BigSister
             public TimeSpan MaxTime = TimeSpan.FromMinutes(4);
         }
 
-        static List<FunMessage> funMessages = new List<FunMessage>
+        static readonly List<FunMessage> funMessages = new List<FunMessage>
         {
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},
@@ -131,11 +127,11 @@ namespace BigSister
             new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"😀"),  Message = "Repopulating...", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(2)},
         };
 
-        static Random ran = new Random(Environment.TickCount);
+        static readonly Random ran = new Random(Environment.TickCount);
         static DateTimeOffset NextTimeChange = DateTimeOffset.UtcNow;
 
         static ResponseInfo[] responses;
-        static HashSet<string> botStates = new HashSet<string>();
+        static readonly HashSet<string> botStates = new HashSet<string>();
 
         public static bool LoadFunStuffJson(string file)
         {
