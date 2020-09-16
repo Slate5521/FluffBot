@@ -1,4 +1,11 @@
-﻿using DSharpPlus.CommandsNext;
+﻿// MentionCommands.cs
+// Contains commands for looking up mentions:
+//  !mentions <users>
+//  !mentions <userIds>
+//
+// EMIKO
+
+using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using DSharpPlus.Entities;
 using System;

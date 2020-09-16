@@ -1,4 +1,9 @@
-﻿using BigSister.ChatObjects;
+﻿// RimboardSystem.cs
+// Contains the backend for the Rimboard system such as queries and event handlers.
+//
+// EMIKO
+
+using BigSister.ChatObjects;
 using BigSister.Commands;
 using BigSister.Database;
 using BigSister.Settings;

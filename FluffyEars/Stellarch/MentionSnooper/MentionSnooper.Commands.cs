@@ -1,4 +1,8 @@
-﻿
+﻿// MentionSnooper.Commands.cs
+// One piece of a partial class for snooping warns, specifically the commands-handling side of it.
+//
+// EMIKO
+
 
 using BigSister.ChatObjects;
 using DSharpPlus;

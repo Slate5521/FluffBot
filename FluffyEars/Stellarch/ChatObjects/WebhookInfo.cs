@@ -1,4 +1,9 @@
-﻿using DSharpPlus.Entities;
+﻿// WebhookInfo.cs
+// Contains information about a webhook including its id and token.
+//
+// EMIKO
+
+using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.IO;

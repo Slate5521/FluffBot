@@ -1,4 +1,9 @@
-﻿using BigSister.Commands;
+﻿// RoleRequestSystem.cs
+// One piece of a partial class, handling mostly the backend such as queries and event handlers.
+//
+// Emiko
+
+using BigSister.Commands;
 using BigSister.Database;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;

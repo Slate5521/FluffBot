@@ -1,7 +1,7 @@
 ﻿// RequestedCommands.cs
 // Here are some commands requested by users.
 //
-// * userinfo which displays information about account creation date and server join date.
+// !userinfo which displays information about account creation date and server join date.
 // 
 // EMIKO
 

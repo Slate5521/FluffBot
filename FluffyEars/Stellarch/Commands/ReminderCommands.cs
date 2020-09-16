@@ -1,4 +1,12 @@
-﻿using BigSister.ChatObjects;
+﻿// ReminderCommands.cs
+// Contains methods for adding, removing, or listing reminders:
+//  !reminder new/add <timeFrame> <message> <mentions> 
+//  !reminder remove/delete <reminderId>
+//  !reminder list
+//
+// EMIKO
+
+using BigSister.ChatObjects;
 using BigSister.Reminders;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;

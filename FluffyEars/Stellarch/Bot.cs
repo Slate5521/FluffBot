@@ -92,6 +92,7 @@ namespace BigSister
             // Fun stuff
 
             botClient.MessageCreated += FunStuff.BotClientMessageCreated;
+            botClient.Heartbeated += FunStuff.BotClient_Heartbeated;
         }
 
         private static void FilterSystem_FilterTriggered(Filter.FilterEventArgs e)

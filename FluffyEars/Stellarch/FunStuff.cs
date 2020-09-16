@@ -1,4 +1,7 @@
-﻿using DSharpPlus;
+﻿// FunStuff.cs
+// Because I can.
+
+using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.EventArgs;
 using Newtonsoft.Json;
@@ -96,6 +99,41 @@ namespace BigSister
             public string RequiresBotState;
         }
 
+        protected class FunMessage
+        {
+            public DiscordEmoji Emoji;
+            public string Message;
+            public TimeSpan MinTime = TimeSpan.FromMinutes(2);
+            public TimeSpan MaxTime = TimeSpan.FromMinutes(4);
+        }
+
+        static List<FunMessage> funMessages = new List<FunMessage>
+        {
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🐇"), Message = "Momu by Rekasa", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3)},  
+            // Weight of 3x.
+
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🧹"), Message = "Cleaning up the grounds.", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3) },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🧹"), Message = "Cleaning up the grounds.", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(3) }, 
+            // Weight of 2x. 
+            
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🗡️"), Message = "Taking care of raiders." },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🎯"), Message = "Spending time in the rec room..." },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"☁️"), Message = "Cloudwatching..." },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🕒"), Message = "Wandering..." },
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💀"), Message = "Disposing of raider bodies."},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🥗"),  Message = "Eating some vegetable medley."},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"💓"), Message = "Healing after a raid."},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🩺"),  Message = "Healing a colonist."},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"👺"),  Message = "Having a mental break!"},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"🔬"),  Message = "....Researching....", MinTime = TimeSpan.FromMinutes(5), MaxTime= TimeSpan.FromMinutes(7)},
+            new FunMessage { Emoji = DiscordEmoji.FromUnicode(@"😀"),  Message = "Repopulating...", MinTime = TimeSpan.FromMinutes(1), MaxTime = TimeSpan.FromMinutes(2)},
+        };
+
+        static Random ran = new Random(Environment.TickCount);
+        static DateTimeOffset NextTimeChange = DateTimeOffset.UtcNow;
+
         static ResponseInfo[] responses;
         static HashSet<string> botStates = new HashSet<string>();
 
@@ -137,6 +175,34 @@ namespace BigSister
                 @return = false;
             }
             return @return;
+        }
+
+        internal static async Task BotClient_Heartbeated(HeartbeatEventArgs e)
+        {
+            if (Program.Settings.FunAllowed)
+            {
+                if (DateTimeOffset.UtcNow.UtcTicks >= NextTimeChange.UtcTicks)
+                {   // If it's change time, let's change.
+                    FunMessage newStatus = funMessages[ran.Next(0, funMessages.Count - 1)];
+
+                    try
+                    {
+                        await e.Client.UpdateStatusAsync
+                            (
+                                new DiscordActivity($"{newStatus.Emoji} {newStatus.Message}", ActivityType.Playing),
+                                UserStatus.Online
+                            );
+                    }
+                    catch { }
+
+                    // Update next time.
+
+                    TimeSpan nextUpdate =
+                        TimeSpan.FromMilliseconds(newStatus.MinTime.TotalMilliseconds + (ran.NextDouble() * newStatus.MaxTime.TotalMilliseconds));
+
+                    NextTimeChange = NextTimeChange.Add(nextUpdate);
+                }
+            }
         }
 
         internal static async Task BotClientMessageCreated(MessageCreateEventArgs e)

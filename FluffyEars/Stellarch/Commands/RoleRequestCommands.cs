@@ -1,4 +1,14 @@
-﻿using BigSister.ChatObjects;
+﻿// RoleRequestCommands.cs
+// Contains commands for adding/removing embeds plus commands for adding messages:
+//  !role-embed-create <channel> <emoji> <role> <title> - Creates a new embed with a title and initial emoji and role.
+//  !role-embed-append <channel> <messageId> <emoji> <role> - Appends a new emoji onto an existing embed.
+//  !role-embed-remove <channel> <messageId> <emoji> - Removes a role from an embed.
+//  !role-message-new <channel> <content> - Creates a new message in a channel.
+//  !role-message-edit <channel> <messageId> <content> - Edits a currently existing message.
+//
+// EMIKO
+
+using BigSister.ChatObjects;
 using BigSister.RoleRequest;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;

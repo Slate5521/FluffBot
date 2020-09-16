@@ -1,4 +1,9 @@
-﻿using BigSister.ChatObjects;
+﻿// AuditSystem.cs
+// Contains methods for logging to a simple plaintext file on the disk.
+//
+// EMIKO
+
+using BigSister.ChatObjects;
 using DSharpPlus.CommandsNext;
 using System;
 using System.Collections.Generic;
