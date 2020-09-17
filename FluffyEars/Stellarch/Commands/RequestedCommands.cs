@@ -36,7 +36,7 @@ namespace BigSister.Commands
                         color: Generics.NeutralColor,
                         description: Generics.NeutralDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: $"Here's some info about {member.Username}#{member.Discriminator}!"),
+                            body: $"here's some info about {member.Username}#{member.Discriminator}!"),
                         title: @"User Info",
                         thumbnail: member.AvatarUrl
                         );
