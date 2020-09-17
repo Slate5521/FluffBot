@@ -19,7 +19,7 @@ namespace BigSister.Commands
         /// <summary>Gets information about a user's account creation date and server join date.</summary>
         [Command("userinfo"),
          MinimumRole(Role.CS),
-         Description("WIP")]
+         Description("Gets a user's join date and creation date.\n\n**Usage:** !userinfo <mention/id>\n*e.g. !userinfo <@131626628211146752> or !userinfo 131626628211146752*")]
         public async Task GetUserInfo(CommandContext ctx, DiscordMember member)
         {
             const string RECENT_MSG = @"In the last minute...";
