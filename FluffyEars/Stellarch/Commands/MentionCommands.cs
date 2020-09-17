@@ -28,7 +28,7 @@ namespace BigSister.Commands
 
         [Command("mentions"), 
             MinimumRole(Role.CS), 
-            Description("Looks for mention(s) of user(s) in the #action-logs channel.\n\n**Usage:** !mentions <user1 user2 ... usern>\n*e.g. !mentions 131626628211146752 <@131626628211146752>*\n\n**Note:** You can use a numerical User ID or a mention.")]
+            Description("Looks for mention(s) of user(s) in the #action-logs channel.\n\n**Usage:**!mentions <user1 user2 ... usern>\n*e.g. !mentions 131626628211146752 <@131626628211146752>*\n\n**Note:** You can use a numerical User ID or a mention.")]
         public async Task MentionsLookup(CommandContext ctx, params string[] users)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))

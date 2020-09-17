@@ -18,6 +18,7 @@ using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using BigSister.ChatObjects;
 using BigSister.Database;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace BigSister.Reminders
 {
@@ -33,10 +34,10 @@ namespace BigSister.Reminders
         /// <summary>Query to read the entire reminder table.</summary>
         const string QQ_ReadTable = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders`;";
         /// <summary>Query to return all reminders that need to be triggered.</summary>
-        const string QQ_CheckRemindersElapsed = @"SELECT `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
-                                                  FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
+        const string QQ_CheckRemindersElapsed = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` 
+                                                  FROM `Reminders` WHERE `TriggerTime` <= $timenow;";
         /// <summary>Query to delete all reminders that need to be triggered.</summary>
-        const string QQ_DeleteRemindersElapsed = @"DELETE FROM `Reminders` WHERE `TriggerTime` >= $timenow;";
+        const string QQ_DeleteRemindersElapsed = @"DELETE FROM `Reminders` WHERE `TriggerTime` <= $timenow;";
         /// <summary>Query to get a single reminder from a list.</summary>
         const string QQ_GetReminderFromId = @"SELECT `Id`, `UserId`, `ChannelId`, `Message`, `TriggerTime`, `Mentions` FROM `Reminders` WHERE `Id`=$id;";
 
@@ -150,16 +151,21 @@ namespace BigSister.Reminders
             DateTimeOffset maxtime = new DateTimeOffset(ctx.Message.CreationTimestamp.UtcDateTime).AddMonths(Program.Settings.MaxReminderTimeMonths);
             DiscordEmbedBuilder embed;
 
+            bool sendErrorEmbed = false;
+
             if (dto.UtcTicks == ctx.Message.CreationTimestamp.UtcTicks)
             {   // No time was added.
+
                 embed = Generics.GenericEmbedTemplate(
                         color: Generics.NegativeColor,
                         description: Generics.NegativeDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: @"I was unable able to add the mask you gave me. You didn't supply me a valid time..."),
+                            body: @"I was unable able to add the reminder you gave me. You didn't supply me a valid time..."),
                         title: @"Unable to add reminder",
                         thumbnail: Generics.URL_REMINDER_GENERIC
                     );
+
+                sendErrorEmbed = true;
             }
             else if (dto.UtcTicks > maxtime.UtcTicks)
             {   // More than our allowed time away.
@@ -170,10 +176,12 @@ namespace BigSister.Reminders
                         color: Generics.NegativeColor,
                         description: Generics.NegativeDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: $"I was unable able to add the mask you gave me. That's more than {maxMonths} month{(maxMonths > 0 ? @"s" : String.Empty)} away..."),
+                            body: $"I was unable able to add the reminder you gave me. That's more than {maxMonths} month{(maxMonths > 0 ? @"s" : String.Empty)} away..."),
                         title: @"Unable to add reminder",
                         thumbnail: Generics.URL_REMINDER_GENERIC
                     );
+
+                sendErrorEmbed = true;
             }
             else
             {   // Everything is good in the world... except that the world is burning, but that's not something we're worried about here, for
@@ -250,6 +258,14 @@ namespace BigSister.Reminders
                 await BotDatabase.Instance.ExecuteNonQuery(command);
                 // Send the response.
                 await ctx.Channel.SendMessageAsync(embed: embed);
+            }
+
+            if(sendErrorEmbed)
+            {
+                var a = ctx.Channel.SendMessageAsync(embed: embed);
+                var b = GenericResponses.HandleInvalidArguments(ctx);
+
+                await Task.WhenAll(a, b);
             }
         }
 
@@ -421,7 +437,7 @@ namespace BigSister.Reminders
                         valueStringBuilder.Append($"**Users to mention:** {mentionsString}\n");
                     }
                     valueStringBuilder.Append($"**Id:** {reminder.OriginalMessageId}\n");
-                    valueStringBuilder.Append($"**Remaining time** {Generics.GetRemainingTime(dto)}");
+                    valueStringBuilder.Append($"**Remaining time:** {Generics.GetRemainingTime(dto)}");
 
                     #region a bunny
 
@@ -479,10 +495,10 @@ namespace BigSister.Reminders
             {   // There are no reminders.
                 await ctx.Channel.SendMessageAsync(
                         embed: Generics.GenericEmbedTemplate(
-                            color: Generics.NegativeColor,
-                            description: Generics.NegativeDirectResponseTemplate(
+                            color: Generics.NeutralColor,
+                            description: Generics.NeutralDirectResponseTemplate(
                                 mention: ctx.Member.Mention,
-                                body: "there are no reminders..."),
+                                body: "there are no reminders."),
                             thumbnail: Generics.URL_SPEECH_BUBBLE,
                             title: "Reminders"));
 
@@ -496,14 +512,13 @@ namespace BigSister.Reminders
 
                     while (reader.Read())
                     {   // Generate a reminder per each row.
-
                         var r = new Reminder(
-                            originalMessageId: reader.GetString(0),
-                            user:          ulong.Parse(reader.GetString(1)),
-                            channel:       ulong.Parse(reader.GetString(2)),
-                            text:          reader.GetString(3),
-                            time:          reader.GetInt32(4),
-                            usersToNotify: reader.GetString(5).Split(' ')
+                            originalMessageId:  reader.GetString(0),
+                            user:               ulong.Parse(reader.GetString(1)),
+                            channel:            ulong.Parse(reader.GetString(2)),
+                            text:               reader.GetString(3),
+                            time:               reader.GetInt32(4),
+                            usersToNotify:      reader.GetString(5).Split(' ')
                         );
 
                         reminderList.Add(r);
@@ -555,7 +570,49 @@ namespace BigSister.Reminders
 
                 delCommand.Parameters.Add(a);
 
-                await BotDatabase.Instance.ExecuteNonQuery(command);
+                Task[] tasks = new Task[pendingReminders.Length + 1];
+                tasks[0] = BotDatabase.Instance.ExecuteNonQuery(delCommand);
+
+                for (int i = 0; i < pendingReminders.Length; i++)
+                {
+                    var reminder = pendingReminders[i];
+
+
+                    DateTimeOffset reminderTime = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60);
+                    DateTimeOffset utcNow = DateTimeOffset.UtcNow;
+
+                    var stringBuilder = new StringBuilder();
+                    TimeSpan lateBy = utcNow.Subtract(reminderTime);
+
+                    DiscordEmbedBuilder deb = new DiscordEmbedBuilder()
+                    {
+                        Title = "Notification",
+                        Description = reminder.Text
+                    };
+
+                    deb.WithThumbnail(Generics.URL_REMINDER_EXCLAIM);
+                    deb.AddField(@"Late by", 
+                        value: String.Format("{0}day {1}hr {2}min {3}sec", 
+                            /*0*/ lateBy.Days,
+                            /*1*/ lateBy.Hours,
+                            /*2*/ lateBy.Minutes,
+                            /*3*/ lateBy.Seconds));
+
+                    // Get all the people we need to remind.
+                    stringBuilder.Append(Generics.GetMention(reminder.User));
+
+                    Array.ForEach(reminder.UsersToNotify,            // For every user (a), append them to sb in mention format <@id>.
+                        a => stringBuilder.Append($"{a} "));
+
+
+
+                    tasks[i + 1] = (await Program.BotClient.GetChannelAsync(reminder.Channel))
+                                    .SendMessageAsync(
+                                        content: stringBuilder.ToString(),
+                                        embed: deb.Build());
+                }
+
+                await Task.WhenAll(tasks);
             }
         }
 
