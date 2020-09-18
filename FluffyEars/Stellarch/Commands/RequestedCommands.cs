@@ -36,13 +36,14 @@ namespace BigSister.Commands
                         color: Generics.NeutralColor,
                         description: Generics.NeutralDirectResponseTemplate(
                             mention: ctx.Member.Mention,
-                            body: $"here's some info about {member.Username}#{member.Discriminator}!"),
+                            body: $"here's some info about that user!"),
                         title: @"User Info",
-                        thumbnail: member.AvatarUrl
-                        );
+                        thumbnail: member.AvatarUrl);
 
-                    deb.AddField(@"Joined Discord:", Generics.GetRemainingTime(GetJoinedDiscordTime(member.Id), false, RECENT_MSG, @"ago"));
-                    deb.AddField($"Joined {ctx.Guild.Name}:", Generics.GetRemainingTime(member.JoinedAt, false, RECENT_MSG, @"ago"));
+                    deb.AddField(@"Mention", member.Mention, true);
+                    deb.AddField(@"Username", $"{member.Username}#{member.Discriminator}", true);
+                    deb.AddField(@"Joined Discord", Generics.GetRemainingTime(GetJoinedDiscordTime(member.Id), false, RECENT_MSG, @"ago"));
+                    deb.AddField($"Joined {ctx.Guild.Name}", Generics.GetRemainingTime(member.JoinedAt, false, RECENT_MSG, @"ago"));
 
                     await ctx.Channel.SendMessageAsync(embed: deb);
                 }
