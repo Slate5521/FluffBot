@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace BigSister.Commands
 {
+    [Group("Settings")]
     class SettingsCommands : BaseCommandModule
     {
         const Role ConfigPerm = Role.BotManager;

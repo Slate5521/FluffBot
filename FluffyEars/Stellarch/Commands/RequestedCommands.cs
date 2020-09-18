@@ -14,6 +14,7 @@ using BigSister.ChatObjects;
 
 namespace BigSister.Commands
 {
+    [Group("Moderation-Requested")]
     class RequestedCommands : BaseCommandModule
     {
         /// <summary>Gets information about a user's account creation date and server join date.</summary>

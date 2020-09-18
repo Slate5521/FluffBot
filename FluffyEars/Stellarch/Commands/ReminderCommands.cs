@@ -14,6 +14,7 @@ using BigSister.Reminders;
 
 namespace BigSister.Commands
 {
+    [Group("Reminders")]
     class ReminderCommands : BaseCommandModule
     {
         [Command("reminder"),

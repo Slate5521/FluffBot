@@ -159,7 +159,7 @@ namespace BigSister
             BotClient.UseCommandsNext(new CommandsNextConfiguration()
             {
                 CaseSensitive = false,
-                EnableDefaultHelp = false,
+                EnableDefaultHelp = true,
                 StringPrefixes = new string[] { Prefix }
             });
 

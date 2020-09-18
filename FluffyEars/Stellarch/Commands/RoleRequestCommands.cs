@@ -17,6 +17,7 @@ using BigSister.ChatObjects;
 
 namespace BigSister.Commands
 {
+    [Group("Roles")]
     class RoleRequestCommands : BaseCommandModule
     {
         [Command("role-embed-create"),

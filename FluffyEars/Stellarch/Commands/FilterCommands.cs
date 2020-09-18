@@ -16,6 +16,7 @@ using BigSister.Filter;
 
 namespace BigSister.Commands
 {
+    [Group("Filter")]
     class FilterCommands : BaseCommandModule
     {
         [Command("filter"), 

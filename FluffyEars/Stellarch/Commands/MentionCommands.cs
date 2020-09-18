@@ -21,6 +21,7 @@ using DSharpPlus.Entities;
 
 namespace BigSister.Commands
 {
+    [Group("Moderation-Mentions")]
     class MentionCommands : BaseCommandModule
     {
         static readonly Regex UserIdLookupRegex = 
