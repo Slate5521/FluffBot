@@ -74,11 +74,14 @@ namespace BigSister.ChatObjects
             stringBuilder.AppendJoin(' ', // Select all the values that were changed
                 from a in successChanged
                 where a.Value
-                select a.Key);
+                select a.Key.Mention);
+
+            string capitalizedVerb = String.Concat(char.ToUpper(verb[0]), verb.Substring(1, verb.Length - 1));
+            string capitalizedInvertedVerb = String.Concat(char.ToUpper(invertedVerb[0]), invertedVerb.Substring(1, invertedVerb.Length - 1));
 
             // Check if anything was added and then make a field if anything was.
-            if(stringBuilder.Length > 0)
-                deb.AddField(verb, value: stringBuilder.ToString());
+            if (stringBuilder.Length > 0)
+                deb.AddField(capitalizedVerb, value: stringBuilder.ToString());
 
             // ----------------
             // Not changed:
@@ -86,11 +89,11 @@ namespace BigSister.ChatObjects
             stringBuilder.AppendJoin(' ', // Select all the values that were not changed
                 from a in successChanged
                 where !a.Value
-                select a.Key);
+                select a.Key.Mention);
 
             // Check if anything was added and then make a field if anything was.
             if (stringBuilder.Length > 0)
-                deb.AddField(invertedVerb, value: stringBuilder.ToString());
+                deb.AddField(capitalizedInvertedVerb, value: stringBuilder.ToString());
 
             // ----------------
             // Send something
