@@ -122,19 +122,23 @@ namespace BigSister.Rimboard
 
         internal static async Task BotClientMessageReactionAdded(MessageReactionAddEventArgs e)
         {
+            // We don't want the cached version of this message because if it was sent during downtime, the bot won't be able to do
+            // anything with it.
+            var message_noCache = await e.Channel.GetMessageAsync(e.Message.Id);
+
             // Before anything, let's make sure that...
             //  1) This is not the rimboard channel
             //  2) Rimboard is enabled.
             //  3) The Rimboard webhook is not default.
+            //  4) This was not sent by the bot (requires nocache).
             if (e.Channel.Id != Program.Settings.RimboardChannelId &&
                 Program.Settings.RimboardEnabled &&
-                Program.Settings.RimboardWebhookId != BotSettings.Default.RimboardWebhookId)
-            {
+                Program.Settings.RimboardWebhookId != BotSettings.Default.RimboardWebhookId &&
+                // De-cache the message so we can get its author.
+                !(message_noCache.Author.IsBot))
+            {  
                 DiscordEmoji emoji = GetReactionEmoji(e.Client);
 
-                // We don't want the cached version of this message because if it was sent during downtime, the bot won't be able to do
-                // anything with it.
-                var message_noCache = await e.Channel.GetMessageAsync(e.Message.Id);
 
                 // This contains a list of the reactions that have rimboardEmoji. It's only ever really going to be be 1 long.
                 var pinReactionsList = message_noCache.Reactions.Where(a => a.Emoji.Name == emoji.Name).ToArray();
