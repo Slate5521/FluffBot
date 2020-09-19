@@ -180,7 +180,7 @@ namespace BigSister
             BotClient.UseCommandsNext(new CommandsNextConfiguration()
             {
                 CaseSensitive = false,
-                EnableDefaultHelp = true,
+                EnableDefaultHelp = false,
                 EnableDms = false,
                 StringPrefixes = new string[] { Prefix }
             });
