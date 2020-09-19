@@ -18,17 +18,10 @@ namespace BigSister.Commands
 {
     class FilterCommands : BaseCommandModule
     {
-        [Command("filter"), 
-            MinimumRole(Role.Mod),
-            Description("Add a new mask, remove a mask, or list all the masks.\n\n" +
-            "**Examples:**\n" +
-            "!filter new b[aeiou]nny\n" +
-            "!filter remove b[aeiou]nny\n" +
-            "!filter list")]
+        [Command("filter"), MinimumRole(Role.Mod)]
         public async Task FilterBase(CommandContext ctx, 
-                                     [Description("new/add, remove/delete, or list")] 
                                         string action, 
-                                     [RemainingText, Description("Regex pattern mask")] 
+                                     [RemainingText]
                                         string mask)
         {
             // Check if they have the permissions to call this command.
@@ -78,18 +71,9 @@ namespace BigSister.Commands
 
         #region Excludes
 
-        [Command("exclude"), 
-            Aliases("excludes"), 
-            MinimumRole(Role.Mod),
-            Description("Add a new exclude, remove an exclude, or list all the excludes.\n\n" +
-            "**Examples:**\n" +
-            "!exclude(s) new bunnyes cute\n" +
-            "!exclude(s) remove bunnyes cute\n" +
-            "!exclude(s) list")]
-        public async Task ExcludeBase(CommandContext ctx,
-                                     [Description("new/add, remove/delete, or list")] 
+        [Command("exclude"), MinimumRole(Role.Mod)]
+        public async Task ExcludeBase(CommandContext ctx, 
                                         string action, 
-                                     [RemainingText, Description("Exclude string")] 
                                         string exclude)
         {
             // Check if they have the permissions to call this command.

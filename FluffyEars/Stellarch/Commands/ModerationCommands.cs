@@ -27,12 +27,8 @@ namespace BigSister.Commands
         static readonly Regex UserIdLookupRegex = 
             new Regex(@"(\d{17,})", RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Compiled);
 
-        [Command("mentions"), 
-            MinimumRole(Role.CS), 
-            Description("Look for mention(s) of user(s) in the #action-logs channel.\n\n" +
-            "**Example:** !mentions 131626628211146752 <@131626628211146752>")]
+        [Command("mentions"), MinimumRole(Role.CS)]
         public async Task MentionsLookup(CommandContext ctx, 
-                                         [Description("Numerical snowflake IDs and/or user mentions")]
                                             params string[] users)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -72,13 +68,8 @@ namespace BigSister.Commands
 
         /// <summary>Gets information about a user's account creation date and server join date.</summary>
         [Command("userinfo"),
-         MinimumRole(Role.CS),
-         Description("Get a user's join date and creation date.\n\n" +
-            "**Examples:**\n" +
-            "!userinfo <@131626628211146752>\n" +
-            "!userinfo 131626628211146752")]
+         MinimumRole(Role.CS)]
         public async Task GetUserInfo(CommandContext ctx,
-                                      [Description("Numerical snowflake ID or user mentions")]
                                         DiscordMember member)
         {
             const string RECENT_MSG = @"In the last minute...";
