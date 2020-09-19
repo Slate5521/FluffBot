@@ -16,17 +16,20 @@ using BigSister.Filter;
 
 namespace BigSister.Commands
 {
-    [Group("Filter")]
     class FilterCommands : BaseCommandModule
     {
         [Command("filter"), 
             MinimumRole(Role.Mod),
-            Description("Depending on user input, adds a new mask, removes a mask, or lists all the masks.\n\n" +
-            "**Usage:**\n" +
-            "!filter new/add <regexString>\ne.g. !filter new b[aeiou]nny" +
-            "!filter remove/delete <regexString>\ne.g. !filter remove b[aeiou]nny" +
+            Description("**[Moderator]** Add a new mask, remove a mask, or list all the masks.\n\n" +
+            "**Examples:**\n" +
+            "!filter new b[aeiou]nny\n" +
+            "!filter remove b[aeiou]nny\n" +
             "!filter list")]
-        public async Task FilterBase(CommandContext ctx, string action, [RemainingText] string mask)
+        public async Task FilterBase(CommandContext ctx, 
+                                     [Description("New/add, remove/delete, or list")] 
+                                        string action, 
+                                     [RemainingText, Description("Regex mask")] 
+                                        string mask)
         {
             // Check if they have the permissions to call this command.
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -78,12 +81,16 @@ namespace BigSister.Commands
         [Command("exclude"), 
             Aliases("excludes"), 
             MinimumRole(Role.Mod),
-            Description("Depending on user input, adds a new exclude, removes an exclude, or lists all the excludes.\n\n" +
-            "**Usage:**\n" +
-            "!exclude(s) new/add <excludePhrase>\n*e.g. !exclude new bunnyes cute*" +
-            "!exclude(s) remove/delete <excludePhrase>\n*e.g. !exclude remove bunnyes cute*" +
+            Description("**[Moderator]** Add a new exclude, remove an exclude, or list all the excludes.\n\n" +
+            "**Examples:**\n" +
+            "!exclude(s) new bunnyes cute\n" +
+            "!exclude(s) remove bunnyes cute\n" +
             "!exclude(s) list")]
-        public async Task ExcludeBase(CommandContext ctx, string action, [RemainingText] string exclude)
+        public async Task ExcludeBase(CommandContext ctx,
+                                     [Description("New/add, remove/delete, or list")] 
+                                        string action, 
+                                     [RemainingText, Description("Exclude string")] 
+                                        string exclude)
         {
             // Check if they have the permissions to call this command.
             if (await Permissions.HandlePermissionsCheck(ctx))

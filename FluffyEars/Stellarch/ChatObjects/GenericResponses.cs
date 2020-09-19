@@ -76,8 +76,8 @@ namespace BigSister.ChatObjects
                 where a.Value
                 select a.Key.Mention);
 
-            string capitalizedVerb = String.Concat(char.ToUpper(verb[0]), verb.Substring(1, verb.Length - 1));
-            string capitalizedInvertedVerb = String.Concat(char.ToUpper(invertedVerb[0]), invertedVerb.Substring(1, invertedVerb.Length - 1));
+            string capitalizedVerb = String.Concat(char.ToUpper(verb[0]), verb[1..]);
+            string capitalizedInvertedVerb = String.Concat(char.ToUpper(invertedVerb[0]), invertedVerb[1..]);
 
             // Check if anything was added and then make a field if anything was.
             if (stringBuilder.Length > 0)

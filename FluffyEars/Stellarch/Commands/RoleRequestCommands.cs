@@ -17,14 +17,21 @@ using BigSister.ChatObjects;
 
 namespace BigSister.Commands
 {
-    [Group("Roles")]
+    [Group("Roles"), Description("Commands for handling embeds and messages related to the role request system")]
     class RoleRequestCommands : BaseCommandModule
     {
         [Command("role-embed-create"),
             MinimumRole(Role.BotManager),
-            Description("Adds a role embed in the specified channel with the initial role, emoji, and title.\n\n**Usage:**\n" +
-               "!role-embed-create <#channel> <emoji> <role> <title>")]
-        public async Task RoleEmbedCreate(CommandContext ctx, DiscordChannel channel, DiscordEmoji emoji, DiscordRole role, [RemainingText] string title)
+            Description("Add a role embed in the specified channel with the initial role, emoji, and title.")]
+        public async Task RoleEmbedCreate(CommandContext ctx, 
+                                          [Description("Channel to post the embed in")]
+                                            DiscordChannel channel, 
+                                          [Description("Emoji to associate role with")]
+                                            DiscordEmoji emoji, 
+                                          [Description("Role to assign to user")]
+                                            DiscordRole role, 
+                                          [RemainingText, Description("Title of the embed")] 
+                                            string title)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -42,9 +49,16 @@ namespace BigSister.Commands
 
         [Command("role-embed-append"),
             MinimumRole(Role.BotManager),
-            Description("Appends an emoji/role pair to an existing embed in the specified channel.\n\n**Usage:**\n" +
-               "!role-embed-append <#channel> <messageId> <emoji> <role>")]
-        public async Task RoleEmbedAppendRole(CommandContext ctx, DiscordChannel channel, ulong messageId, DiscordEmoji emoji, DiscordRole role)
+            Description("Append an emoji/role pair to an existing embed in the specified channel.")]
+        public async Task RoleEmbedAppendRole(CommandContext ctx,
+                                              [Description("Channel the embed is in")]
+                                                DiscordChannel channel, 
+                                              [Description("Snowflake ID of the message")]
+                                                ulong messageId,
+                                              [Description("Emoji to associate role with")] 
+                                                DiscordEmoji emoji,
+                                              [Description("Role to assign to user")] 
+                                                DiscordRole role)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -54,9 +68,14 @@ namespace BigSister.Commands
 
         [Command("role-embed-remove"),
             MinimumRole(Role.BotManager),
-            Description("Removes an emoji/role pair from an existing embed in the specified channel.\n\n**Usage:**\n" +
-               "!role-embed-remove <#channel> <emoji>")]
-        public async Task RoleEmbedRemoveRole(CommandContext ctx, DiscordChannel channel, ulong messageId, DiscordEmoji emoji)
+            Description("Remove an emoji/role pair from an existing embed in the specified channel.")]
+        public async Task RoleEmbedRemoveRole(CommandContext ctx,
+                                              [Description("Channel the embed is in")] 
+                                                DiscordChannel channel,
+                                              [Description("Snowflake ID of the message")] 
+                                                ulong messageId, 
+                                              [Description("Emoji to remove from the embed")]
+                                                DiscordEmoji emoji)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -66,9 +85,12 @@ namespace BigSister.Commands
 
         [Command("role-message-new"),
             MinimumRole(Role.BotManager),
-            Description("Creates a new blank message unassociated with database information in the specified channel.\n\n**Usage:**\n" +
-               "!role-message-new <#channel> <content>")]
-        public async Task RoleMessageNew(CommandContext ctx, DiscordChannel channel, [RemainingText] string content)
+            Description("Create a new blank message unassociated with database information in the specified channel.")]
+        public async Task RoleMessageNew(CommandContext ctx,
+                                         [Description("Channel to post the message in")] 
+                                            DiscordChannel channel, 
+                                         [RemainingText, Description("Content of the message")] 
+                                            string content)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -78,9 +100,15 @@ namespace BigSister.Commands
 
         [Command("role-message-edit"),
             MinimumRole(Role.BotManager),
-            Description("Edits a message in the specified channel.\n\n**Usage:**\n" +
+            Description("Edit a message in the specified channel.\n\n**Usage:**\n" +
                "!role-message-edit <#channel> <messageId> <content>")]
-        public async Task RoleMessageEdit(CommandContext ctx, DiscordChannel channel, ulong messageId, [RemainingText] string content)
+        public async Task RoleMessageEdit(CommandContext ctx,
+                                         [Description("Channel the message is posted in")] 
+                                            DiscordChannel channel,
+                                         [Description("Snowflake ID of the message")] 
+                                            ulong messageId, 
+                                         [RemainingText, Description("New content of the message")] 
+                                            string content)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {

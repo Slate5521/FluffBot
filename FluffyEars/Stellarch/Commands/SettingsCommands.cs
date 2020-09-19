@@ -27,10 +27,12 @@ namespace BigSister.Commands
         [Command("excluded-channels"), 
             Aliases("excluded-chans"), 
             MinimumRole(ConfigPerm),
-            Description("Adds new excluded channnel(s), preventing messages in them from triggering the filter system.\n\n" +
-            "**Usage:**\n" +
-            "!excluded-channels <#chan1 #chan2 ... #chann>")]
-        public async Task ExcludeChannel(CommandContext ctx, string command, params DiscordChannel[] channels)
+            Description("**[Bot Manager]** Add new excluded channnel(s), preventing messages in them from triggering the filter system.")]
+        public async Task ExcludeChannel(CommandContext ctx, 
+                                         [Description("Add or remove")]
+                                            string command, 
+                                         [Description("Channel(s) to add or remove")]
+                                            params DiscordChannel[] channels)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -117,10 +119,10 @@ namespace BigSister.Commands
         [Command("filter-channel"), 
             Aliases("filter-chan"), 
             MinimumRole(ConfigPerm),
-            Description("Sets the filter channel.\n\n" +
-            "**Usage:**\n" +
-            "!filter-channel <#channel>")]
-        public async Task ExcludeChannel(CommandContext ctx, DiscordChannel channel)
+            Description("**[Bot Manager]** Set the filter channel.")]
+        public async Task ExcludeChannel(CommandContext ctx, 
+                                         [Description("Filter channel")]
+                                            DiscordChannel channel)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -140,10 +142,10 @@ namespace BigSister.Commands
 
         [Command("reminder-limit"), 
             MinimumRole(ConfigPerm),
-            Description("Sets the maximum reminder time in months.\n\n" +
-            "**Usage:**\n" +
-            "!reminder-limit <maxMonths>")]
-        public async Task SetReminderTimeLimit(CommandContext ctx, uint months)
+            Description("**[Bot Manager]** Set the maximum reminder time.")]
+        public async Task SetReminderTimeLimit(CommandContext ctx, 
+                                               [Description("Maximum reminder time in months")]
+                                                    uint months)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -166,10 +168,10 @@ namespace BigSister.Commands
 
         [Command("warn-month-limit"), 
             MinimumRole(ConfigPerm),
-            Description("Sets the expiration time for warns in months.\n\n" +
-            "**Usage:**\n" +
-            "!warn-month-limit <maxMonths>")]
-        public async Task SetMaxWarnLimit(CommandContext ctx, uint months)
+            Description("**[Bot Manager]** Set the warning expiration time.")]
+        public async Task SetMaxWarnLimit(CommandContext ctx,
+                                          [Description("Warning expiration time in months")] 
+                                            uint months)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -190,10 +192,10 @@ namespace BigSister.Commands
         [Command("action-channel"), 
             Aliases("action-chan"), 
             MinimumRole(ConfigPerm),
-            Description("Sets the action-logs channel.\n\n" +
-            "**Usage:**\n" +
-            "!action-channel <#channel>")]
-        public async Task SetActionChannel(CommandContext ctx, DiscordChannel channel)
+            Description("**[Bot Manager]** Set the action-logs channel.")]
+        public async Task SetActionChannel(CommandContext ctx,
+                                           [Description("Action logs channel")] 
+                                                DiscordChannel channel)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -211,10 +213,10 @@ namespace BigSister.Commands
         [Command("snoop-enabled"), 
             Aliases("warnsnoopenabled", "snoopdogenabled"), 
             MinimumRole(ConfigPerm),
-            Description("Enables or disables passive warn snooping.\n\n" +
-            "**Usage:**\n" +
-            "!snoop-enabled <true/false>")]
-        public async Task SetSnoopEnabled(CommandContext ctx, bool enabled)
+            Description("**[Bot Manager]** Enable or disable passive warn snooping.")]
+        public async Task SetSnoopEnabled(CommandContext ctx, 
+                                          [Description("True or false")] 
+                                            bool enabled)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -235,10 +237,10 @@ namespace BigSister.Commands
 
         [Command("rimboard-enabled"), 
             MinimumRole(ConfigPerm),
-            Description("Enables or disables Rimboard.\n\n" +
-            "**Usage:**\n" +
-            "!rimboard-enabled <true/false>")]
-        public async Task RimboardEnabled(CommandContext ctx, bool enabled)
+            Description("**[Bot Manager]** Enable or disable Rimboard.")]
+        public async Task RimboardEnabled(CommandContext ctx,
+                                          [Description("True or false")] 
+                                            bool enabled)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -257,10 +259,10 @@ namespace BigSister.Commands
         [Command("rimboard-channel"), 
             Aliases("rimboard-chan"), 
             MinimumRole(ConfigPerm),
-            Description("Sets the channel for Rimboard.\n\n" +
-            "**Usage:**\n" +
-            "!rimboard-channel <#channel>")]
-        public async Task SetRimboardChannel(CommandContext ctx, DiscordChannel channel)
+            Description("**[Bot Manager]** Set the channel for Rimboard.")]
+        public async Task SetRimboardChannel(CommandContext ctx,
+                                             [Description("Rimboard channel")] 
+                                                DiscordChannel channel)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -293,10 +295,10 @@ namespace BigSister.Commands
 
         [Command("rimboard-emote"), 
             MinimumRole(ConfigPerm),
-            Description("Sets the Rimboard reaction emote.\n\n" +
-            "**Usage:**\n" +
-            "!rimboard-emote <:emote:>")]
-        public async Task SetRimboardEmote(CommandContext ctx, DiscordEmoji emote)
+            Description("**[Bot Manager]** Set the Rimboard reaction emote.")]
+        public async Task SetRimboardEmote(CommandContext ctx,
+                                             [Description("Rimboard emote")] 
+                                                DiscordEmoji emote)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -313,10 +315,10 @@ namespace BigSister.Commands
 
         [Command("rimboard-reaction-count"),  
             MinimumRole(ConfigPerm),
-            Description("Sets the Rimboard reaction count for a message to be reposted.\n\n" +
-            "**Usage:**\n" +
-            "!rimboard-reaction-count <count>")]
-        public async Task SetRimboardReactionsRequired(CommandContext ctx, uint count)
+            Description("**[Bot Manager]** Set the Rimboard reaction count for a message to be reposted.")]
+        public async Task SetRimboardReactionsRequired(CommandContext ctx,
+                                             [Description("Reaction count required")] 
+                                                uint count)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
@@ -336,10 +338,10 @@ namespace BigSister.Commands
 
         [Command("rimboard-pin-reaction-count"), 
             MinimumRole(ConfigPerm),
-            Description("Sets the Rimboard reaction count for a message to be pinned in the Rimboard channel.\n\n" +
-            "**Usage:**\n" +
-            "!rimboard-pin-reaction-count <count>")]
-        public async Task SetRimboardReactionsRequiredToPin(CommandContext ctx, uint count)
+            Description("**[Bot Manager]** Sets the Rimboard reaction count for a message to be pinned in the Rimboard channel.\n\n")]
+        public async Task SetRimboardReactionsRequiredToPin(CommandContext ctx,
+                                             [Description("Reaction count required")] 
+                                                uint count)
         {
             if (await Permissions.HandlePermissionsCheck(ctx))
             {
