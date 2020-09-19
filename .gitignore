@@ -351,5 +351,14 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
-FluffyEars/FluffyEars/authkey
-FluffyEars/FluffyEars/webhook
+
+FluffyEars/Stellarch/sav/identity.json
+FluffyEars/Stellarch/Properties/launchSettings.json
+FluffyEars/Stellarch/sav/database.db
+FluffyEars/Stellarch/sav/identity.json
+FluffyEars/Stellarch/sav/identity.json
+FluffyEars/Stellarch/sav/identity.json
+FluffyEars/Stellarch/sav/identity.json
+FluffyEars/Stellarch/sav/identity.json
+FluffyEars/Stellarch/sav/identity.json
+FluffyEars/Stellarch/sav/identity0.json
