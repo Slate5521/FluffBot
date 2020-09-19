@@ -44,6 +44,7 @@ namespace BigSister.Database
         /// <summary>Database connection datasource.</summary>
         public string DataSource;
 
+        /// <summary>Single database instance.</summary>
         public static BotDatabase Instance
         {
             get => instance;
@@ -63,6 +64,8 @@ namespace BigSister.Database
         }
 
 #pragma warning disable IDE0063
+        /// <summary>Executes a command and invokes an action on the results.</summary>
+        /// <param name="processAction">Action to invoke on the results.</param>
         public async Task<object> ExecuteReaderAsync(SqliteCommand cmd, Func<SqliteDataReader, object> processAction)
         {
             object returnVal;
@@ -98,6 +101,8 @@ namespace BigSister.Database
 #pragma warning restore IDE0063
 
 #pragma warning disable IDE0063
+
+        /// <summary>Execute a command to the database.</summary>
         public async Task ExecuteNonQuery(SqliteCommand cmd)
         {
             semaphoreSlim.Wait();

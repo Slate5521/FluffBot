@@ -12,14 +12,15 @@ namespace BigSister.Reminders
     /// </summary>
     public struct Reminder
     {
-        // Invalid reminder.
-        public static Reminder Invalid = new Reminder(
-            originalMessageId: default,
-            user:          default,
-            text:          default,
-            time:          default,
-            channel:       default,
-            usersToNotify: default);
+        /// <summary>Invalid reminder.</summary>
+        public static Reminder Invalid = 
+            new Reminder(
+                originalMessageId: default,
+                user:          default,
+                text:          default,
+                time:          default,
+                channel:       default,
+                usersToNotify: default);
 
         /// <summary>The original message id.</summary>
         public string OriginalMessageId { get; }

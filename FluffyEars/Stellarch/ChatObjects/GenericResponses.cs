@@ -16,6 +16,7 @@ namespace BigSister.ChatObjects
 {
     public static class GenericResponses
     {
+        /// <summary>Gets a message signifying a user doesn't have the permissions to use a command.</summary>
         public static DiscordEmbed GetMessageInsufficientPermissions(string mention,
                                                                       string minRole, 
                                                                       string command)
@@ -24,10 +25,9 @@ namespace BigSister.ChatObjects
                 body: $"you do not have the permissions to use the command '{Formatter.Bold(command)}'. Required role: {Formatter.Bold(minRole)}...");
 
             return Generics.GenericEmbedTemplate(Generics.NegativeColor, description, title: @"Insufficient permission");
-
-
         }
 
+        /// <summary>Handles invalid arguments supplied to a command.</summary>
         public static async Task HandleInvalidArguments(CommandContext ctx) 
         {
             string description = Generics.NegativeDirectResponseTemplate(ctx.Member.Mention,
@@ -40,6 +40,7 @@ namespace BigSister.ChatObjects
             await ctx.Channel.SendMessageAsync(embed: embedBuilder.Build());
         }
 
+        /// <summary>Sends a generic command error.</summary>
         public static async Task SendGenericCommandError(DiscordChannel channel,
                                                          string mention,
                                                          string title,
@@ -54,6 +55,7 @@ namespace BigSister.ChatObjects
             await channel.SendMessageAsync(embed: deb.Build());
         }
 
+        /// <summary>Sends a message signifying if a list was changed or not changed.</summary>
         public static async Task SendMessageChangedNotChanged(DiscordChannel channel, 
                                                           string title, 
                                                           string mention, 
