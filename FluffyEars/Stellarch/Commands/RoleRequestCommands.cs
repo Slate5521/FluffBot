@@ -19,8 +19,7 @@ namespace BigSister.Commands
 {
     class RoleRequestCommands : BaseCommandModule
     {
-        [Command("role-embed-create"),
-            MinimumRole(Role.BotManager)]
+        [Command("role-embed-create"), MinimumRole(Role.BotManager)]
         public async Task RoleEmbedCreate(CommandContext ctx, 
                                             DiscordChannel channel, 
                                             DiscordEmoji emoji, 
@@ -42,8 +41,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("role-embed-append"),
-            MinimumRole(Role.BotManager)]
+        [Command("role-embed-append"), MinimumRole(Role.BotManager)]
         public async Task RoleEmbedAppendRole(CommandContext ctx,
                                                 DiscordChannel channel, 
                                                 ulong messageId,
@@ -56,8 +54,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("role-embed-remove"),
-            MinimumRole(Role.BotManager)]
+        [Command("role-embed-remove"), MinimumRole(Role.BotManager)]
         public async Task RoleEmbedRemoveRole(CommandContext ctx,
                                                 DiscordChannel channel,
                                                 ulong messageId, 
@@ -69,8 +66,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("role-message-new"),
-            MinimumRole(Role.BotManager)]
+        [Command("role-message-new"), MinimumRole(Role.BotManager)]
         public async Task RoleMessageNew(CommandContext ctx,
                                             DiscordChannel channel, 
                                          [RemainingText]
@@ -82,8 +78,7 @@ namespace BigSister.Commands
             }
         }
 
-        [Command("role-message-edit"),
-            MinimumRole(Role.BotManager)]
+        [Command("role-message-edit"), MinimumRole(Role.BotManager)]
         public async Task RoleMessageEdit(CommandContext ctx,
                                             DiscordChannel channel,
                                             ulong messageId, 

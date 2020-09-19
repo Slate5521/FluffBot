@@ -16,21 +16,9 @@ namespace BigSister.Commands
 {
     class ReminderCommands : BaseCommandModule
     {
-        [Command("reminder"),
-         Aliases("reminders"),
-         MinimumRole(Role.CS),
-         Description("Add, remove, or list reminders.\n\n" +
-            "**Example:** !reminder add 20d 4 mins unmute <@131626628211146752> thanks, also this is a valid message string\n\n" +
-            "**Note:** Acceptable time formats are...\n\n" +
-            "**Months:** month(s)\n" +
-            "**Weeks:** week(s), wk(s), w\n" +
-            "**Days:** day(s), d\n" +
-            "**Hours:** hour(s), hr(s), h\n" +
-            "**Minutes:** minute(s), min(s)\n")]
+        [Command("reminder"), MinimumRole(Role.CS)]
         public async Task ReminderBase(CommandContext ctx, 
-                                       [Description("new/add, remove/delete, or list")]
                                             string action, 
-                                       [RemainingText, Description("Time information, message, and mention(s) if applicable")] 
                                             string args)
         {
             // Check if they have the permissions to call this command.
