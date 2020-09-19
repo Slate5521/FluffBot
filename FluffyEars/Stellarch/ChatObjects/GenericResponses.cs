@@ -31,8 +31,7 @@ namespace BigSister.ChatObjects
         public static async Task HandleInvalidArguments(CommandContext ctx) 
         {
             string description = Generics.NegativeDirectResponseTemplate(ctx.Member.Mention,
-                body: $"I did not understand the arguments supplied to me. Please check that you have the right arguments...\n\n" +
-                      $"**Description:** {ctx.Command.Description}");
+                body: $"I did not understand the arguments supplied to me. Please check that you have the right arguments...\n\n");
 
             var embedBuilder = Generics.GenericEmbedTemplate(Generics.NegativeColor, description,
                 title: $"Invalid arguments: !{ctx.Command.Name}");
