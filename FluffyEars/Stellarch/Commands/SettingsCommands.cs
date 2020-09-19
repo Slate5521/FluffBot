@@ -10,6 +10,7 @@ using DSharpPlus.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BigSister.Commands
@@ -105,6 +106,43 @@ namespace BigSister.Commands
                 }
             }
         }
+
+        [Command("excluded-channels"), MinimumRole(Role.BotManager)]
+        public async Task ExcludeChannel(CommandContext ctx, string command)
+        {
+            if(await Permissions.HandlePermissionsCheck(ctx) && command.Equals("list"))
+            {
+                // Check if there are even any excluded channels.
+                if (Program.Settings.ExcludedChannels.Count > 0)
+                {
+                    var stringBuilder = new StringBuilder();
+
+                    stringBuilder.AppendJoin('\n',
+                        Program.Settings.ExcludedChannels.Select(a => Generics.GetChannelMention(a)));
+
+                    await ctx.RespondAsync(
+                        embed: Generics.GenericEmbedTemplate(
+                            color: Generics.NeutralColor,
+                            description: Generics.NeutralDirectResponseTemplate(
+                                mention: ctx.Member.Mention,
+                                body: $"here are the excluded channels:\n{stringBuilder.ToString()}"),
+                            thumbnail: Generics.URL_SPEECH_BUBBLE,
+                            title: @"Excluded channels"));
+                }
+                else
+                {
+                    await ctx.RespondAsync(
+                        embed: Generics.GenericEmbedTemplate(
+                            color: Generics.NeutralColor,
+                            description: Generics.NeutralDirectResponseTemplate(
+                                mention: ctx.Member.Mention,
+                                body: @"there are no excluded channels."),
+                            thumbnail: Generics.URL_SPEECH_BUBBLE,
+                            title: @"Excluded channels"));
+                }
+            }
+        }
+
 
         [Command("filter-channel"), MinimumRole(Role.BotManager)]
         public async Task SetFilterChannel(CommandContext ctx, DiscordChannel channel)

@@ -19,7 +19,7 @@ namespace BigSister.Commands
         [Command("reminder"), MinimumRole(Role.CS)]
         public async Task ReminderBase(CommandContext ctx, 
                                             string action, 
-                                            string args)
+                                            string args = @"")
         {
             // Check if they have the permissions to call this command.
             if (await Permissions.HandlePermissionsCheck(ctx))

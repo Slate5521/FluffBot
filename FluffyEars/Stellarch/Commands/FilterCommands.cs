@@ -22,7 +22,7 @@ namespace BigSister.Commands
         public async Task FilterBase(CommandContext ctx, 
                                         string action, 
                                      [RemainingText]
-                                        string mask)
+                                        string mask = @"")
         {
             // Check if they have the permissions to call this command.
             if (await Permissions.HandlePermissionsCheck(ctx))
@@ -74,7 +74,7 @@ namespace BigSister.Commands
         [Command("exclude"), MinimumRole(Role.Mod)]
         public async Task ExcludeBase(CommandContext ctx, 
                                         string action, 
-                                        string exclude)
+                                        string exclude = @"")
         {
             // Check if they have the permissions to call this command.
             if (await Permissions.HandlePermissionsCheck(ctx))
