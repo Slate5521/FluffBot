@@ -242,7 +242,7 @@ namespace BigSister.Reminders
 
                 SqliteParameter e = new SqliteParameter("$time", reminder.Time)
                 {
-                    DbType = DbType.Int64
+                    DbType = DbType.Int32
                 };
 
                 var stringBuilder = new StringBuilder();
@@ -260,7 +260,7 @@ namespace BigSister.Reminders
                 await ctx.Channel.SendMessageAsync(embed: embed);
             }
 
-            if(sendErrorEmbed)
+            if (sendErrorEmbed)
             {
                 var a = ctx.Channel.SendMessageAsync(embed: embed);
                 var b = GenericResponses.HandleInvalidArguments(ctx);
@@ -299,7 +299,7 @@ namespace BigSister.Reminders
                     @"I able to remove the reminder you gave me!"),
                 thumbnail: Generics.URL_REMINDER_DELETED,
                 title: @"Removed reminder"));
-            
+
             DateTimeOffset dto = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60); // The reminder's DTO.
             TimeSpan remainingTime = dto.Subtract(DateTimeOffset.UtcNow); // The remaining time left for the reminder.
             string originalAuthorMention = Generics.GetMention(reminder.User);
@@ -395,7 +395,7 @@ namespace BigSister.Reminders
 
             // Check if it's default aka nothing found (for some reason). We should've already checked that this item exists previously, but I still
             // want to be super careful
-            if(item_returnVal.Equals(default(Reminder)))
+            if (item_returnVal.Equals(default(Reminder)))
             {   // Equals default.
                 item_returnVal = Reminder.Invalid;
             }
@@ -425,7 +425,7 @@ namespace BigSister.Reminders
                 {
                     Reminder reminder = reminders[i];
 
-                    
+
 
                     var dto = DateTimeOffset.FromUnixTimeSeconds(reminder.Time * 60);
 
@@ -505,7 +505,7 @@ namespace BigSister.Reminders
             }
         }
 
-        static readonly Func<SqliteDataReader, object> readReminders = 
+        static readonly Func<SqliteDataReader, object> readReminders =
             delegate (SqliteDataReader reader)
                 {
                     var reminderList = new List<Reminder>();
@@ -513,12 +513,12 @@ namespace BigSister.Reminders
                     while (reader.Read())
                     {   // Generate a reminder per each row.
                         var r = new Reminder(
-                            originalMessageId:  reader.GetString(0),
-                            user:               ulong.Parse(reader.GetString(1)),
-                            channel:            ulong.Parse(reader.GetString(2)),
-                            text:               reader.GetString(3),
-                            time:               reader.GetInt32(4),
-                            usersToNotify:      reader.GetString(5).Split(' ')
+                            originalMessageId: reader.GetString(0),
+                            user: ulong.Parse(reader.GetString(1)),
+                            channel: ulong.Parse(reader.GetString(2)),
+                            text: reader.GetString(3),
+                            time: reader.GetInt32(4),
+                            usersToNotify: reader.GetString(5).Split(' ')
                         );
 
                         reminderList.Add(r);
@@ -591,8 +591,8 @@ namespace BigSister.Reminders
                     };
 
                     deb.WithThumbnail(Generics.URL_REMINDER_EXCLAIM);
-                    deb.AddField(@"Late by", 
-                        value: String.Format("{0}day {1}hr {2}min {3}sec", 
+                    deb.AddField(@"Late by",
+                        value: String.Format("{0}day {1}hr {2}min {3}sec",
                             /*0*/ lateBy.Days,
                             /*1*/ lateBy.Hours,
                             /*2*/ lateBy.Minutes,
@@ -667,7 +667,7 @@ namespace BigSister.Reminders
         /// <summary>Checks if a character is a white space.</summary>
         private static bool IsWhitespace(char c)
         {
-            return c.Equals(' ')  ||
+            return c.Equals(' ') ||
                    c.Equals('\r') ||
                    c.Equals('\n') ||
                    c.Equals('\t');
@@ -699,6 +699,6 @@ namespace BigSister.Reminders
 
         internal static async void ReminderTimer_Elapsed(object sender, ElapsedEventArgs e)
             => await LookTriggerReminders(
-                (int)(e.SignalTime.ToUniversalTime().Ticks / (TimeSpan.TicksPerMillisecond * 1000 * 60)));
+                 (int)(DateTimeOffset.UtcNow.ToUnixTimeSeconds() / 60));
     }
 }
