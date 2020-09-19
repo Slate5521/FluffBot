@@ -16,6 +16,7 @@ using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using BigSister.Settings;
 using BigSister.Database;
+using System.Text;
 
 namespace BigSister
 {
@@ -81,7 +82,26 @@ namespace BigSister
 
         static void Main(string[] args)
         {
-            // TODO: CLI
+            if(args.Length > 1)
+            {
+                if(args[0].Equals("-md5"))
+                {
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.Append(args[1..]);
+
+                    string baseFile = stringBuilder.ToString();
+
+#pragma warning disable IDE0063
+                    using (StreamReader sr = new StreamReader(baseFile))
+                    {
+                        var tempSaveFile = new SaveFile(baseFile);
+                        tempSaveFile.Save(sr.ReadToEnd());
+                    }
+#pragma warning restore IDE0063
+                }
+
+                Environment.Exit(0);
+            }
 
             bool loadSuccess;
 
@@ -248,11 +268,6 @@ namespace BigSister
             }
 
             return loadedValues_returnVal;
-        }
-
-        private static void GenerateMd5File(string inputFile, string outputFile)
-        {
-            throw new NotImplementedException();
         }
     }
 }
