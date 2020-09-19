@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace BigSister.Commands
 {
-    [Group("Settings")]
+    [Group("Settings"), Description("Bot settings")]
     class SettingsCommands : BaseCommandModule
     {
         const Role ConfigPerm = Role.BotManager;
@@ -27,9 +27,9 @@ namespace BigSister.Commands
         [Command("excluded-channels"), 
             Aliases("excluded-chans"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Add new excluded channnel(s), preventing messages in them from triggering the filter system.")]
+            Description("Add new excluded channnel(s), preventing messages in them from triggering the filter system.")]
         public async Task ExcludeChannel(CommandContext ctx, 
-                                         [Description("Add or remove")]
+                                         [Description("add/remove")]
                                             string command, 
                                          [Description("Channel(s) to add or remove")]
                                             params DiscordChannel[] channels)
@@ -119,7 +119,7 @@ namespace BigSister.Commands
         [Command("filter-channel"), 
             Aliases("filter-chan"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Set the filter channel.")]
+            Description("Set the filter channel.")]
         public async Task ExcludeChannel(CommandContext ctx, 
                                          [Description("Filter channel")]
                                             DiscordChannel channel)
@@ -142,7 +142,7 @@ namespace BigSister.Commands
 
         [Command("reminder-limit"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Set the maximum reminder time.")]
+            Description("Set the maximum reminder time.")]
         public async Task SetReminderTimeLimit(CommandContext ctx, 
                                                [Description("Maximum reminder time in months")]
                                                     uint months)
@@ -168,7 +168,7 @@ namespace BigSister.Commands
 
         [Command("warn-month-limit"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Set the warning expiration time.")]
+            Description("Set the warning expiration time.")]
         public async Task SetMaxWarnLimit(CommandContext ctx,
                                           [Description("Warning expiration time in months")] 
                                             uint months)
@@ -192,7 +192,7 @@ namespace BigSister.Commands
         [Command("action-channel"), 
             Aliases("action-chan"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Set the action-logs channel.")]
+            Description("Set the action-logs channel.")]
         public async Task SetActionChannel(CommandContext ctx,
                                            [Description("Action logs channel")] 
                                                 DiscordChannel channel)
@@ -213,7 +213,7 @@ namespace BigSister.Commands
         [Command("snoop-enabled"), 
             Aliases("warnsnoopenabled", "snoopdogenabled"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Enable or disable passive warn snooping.")]
+            Description("Enable or disable passive warn snooping.")]
         public async Task SetSnoopEnabled(CommandContext ctx, 
                                           [Description("True or false")] 
                                             bool enabled)
@@ -237,7 +237,7 @@ namespace BigSister.Commands
 
         [Command("rimboard-enabled"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Enable or disable Rimboard.")]
+            Description("Enable or disable Rimboard.")]
         public async Task RimboardEnabled(CommandContext ctx,
                                           [Description("True or false")] 
                                             bool enabled)
@@ -259,7 +259,7 @@ namespace BigSister.Commands
         [Command("rimboard-channel"), 
             Aliases("rimboard-chan"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Set the channel for Rimboard.")]
+            Description("Set the channel for Rimboard.")]
         public async Task SetRimboardChannel(CommandContext ctx,
                                              [Description("Rimboard channel")] 
                                                 DiscordChannel channel)
@@ -295,7 +295,7 @@ namespace BigSister.Commands
 
         [Command("rimboard-emote"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Set the Rimboard reaction emote.")]
+            Description("Set the Rimboard reaction emote.")]
         public async Task SetRimboardEmote(CommandContext ctx,
                                              [Description("Rimboard emote")] 
                                                 DiscordEmoji emote)
@@ -315,7 +315,7 @@ namespace BigSister.Commands
 
         [Command("rimboard-reaction-count"),  
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Set the Rimboard reaction count for a message to be reposted.")]
+            Description("Set the Rimboard reaction count for a message to be reposted.")]
         public async Task SetRimboardReactionsRequired(CommandContext ctx,
                                              [Description("Reaction count required")] 
                                                 uint count)
@@ -338,7 +338,7 @@ namespace BigSister.Commands
 
         [Command("rimboard-pin-reaction-count"), 
             MinimumRole(ConfigPerm),
-            Description("**[Bot Manager]** Sets the Rimboard reaction count for a message to be pinned in the Rimboard channel.\n\n")]
+            Description("Sets the Rimboard reaction count for a message to be pinned in the Rimboard channel.\n\n")]
         public async Task SetRimboardReactionsRequiredToPin(CommandContext ctx,
                                              [Description("Reaction count required")] 
                                                 uint count)

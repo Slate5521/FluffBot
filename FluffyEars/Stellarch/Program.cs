@@ -17,6 +17,7 @@ using DSharpPlus.Interactivity;
 using BigSister.Settings;
 using BigSister.Database;
 using System.Text;
+using DSharpPlus.CommandsNext.Attributes;
 
 namespace BigSister
 {
@@ -75,7 +76,7 @@ namespace BigSister
         public static BotSettings Settings;
         public static DiscordClient BotClient;
 
-        public const string Prefix = @"!";
+        public const string Prefix = @"~";
 
         static SaveFile BotSettingsFile;
         static Identity Identity;
@@ -180,6 +181,7 @@ namespace BigSister
             {
                 CaseSensitive = false,
                 EnableDefaultHelp = true,
+                EnableDms = false,
                 StringPrefixes = new string[] { Prefix }
             });
 

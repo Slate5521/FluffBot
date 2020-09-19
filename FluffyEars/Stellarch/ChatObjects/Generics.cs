@@ -16,9 +16,9 @@ namespace BigSister.ChatObjects
     {
         const string EMPTY_STRING = @"";
 
-        const string NEGATIVE_PREFIX = @":x: **/(u︵u)\\**";
-        const string POSITIVE_PREFIX = @":white_check_mark: **/(^‿^)\\**";
-        const string NEUTRAL_PREFIX = @":speech_left: **/('▿')\\**";
+        public const string NEGATIVE_PREFIX = @":x: **/(u︵u)\\**";
+        public const string POSITIVE_PREFIX = @":white_check_mark: **/(^‿^)\\**";
+        public const string NEUTRAL_PREFIX = @":speech_left: **/('▿')\\**";
 
         public static DiscordColor PositiveColor = DiscordColor.Green;
         public static DiscordColor NegativeColor = DiscordColor.Red;

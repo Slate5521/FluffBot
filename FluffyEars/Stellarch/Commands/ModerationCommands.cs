@@ -29,7 +29,7 @@ namespace BigSister.Commands
 
         [Command("mentions"), 
             MinimumRole(Role.CS), 
-            Description("**[CS]** Look for mention(s) of user(s) in the #action-logs channel.\n\n" +
+            Description("Look for mention(s) of user(s) in the #action-logs channel.\n\n" +
             "**Example:** !mentions 131626628211146752 <@131626628211146752>")]
         public async Task MentionsLookup(CommandContext ctx, 
                                          [Description("Numerical snowflake IDs and/or user mentions")]
@@ -73,8 +73,8 @@ namespace BigSister.Commands
         /// <summary>Gets information about a user's account creation date and server join date.</summary>
         [Command("userinfo"),
          MinimumRole(Role.CS),
-         Description("**[CS]** Get a user's join date and creation date.\n\n" +
-            "**Examples:**\n\n" +
+         Description("Get a user's join date and creation date.\n\n" +
+            "**Examples:**\n" +
             "!userinfo <@131626628211146752>\n" +
             "!userinfo 131626628211146752")]
         public async Task GetUserInfo(CommandContext ctx,

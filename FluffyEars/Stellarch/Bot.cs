@@ -47,6 +47,8 @@ namespace BigSister
             commands.RegisterCommands<RoleRequestCommands>();
             commands.RegisterCommands<ModerationCommands>();
             commands.RegisterCommands<SettingsCommands>();
+
+            commands.SetHelpFormatter<BunnyHelpFormatter>();
         }
 
         static void RegisterEvents(DiscordClient botClient)
