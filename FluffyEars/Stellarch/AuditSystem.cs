@@ -29,7 +29,7 @@ namespace BigSister
                     string timeStamp = dto.ToString(Generics.DateFormat);
 
                     await sw.WriteAsync(
-                        value: String.Format("[{0}] '{1}' CALLED BY '{2}' ID '{3}' WITH ARGUMENTS '{4}'",
+                        value: String.Format("[{0}] '{1}' CALLED BY '{2}' ID '{3}' WITH ARGUMENTS '{4}'\n",
                             timeStamp,
                             e.Command.Name,
                             $"{e.Context.Member.Username}#{e.Context.Member.Discriminator}",
