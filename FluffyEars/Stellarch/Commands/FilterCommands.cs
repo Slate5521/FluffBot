@@ -74,6 +74,7 @@ namespace BigSister.Commands
         [Command("exclude"), MinimumRole(Role.Mod)]
         public async Task ExcludeBase(CommandContext ctx, 
                                         string action, 
+                                        [RemainingText]
                                         string exclude = @"")
         {
             // Check if they have the permissions to call this command.
