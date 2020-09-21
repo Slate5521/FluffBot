@@ -81,7 +81,7 @@ namespace BigSister.ChatObjects
 
             if (!(fileStream is null) && !(fileName is null))
             {
-                dwb.AddFile(fileName, fileStream);
+                dwb.AddFile(Path.GetFileName(fileName), fileStream);
             }
 
             if (embeds is null && content is null && fileStream is null)
