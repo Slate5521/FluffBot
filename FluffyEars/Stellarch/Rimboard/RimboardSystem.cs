@@ -132,7 +132,8 @@ namespace BigSister.Rimboard
             //  3) The Rimboard webhook is not default.
             //  4) This was not sent by the bot (requires nocache).
             if (e.Channel.Id != Program.Settings.RimboardChannelId &&
-                Program.Settings.RimboardEnabled &&
+                e.Channel.Id != 401672277692776448 &&   // Temporary patch to ignore the announcements channel while I work on the the next
+                Program.Settings.RimboardEnabled &&     // update. Please, please, PLEASE get a proper Rimboard-channel-ignore method at some point.
                 Program.Settings.RimboardWebhookId != BotSettings.Default.RimboardWebhookId &&
                 // De-cache the message so we can get its author.
                 !(message_noCache.Author.IsBot))
