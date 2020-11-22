@@ -270,23 +270,11 @@ namespace BigSister.RoleRequest
                     DiscordMember member = await guild.GetMemberAsync(user.Id);
                     DiscordRole role = guild.GetRole(discordRoleId);
 
-                    // Let's make sure they have the role (or don't).
-                    // Case A: They have the role and we're taking the role from them.
-                    // Case B: They don't have the role and we're giving the role to them.
-                    if ((member.Roles.Contains(role)  && !giveRole) || // Case A
-                        (!member.Roles.Contains(role) &&  giveRole))   // Case B
-                    {   
-                        // Let's give them the role or remove it from them now.
-                        switch (giveRole)
-                        {
-                            case true:
-                                await member.GrantRoleAsync(role);
-                                break;
-                            case false:
-                                await member.RevokeRoleAsync(role);
-                                break;
-                        } // end switch
-                    } // end if
+                    // Let's give them the role or remove it from them now.
+                    if(giveRole)
+                        await member.GrantRoleAsync(role);
+                    else
+                        await member.RevokeRoleAsync(role);
                 } // end if
             } // end if
         } // end method
