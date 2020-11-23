@@ -15,9 +15,9 @@ using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Interactivity;
 using BigSister.Settings;
-using BigSister.Database;
 using System.Text;
 using DSharpPlus.CommandsNext.Attributes;
+using System.Collections.Generic;
 
 namespace BigSister
 {
@@ -42,88 +42,24 @@ namespace BigSister
                 get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, IDENTITY_FILE);
             }
 
-            const string SETTINGS_FILE = @"settings.json";
-            public static string SettingsFile
+            const string ANNOUNCEMENTS_FILE  = @"announcements.json";
+            public static string AnnouncementsFile
             {
-                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, SETTINGS_FILE);
-            }
-
-            const string FUN_FILE = @"botReactions.json";
-            public static string FunFile
-            {
-                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, FUN_FILE);
-            }
-
-            const string LOG_FILE = @"log.txt";
-            public static string LogFile
-            {
-                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, LOG_FILE);
-            }
-
-            const string DATABASE_FILE = @"database.db";
-            public static string DatabaseFile
-            {
-                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, DATABASE_FILE);
-            }
-
-            public const string RIMBOARD_DIR = @"temp";
-            public static string RimboardTempFileDirectory
-            {
-                get => Path.Combine(ExecutableDirectory, RIMBOARD_DIR);
+                get => Path.Combine(ExecutableDirectory, SAVE_DIRECTORY, ANNOUNCEMENTS_FILE);
             }
         }
 
-        public static BotSettings Settings;
         public static DiscordClient BotClient;
 
-        public const string Prefix = @"~";
+        public const string Prefix = @";";
 
-        static SaveFile BotSettingsFile;
         static Identity Identity;
+        static Announcements Announcements;
 
         static void Main(string[] args)
         {
-            if(args.Length > 1)
-            {
-                if(args[0].Equals("-md5"))
-                {
-                    var stringBuilder = new StringBuilder();
-                    stringBuilder.Append(args[1..]);
-
-                    string baseFile = stringBuilder.ToString();
-
-#pragma warning disable IDE0063
-                    using (StreamReader sr = new StreamReader(baseFile))
-                    {
-                        var tempSaveFile = new SaveFile(baseFile);
-                        tempSaveFile.Save(sr.ReadToEnd());
-                    }
-#pragma warning restore IDE0063
-                }
-
-                Environment.Exit(0);
-            }
-
-            bool loadSuccess;
-
             // ----------------
             // Initiate folders
-
-            // Check if the save directory exists.
-            if (!Directory.Exists(Files.SaveDirectory))
-            {
-                Console.Write("Folder {0} not found, creating directory... ", Files.SAVE_DIRECTORY);
-                Directory.CreateDirectory(Files.SaveDirectory);
-                Console.WriteLine("Created!");
-            }
-
-            // Check if the rimboard temp file directory exists.
-            if (!Directory.Exists(Files.RimboardTempFileDirectory))
-            {   
-                Console.Write("Folder {0} not found, creating directory... ", Files.RIMBOARD_DIR);
-                Directory.CreateDirectory(Files.RimboardTempFileDirectory);
-                Console.WriteLine("Created!");
-            }
 
             // ----------------
             // Load authkey and webhooks.
@@ -134,36 +70,10 @@ namespace BigSister
                 Identity.Webhooks.Count == 1 ? '\0' : 's');
 
             // ----------------
-            // Load bot settings.
-            Console.Write("Loading settings... ");
-            loadSuccess = LoadSettings(out Settings);
-            Console.WriteLine(loadSuccess ? @"Successfully loaded" : @"No file - Used default values.");
-
-            // ----------------
-            // TODO: Initiate auditing.
-
-            // ----------------
-            // Initiate database.
-            Console.Write("Looking for database file... ");
-            string localDbPath = Path.GetRelativePath(Files.ExecutableDirectory, Files.DatabaseFile);
-            if (File.Exists(Files.DatabaseFile)) // DB found
-                Console.WriteLine("Found {0}!", localDbPath);
-            else
-            { // DB not found
-                Console.WriteLine("No database - Instantiating default {0}.", localDbPath);
-                BotDatabase.GenerateDefaultFile(Files.DatabaseFile);
-            }
-
-            // ----------------
-            // Load fun stuff settings.
-            Console.Write("Loading fun stuff... ");
-            loadSuccess = FunStuff.LoadFunStuffJson(Files.FunFile);
-            Console.WriteLine(loadSuccess ? @"Successfully loaded" : @"No file - No fun allowed.");
-
-            if(Settings.FunAllowed && !loadSuccess)
-            {
-                UpdateSettings(ref Settings.FunAllowed, false);
-            }
+            // Load announcements file.
+            Console.Write("Loading announcements... ");
+            Announcements.Instance.Load();
+            Console.WriteLine("Loaded announcements...");
 
             // ----------------
             // Run the bot.
@@ -185,17 +95,10 @@ namespace BigSister
                 StringPrefixes = new string[] { Prefix }
             });
 
-            BotClient.UseInteractivity(new InteractivityConfiguration
-            {
-                PaginationBehaviour = DSharpPlus.Interactivity.Enums.PaginationBehaviour.Ignore
-            });
-
             // ----------------
             // Initialize static classes.
 
-            Filter.FilterSystem.Initialize();
             WebhookDelegator.Initialize(Identity.Webhooks);
-
 
             Bot.RunAsync(BotClient).ConfigureAwait(false).GetAwaiter().GetResult();
         }
@@ -226,50 +129,7 @@ namespace BigSister
             return identity_returnVal;
         }
 
-        /// <summary>Update a setting and save if desired.</summary>
-        /// <param name="setting">Reference of the setting to update.</param>
-        /// <param name="newVal">New value of the setting.</param>
-        /// <param name="save">If should be immediately save to disk.</param>
-        public static void UpdateSettings<T>(ref T setting, T newVal, bool save = true)
-        {
-            setting = newVal;
-
-            if(save)
-            {
-                SaveSettings();
-            }
-        }
-
-        /// <summary>Save settings as is.</summary>
-        public static void SaveSettings()
-        {
-            BotSettingsFile.Save<BotSettings>(Settings);
-        }
-        
-        /// <summary>Load the bot's settings.</summary>
-        /// Doesn't have to be asynchronous because I don't care what performance the bot has upon start.
-        static bool LoadSettings(out BotSettings botSettings)
-        {
-            bool loadedValues_returnVal;
-
-            BotSettingsFile = new SaveFile(Files.SettingsFile);
-
-            // Check if it's an existing save file.
-            if (BotSettingsFile.IsExistingSaveFile())
-            {   // It's an existing file, so let's get the values.
-                loadedValues_returnVal = true;
-
-                botSettings = BotSettingsFile.Load<BotSettings>();
-            }
-            else
-            {   // It's not an existing file, so let's use default values and then save them.
-                botSettings = new BotSettings();
-                loadedValues_returnVal = false;
-
-                BotSettingsFile.Save<BotSettings>(botSettings);
-            }
-
-            return loadedValues_returnVal;
-        }
+        static bool LoadAnnouncements()
+            => Announcements.Instance.Load();
     }
 }
