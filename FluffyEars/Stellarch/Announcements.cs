@@ -40,7 +40,7 @@ namespace BigSister
         /// <summary>Load the announcements file.</summary>
         public bool Load()
         {
-            bool @return = false;
+            bool @return;
 
             if (!loaded)
             {
@@ -82,12 +82,14 @@ namespace BigSister
 
             try
             {
+#pragma warning disable IDE0063 // Use simple 'using' statement
                 // Open SW on announcements file with intention to overwrite.
-                using(StreamWriter sw = new StreamWriter(Files.AnnouncementsFile, false))
+                using (StreamWriter sw = new StreamWriter(Files.AnnouncementsFile, false))
                 {
                     // Dump that shit out!
                     await sw.WriteAsync(JsonConvert.SerializeObject(announcements));
                 }
+#pragma warning restore IDE0063 // Use simple 'using' statement
             }
             finally
             {

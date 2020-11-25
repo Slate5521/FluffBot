@@ -9,19 +9,31 @@ using System.Timers;
 using DSharpPlus;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.Entities;
-using System.Text;
-using BigSister.ChatObjects;
 using System.Collections.Generic;
-using DSharpPlus.CommandsNext.Attributes;
 
 namespace BigSister
 {
     public static class Bot
     {
-        static Timer reminderTimer;
-        static ulong[] channelIds = new ulong[]         { 755926052571971814 };
-        static string[] mentionStrings = new string[] { "<@&727048568220680252>" };
-        static DiscordChannel[] channels;
+        static Timer reminderTimer;                           // Burrow                   , Poe home                 , Rimworld
+        static readonly ulong[] channelIds = new ulong[]       {      780596714968186880  ,      701631184832167996  ,      780350282144022548   };
+        static readonly string[] mentionStrings = new string[] { @"<@&780596737106378772>", @"<@&701642824487141376>", @"<@&780034969870401566>" };
+        static DiscordChannel[] _channels;
+
+        static async Task<DiscordChannel[]> GetChannels()
+        {
+            if (_channels is null)
+            {
+                _channels = new DiscordChannel[channelIds.Length];
+
+                for (int i = 0; i < _channels.Length; i++)
+                {   // Let's populate each one.
+                    _channels[i] = await Program.BotClient.GetChannelAsync(channelIds[i]);
+                }
+            }
+
+            return _channels;
+        }
 
         public static async Task RunAsync(DiscordClient botClient)
         {
@@ -33,7 +45,7 @@ namespace BigSister
             };
 
             RegisterCommands(botClient);
-            RegisterEvents(botClient);
+            RegisterEvents();
 
             reminderTimer.Start();
 
@@ -43,26 +55,13 @@ namespace BigSister
 
         static void RegisterCommands(DiscordClient botClient)
         {
-            botClient.UseCommandsNext(new CommandsNextConfiguration()
-            {
-                EnableDms = false,
-                StringPrefixes = new string[] { "!" },
-                CaseSensitive = false,
-                DmHelp = false,
-                EnableDefaultHelp = false
-            });
+            var commands = botClient.GetCommandsNext();
+
+            commands.RegisterCommands<BotCommands>();
         }
 
-        class Commands : BaseCommandModule
-        {
-            [Command("dropped")]
-            static async Task DroppedPotato(string twitchName)
-            {
 
-            }
-        }
-
-        static void RegisterEvents(DiscordClient botClient)
+        static void RegisterEvents()
         {
             // ----------------
             // Reminder Timer
@@ -85,36 +84,43 @@ namespace BigSister
                     // Check if the announcement is too late.
                     if (DateTimeOffset.UtcNow <= info.EndTime)
                     {   // Not too late.
-                        PostAnnouncement(info).ConfigureAwait(false).GetAwaiter().GetResult();
-                        Announcements.Instance.PopAnnouncement(info);
+                        try
+                        {
+                            PostAnnouncement(info).ConfigureAwait(false).GetAwaiter().GetResult();
+                        }
+                        finally
+                        {   // Always pop the announcement so it doesn't spam the fuck out of other channels if it can't send it to one.
+                            Announcements.Instance.PopAnnouncement(info);
+                        }
                     }
                     else
-                    {   // Too late, so let's jus tremove it.
+                    {   // Too late, so let's just remove it.
                         Announcements.Instance.PopAnnouncement(info);
-                    }
-                }
+                    } // end else
+                } // end foreach
+            } // end if
+        } // end method
 
+        public static async Task PostAnnouncement(AnnouncementInfo info)
+        {
+            var channels = await GetChannels();
+
+            // Go through each channel to post an announcement...
+            for (int i = 0; i < channels.Length; i++)
+            {
+                await channels[i].SendMessageAsync(content: info.GetContent(mentionStrings[i]));
+                await Task.Delay(2000);
             }
         }
 
-        static async Task PostAnnouncement(AnnouncementInfo info)
+        public static async Task PostAnnouncement(string content)
         {
-            // Check if the channel cache is null.
-            if(channels is null)
-            {   // It is, so let's just populate it really fast.
-                channels = new DiscordChannel[channelIds.Length];
-
-                for(int i = 0; i < channels.Length; i++)
-                {   // Let's populate each one.
-                    channels[i] = await Program.BotClient.GetChannelAsync(channelIds[i]);
-                }
-            }
+            var channels = await GetChannels();
 
             // Go through each channel to post an announcement...
-            for(int i = 0; i < channels.Length; i++) 
+            for (int i = 0; i < channels.Length; i++)
             {
-                await channels[i].SendMessageAsync(content: info.GetContent(mentionStrings[i]));//, 
-                    //embed: info.GetAnnouncementEmbed());
+                await channels[i].SendMessageAsync(String.Format(content, mentionStrings[i]));
                 await Task.Delay(2000);
             }
         }

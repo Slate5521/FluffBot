@@ -17,19 +17,18 @@ namespace BigSister
         public string time;
         public string end;
         public string username;
-        public string avatar;
         public string @override;
 
         [JsonIgnore]
         public DateTimeOffset PostTime
         {
-            get => DateTimeOffset.ParseExact(time, FORMAT_RECEIVE, CultureInfo.InvariantCulture.DateTimeFormat).UtcDateTime;
+            get => DateTimeOffset.ParseExact(time, FORMAT_RECEIVE, CultureInfo.InvariantCulture.DateTimeFormat);
         }
 
         [JsonIgnore]
         public DateTimeOffset EndTime
         {
-            get => DateTimeOffset.ParseExact(end, FORMAT_RECEIVE, CultureInfo.InvariantCulture.DateTimeFormat).UtcDateTime;
+            get => DateTimeOffset.ParseExact(end, FORMAT_RECEIVE, CultureInfo.InvariantCulture.DateTimeFormat);
         }
 
         string GetTwitchLink()
@@ -62,20 +61,9 @@ namespace BigSister
             if (!(@override is null) && @override.Length > 0)
                 @return = $"{roleMention} {@override} {GetTwitchLink()}";
             else
-                @return = $"{roleMention}\n:fire::potato: The potato has been passed! :potato::fire: **{username}** is now carrying the potato until {GetTimeEnd()}!\n**Catch the drama at** {GetTwitchLink()}";
+                @return = $"{roleMention}\n:fire::potato: The potato has been passed! :potato::fire: **{username}** is now carrying the potato until {GetTimeEnd()}! Catch the drama at {GetTwitchLink()}";
 
             return @return;
-        }
-
-        public DiscordEmbed GetAnnouncementEmbed()
-        {
-            var deb = new DiscordEmbedBuilder();
-            deb.WithTitle(username);
-            deb.WithUrl(GetTwitchLink());
-            deb.WithImageUrl(avatar);
-            deb.WithFooter($"twitch.tv/{username}");
-
-            return deb.Build();
         }
 
         public override bool Equals(object obj)

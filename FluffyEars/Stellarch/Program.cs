@@ -54,9 +54,8 @@ namespace BigSister
         public const string Prefix = @";";
 
         static Identity Identity;
-        static Announcements Announcements;
 
-        static void Main(string[] args)
+        static void Main()
         {
             // ----------------
             // Initiate folders
@@ -92,7 +91,7 @@ namespace BigSister
                 CaseSensitive = false,
                 EnableDefaultHelp = false,
                 EnableDms = false,
-                StringPrefixes = new string[] { Prefix }
+                StringPrefixes = new string[] { @"!" }
             });
 
             // ----------------
@@ -128,8 +127,5 @@ namespace BigSister
 
             return identity_returnVal;
         }
-
-        static bool LoadAnnouncements()
-            => Announcements.Instance.Load();
     }
 }
