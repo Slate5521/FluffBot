@@ -173,7 +173,7 @@ namespace BigSister.Rimboard
                     deb.WithThumbnail(avatarUri.ToString());
                     deb.WithDescription(message_noCache.Content);
                     deb.AddField(@"Colonist", $"{message_noCache.Author.Mention}", true);
-                    deb.AddField(@"Link", $"{Formatter.MaskedUrl($"#{message_noCache.Channel.Name}", new Uri(Generics.GetMessageUrl(message_noCache)))}", true);
+                    deb.AddField(@"Link", Generics.GetMessageUrl(message_noCache), true);
 
                     if (message_noCache.Attachments.Count > 0)
                     {
