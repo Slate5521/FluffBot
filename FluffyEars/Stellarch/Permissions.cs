@@ -157,12 +157,14 @@ namespace BigSister
                         break;
                     // ----------------------------------------------
                     case 326891962697383936: // Rimworld Community Support
-                    case 673765694982193173: // Dev Server Comminuity Support
+                    case 795637726371512330: // Rimworld NEW Community Support
+                    case 673765694982193173: // Dev Server Community Support
 
                         role_returnVal |= Role.CS;
                         break;
                     // ----------------------------------------------
                     case 214527027112312834: // Rimworld Moderator
+                    case 795636990221221908: // Rimworld NEW MODERATOR
                     case 690206811961294934: // Rimworld . Role 
                     case 673765713600708672: // Dev Server Moderator
 
