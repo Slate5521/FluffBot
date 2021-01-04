@@ -43,21 +43,8 @@
     "RequiresBotState": "WaitingForCarrot"
   },
   {
-    "RegexString": "^Floppy,? take off (?:that|your) mask[.!?]?$",
-    "Response": "O -oh! A-are you sure? https://i.imgur.com/DGyCqfp.png",
-    "Cooldown": 1800000,
-    "BotState": "WaitingForMask"
-  },
-  {
-    "RegexString": "^(?:yes|yea|yeah|ya)[.!?]?$",
-    "Response": "**H**ôŵ    *Þ*Ö  į  ł*ØÒ*k?*?*?? https://i.imgur.com/k7dDhvp.png",
-    "Cooldown": 0,
-    "RequiresBotState": "WaitingForMask"
-  },
-  {
-    "RegexString": "^(?:no|nah)[.!?]?$",
-    "Response": "Maybe for the best......",
-    "Cooldown": 0,
-    "RequiresBotState": "WaitingForMask"
+    "RegexString": "\svore\s",
+    "Response": "It has now been :zero: days since vore has been mentioned. <:sipsquared:640971709419094019>",
+    "Cooldown": 43200000
   }
 ]
