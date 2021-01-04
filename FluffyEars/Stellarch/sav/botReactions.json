@@ -43,7 +43,7 @@
     "RequiresBotState": "WaitingForCarrot"
   },
   {
-    "RegexString": "\svore\s",
+    "RegexString": "\bvor(?:e|ing)s?\b|vorarephiles?|vorarephilia",
     "Response": "It has now been :zero: days since vore has been mentioned. <:sipsquared:640971709419094019>",
     "Cooldown": 43200000
   }
