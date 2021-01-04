@@ -144,13 +144,13 @@ namespace BigSister
                 switch (role.Id)
                 {
                     // ----------------------------------------------
-                    case 409968304531439617: // Rimworld Colonist  
+                    case 793897526377840660: // Rimworld Colonist  
                     case 750984313813598218: // Dev Server Colonist
 
                         role_returnVal |= Role.Colonist;
                         break;
                     // ----------------------------------------------
-                    case 329295632395272203: // Rimworld Troubleshooter
+                    case 793897521755062324: // Rimworld Troubleshooter
                     case 750985581701496872: // Dev Server Troubleshooter
 
                         role_returnVal |= Role.Troubleshooter;
@@ -187,7 +187,7 @@ namespace BigSister
                         role_returnVal |= Role.Admin;
                         break;
                     // ----------------------------------------------
-                    case 261282907149172737: // Rimworld Muted
+                    case 793897525509095477: // Rimworld Muted
                     case 750984286831902771: // Dev Server Muted
 
                         muted = true;
