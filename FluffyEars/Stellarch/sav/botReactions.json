@@ -46,5 +46,10 @@
     "RegexString": "^!vore$",
     "Response": "https://i.imgur.com/HFVQYlh.png?1",
     "Cooldown": 43200000
+  },
+  {
+    "RegexString": "^!lizard$",
+    "Response": "https://i.imgur.com/HFVQYlh.png?1",
+    "Cooldown": 900000
   }
 ]
