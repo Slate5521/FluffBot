@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "RegexString": "^\\*hugs <@!?669347771312111619>\\*$",
     "Response": "*cuddles with {0}.*",
@@ -49,7 +49,7 @@
   },
   {
     "RegexString": "^!lizard$",
-    "Response": "https://i.imgur.com/HFVQYlh.png?1",
+    "Response": "https://i.imgur.com/e2w5bBk.png",
     "Cooldown": 900000
   }
 ]
